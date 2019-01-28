@@ -47,3 +47,11 @@ Alpha implementation of OV Assistant
 |Bearing|||
 |Transition matrix|||
 |Speed|||
+
+### Scoring
+
+
+### Hyperparameter tuning
+
+### Read more
+- (Hidden Markov Map Matching Through Noise and Sparseness)[http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.187.5145&rep=rep1&type=pdf]
