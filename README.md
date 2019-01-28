@@ -56,6 +56,7 @@ Alpha implementation of OV Assistant
 ### Hyperparameter tuning
 - GPS Error margin
 - Minimum previous user datetime 
+- Minimum previous vehicle datetime
 
 ### Read more
 - (Hidden Markov Map Matching Through Noise and Sparseness)[http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.187.5145&rep=rep1&type=pdf]
