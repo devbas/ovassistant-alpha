@@ -3,7 +3,7 @@ Alpha implementation of OV Assistant
 
 ## REST API Prerequisites
 
-- Classification from a client application requires a Bearer token provided through a by Lionoda provided registration flow. 
+- Classification from a client application requires a Bearer token provided by Lionoda.
 
 ## REST Endpoints 
 
