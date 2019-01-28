@@ -7,7 +7,9 @@ Alpha implementation of OV Assistant
 
 ## REST Endpoints 
 
-### `/api/v1/classify/`
+|Method|Group|Endpoint|Usage|User Auth required?|
+|------|-----|--------|-----|-------------------|
+|POST|Classification|classify|Classify user coordinates|✓|
 
 ## ML Model specification
 
