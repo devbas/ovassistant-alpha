@@ -1,6 +1,15 @@
 # ovassistant-alpha
 Alpha implementation of OV Assistant
 
+## REST API Prerequisites
+
+- Classification from a client application requires a Bearer token provided through a by Lionoda provided registration flow. 
+
+## REST Endpoints 
+
+### `/api/v1/classify/`
+
+## ML Model specification
 
 ### Raw user data requirements
 | Variable | Specification | 
@@ -25,7 +34,7 @@ Alpha implementation of OV Assistant
 |Previous coordinates measurement timestamp| UNIX |
 
 
-### Features
+### Feature engineering
 
 | Variable | Calculation | Dependent on |
 |----------|-------------|--------------|
