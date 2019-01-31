@@ -1,6 +1,13 @@
 # ovassistant-alpha
 Alpha implementation of OV Assistant
 
+## Considerations
+This project is designed with the following principles in mind:
+
+1) Data should be locked into OV Assistant and only be exportable by end-users, no third (commercial) parties. 
+2) Keep the human in the loop. Any feedback provided by endusers (for example, selecting an alternative vehicle) should be analyzed if it can contribute to a better version of the ML model. 
+3) Location history should be kept completely seperate from other personal information, such as, but not limited to, email addresses.
+
 ## REST API Prerequisites
 
 - Classification from a client application requires a Bearer token provided by Lionoda.
@@ -45,6 +52,7 @@ Alpha implementation of OV Assistant
 | Variable | Calculation | Dependent on |
 |----------|-------------|--------------|
 |Current vehicle latitude|||
+|Current vehicle longitude|||
 |Vehicle travel distance|||
 |Device vehicle distance|||
 |Device travel distance|             |              |
