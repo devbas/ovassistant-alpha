@@ -5,6 +5,7 @@ const utils = require('../utils')
 const moment = require('moment')
 const _ = require('lodash')
 const redisClient = require('../redis-client')
+const redisLayerStore = require('../redis-layer-store')
 
 const getVehicleItemInfo = async (vehicle) => {
   try {
@@ -73,6 +74,31 @@ const getVehicleCandidates = async (data) => {
     const matches = vehicleCandidatesRaw.data.matches
     vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo))
     
+    // Insert this into Redis
+    // ID: user_id:vehicle_id:user_measurement_timestamp
+    await redisLayerStore.set(`${data.user_id}:${candidate.vehicle_id}`, JSON.stringify({
+      user_id: data.userId, 
+      bearing: candidate.bearing, 
+      current_neighbor_coords: candidate.current_neighbor_coords, 
+      current_neighbor_datetime: candidate.current_neighbor_datetime, 
+      current_user_coords: candidate.current_user_coords, 
+      next_neighbor_coords: candidate.next_neighbor_coords, 
+      next_neighbor_datetime: candidate.next_neighbor_datetime, 
+      prev_neighbor_coords: candidate.prev_neighbor_coords,
+      prev_neighbor_datetime: candidate.prev_neighbor_datetime, 
+      speed: candidate.speed,
+      vehicle_id: candidate.vehicle_id, 
+      vehicle_type: candidate.vehicle_type, 
+      vehicle_travel_distance: candidate.vehicle_travel_distance, 
+      user_travel_distance: candidate.user_travel_distance, 
+      user_vehicle_distance: candidate.user_vehicle_distance, 
+      emission_prob: candidate.emission_prob, 
+      closest_stop_id: candidate.closest_stop ? candidate.closest_stop.closest_stop_id : 0,
+      closest_stop_distance: candidate.closest_stop ? candidate.closest_stop.stop_distance : -1,
+      transition_matrix: candidate.transition_matrix, 
+      inserted_at: Math.round((new Date()).getTime() / 1000)
+    }))
+
     vehicleCandidates.forEach((candidate) => {
       pool.query(`INSERT INTO user_vehicle_match SET 
         user_id = ?, 

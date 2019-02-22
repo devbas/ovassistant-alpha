@@ -1,4 +1,3 @@
-// "zeromq": "5.1.0"
 const express        = require('express');  
 const app            = express();   
 const Sentry         = require('@sentry/node');

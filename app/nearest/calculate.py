@@ -20,13 +20,18 @@ class NearestVehicle(BaseHTTPRequestHandler):
 
   def do_GET(self):
     paths = {
-      '/classify/location': {'status': 200}
+      '/classify/location': {'status': 200}, 
+      '/test': {'status':200}
     }
 
     o = urlparse(self.path) 
     if not o.path in paths:
       print('not all info avaialbe 2' + str(self.path) + str(o.path) + str(paths))
       self.respond({'status': 500})
+      return 
+
+    if str(o.path) == '/test': 
+      self.respond({'status': 200})
       return 
     
     if not o.query: 
