@@ -46,6 +46,7 @@ class NearestVehicle(BaseHTTPRequestHandler):
     user_id = variables['user_id'][0]
 
     if not datetime or not lon or not lat or not user_id: 
+      print(str(user_id))
       print('not all info avaialbe')
       self.respond({'status': 500})
       return 
