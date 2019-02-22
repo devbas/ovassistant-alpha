@@ -57,7 +57,8 @@ def get_vehicle_candidates(lon, lat, user_datetime, user_id):
   # observations['transition_matrix'] = [transportgeo.transition_matrix(vehicle, observations) for index, vehicle in observations.iterrows()]
 
   # Get all other observations from database
-  historic_obs = locationcache.get_observations(user_id, user_datetime) 
+  # historic_obs = locationcache.get_observations(user_id, user_datetime) 
+  historic_obs = []
   print('historic obs: ' + str(len(historic_obs)))
   
   vit_layers = pd.DataFrame()
