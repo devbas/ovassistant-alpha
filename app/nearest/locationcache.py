@@ -135,6 +135,8 @@ def get_vehicles_by_radius(lon, lat, radius, user_datetime):
 
 def get_observations(user_id, datetime): 
 
+  # Get observations from Redis
+
   observations = False 
   try:
 

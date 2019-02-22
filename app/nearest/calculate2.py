@@ -48,13 +48,13 @@ def get_vehicle_candidates(lon, lat, user_datetime, user_id):
     Calculate the great circle distance between the vehicle and
     the closest stop. 
   '''
-  # observations['closest_stop'] = [transportgeo.vehicle_stop_great_circle_distance(row) for index, row in observations.iterrows()]
+  observations['closest_stop'] = [transportgeo.vehicle_stop_great_circle_distance(row) for index, row in observations.iterrows()]
 
 
   '''
     Calculate the transition for each vehicle to each vehicle. 
   '''
-  # observations['transition_matrix'] = [transportgeo.transition_matrix(vehicle, observations) for index, vehicle in observations.iterrows()]
+  observations['transition_matrix'] = [transportgeo.transition_matrix(vehicle, observations) for index, vehicle in observations.iterrows()]
 
   # Get all other observations from database
   # historic_obs = locationcache.get_observations(user_id, user_datetime) 
