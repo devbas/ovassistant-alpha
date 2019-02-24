@@ -164,7 +164,7 @@ header .letstalk-header:hover {
   font-weight: 600; 
 }
 
-.portal-popup-box-login {
+.portal-popup-box-login, .portal-popup-box-signup {
   position: fixed; 
   top: 0; 
   left: 0; 
@@ -175,15 +175,25 @@ header .letstalk-header:hover {
 }
 
 .portal-popup-innerbox {
-  position: absolute; 
-  top: 0; 
-  left: 0; 
-  right: 0; 
-  bottom: 0; 
-  background-color: #F6FCFC; 
   width: 300px; 
   height: 300px; 
   margin: auto;
   z-index: 2; 
   border-radius: 15px;
+  background-color: #F6FCFC; 
+}
+
+.portal-popup-outerbox {
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  bottom: 0; 
+  width: 300px; 
+  height: 400px;
+  margin: auto;
+}
+
+.portal-popup-outerfooter {
+  color: #F6FCFC; 
 }

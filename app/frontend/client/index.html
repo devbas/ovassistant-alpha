@@ -19,8 +19,13 @@
       $('.portal-popup-box-login').css('display', 'none')
     }
 
-    function onRegisterClick() {
+    function onSignupClick() {
+      $('.portal-popup-box-login').css('display', 'none')
+      $('.portal-popup-box-signup').css('display', 'block')
+    }
 
+    function onSignupClose() {
+      $('.portal-popup-box-signup').css('display', 'none')
     }
   </script>
 </head>
@@ -34,7 +39,7 @@
             <div class="logo-subsidiary">by Lionoda</div>
           </div>
           <div class="right">
-            <a href="/api-docs" class="docs-header">
+            <a href="docs.lionoda.com" class="docs-header">
               <div class="docs-header-label">API Docs</div>
             </a>
             <a onclick="onLoginClick()" class="devportal-header">
@@ -107,34 +112,43 @@
     </div>
   </div>
   <div class="portal-popup-box-login" style="display: none;">
-    <div class="portal-popup-innerbox">
-      <div class="header">
-        <div class="title left">Login</div>
-        <div class="close-icon right" onclick="onLoginClose()">close</div>
+    <div class="portal-popup-outerbox">
+      <div class="portal-popup-innerbox">
+        <div class="header">
+          <div class="title left">Login</div>
+          <div class="close-icon right" onclick="onLoginClose()">close</div>
+        </div>
+        <div class="body">
+          <input type="text" name="email" id="email" class="portal-popup-email"/>
+          <input type="password" name="password" id="password" class="portal-popup-password"/>
+          <input type="submit" class="portal-popup-submit"/>
+        </div>
+        <div class="footer">
+        </div>
       </div>
-      <div class="body">
-        <input type="text" name="email" id="email" class="portal-popup-email"/>
-        <input type="password" name="password" id="password" class="portal-popup-password"/>
-        <input type="submit" class="portal-popup-submit"/>
-      </div>
-      <div class="footer">
+      <div class="portal-popup-outerfooter">
         <p>Dont have an account? <a onClick="onSignupClick()">Sign up here</a></p>
       </div>
     </div>
   </div>
   <div class="portal-popup-box-signup" style="display: none;">
-    <div class="portal-popup-innerbox">
-      <div class="header">
-        <div class="title">Signup</div>
-        <div class="description">A basic account comes with 5 free users to play around with. Need more? Let's talk.</div>
+    <div class="portal-popup-outerbox">
+      <div class="portal-popup-innerbox">
+        <div class="header">
+          <div class="title">Signup</div>
+          <div class="description">A basic account comes with 5 free users to play around with.</div>
+        </div>
+        <div class="body">
+          <input type="text" name="email" id="email" class="portal-popup-email"/>
+          <input type="password" name="password" id="password" class="portal-popup-password"/>
+          <input type="submit" class="portal-popup-submit"/>
+        </div>
+        <div class="footer">
+          
+        </div>
       </div>
-      <div class="body">
-        <input type="text" name="email" id="email" class="portal-popup-email"/>
-        <input type="password" name="password" id="password" class="portal-popup-password"/>
-        <input type="submit" class="portal-popup-submit"/>
-      </div>
-      <div class="footer">
-        <p>Dont have an account? <a onClick="onSignupClick()">Sign up here</a></p>
+      <div class="portal-popup-outerfooter">
+        <p>Dont have an account? <a onClick="onSignupClick()" style="text-decoration: underline;">Sign up here</a></p>
       </div>
     </div>
   </div>
