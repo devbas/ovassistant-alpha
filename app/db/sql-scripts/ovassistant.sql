@@ -5,13 +5,10 @@
 # http://www.sequelpro.com/
 # https://github.com/sequelpro/sequelpro
 #
-# Host: 127.0.0.1 (MySQL 5.7.22)
+# Host: 127.0.0.1 (MySQL 5.7.23)
 # Database: ovassistant
-# Generation Time: 2018-12-21 13:13:45 +0000
+# Generation Time: 2019-02-24 17:34:13 +0000
 # ************************************************************
-
-CREATE DATABASE IF NOT EXISTS ovassistant;
-USE ovassistant;
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -49,6 +46,24 @@ CREATE TABLE `calendar_dates` (
   `exception_type` int(11) DEFAULT NULL,
   KEY `service_id_index` (`service_id`),
   KEY `date_index` (`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+
+# Dump of table organisation
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `organisation`;
+
+CREATE TABLE `organisation` (
+  `organisation_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `organisation` int(11) DEFAULT NULL,
+  `max_users` int(11) DEFAULT '5',
+  `created` datetime DEFAULT NULL,
+  `updated` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `email` varchar(255) DEFAULT NULL,
+  `password` text,
+  PRIMARY KEY (`organisation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
