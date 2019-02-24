@@ -1,0 +1,142 @@
+<html>
+<head>
+  <link rel="stylesheet" id="style" href="./style.css" type="text/css" media="all">
+  <link rel="stylesheet" id="style" href="./bootstrap.min.css" type="text/css" media="all">
+  <link rel="stylesheet" id="style" href="./animate.css" type="text/css" media="all">
+  <link href="https://fonts.googleapis.com/css?family=Barlow:400,500,600,700" rel="stylesheet">
+  <title>Nearest SDK By Lionoda</title>
+  <script
+    src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+    crossorigin="anonymous">
+  </script>
+  <script>
+    function onLoginClick() {
+      $('.portal-popup-box-login').css('display', 'block')
+    }
+
+    function onLoginClose() {
+      $('.portal-popup-box-login').css('display', 'none')
+    }
+
+    function onRegisterClick() {
+
+    }
+  </script>
+</head>
+<body>
+  <div class="page">
+    <div class="superhero-box">
+      <header>
+        <div class="inner-box">
+          <div class="left">
+            <div class="logo-caption">NEAREST</div>
+            <div class="logo-subsidiary">by Lionoda</div>
+          </div>
+          <div class="right">
+            <a href="/api-docs" class="docs-header">
+              <div class="docs-header-label">API Docs</div>
+            </a>
+            <a onclick="onLoginClick()" class="devportal-header">
+              <div class="docs-header-label">Dev portal</div>
+            </a>
+            <a href="#lets-talk" class="letstalk-header">
+              <div class="letstalk-header-label">Let's talk</div>
+            </a>
+          </div>
+        </div>
+      </header>
+    </div>
+    <div class="menu-box">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+            <ul>
+              <li class="passive-label">On this page</li>
+              <li class="subsection">BENEFITS</li>
+              <li class="subsection">USE CASES</li>
+              <li class="subsection">HOW IT WORKS</li>
+              <li class="subsection">FEATURES</li>
+              <li class="subsection">LET'S TALK</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="benefits-box full-width left">
+      <div class="left">
+
+      </div>
+      <div class="left">
+        <div class="title-box">
+          <div class="subtitle">KEY BENEFITS</div>
+          <div class="title">Delight Users with Nearest</div>
+        </div>
+        <div class="content-box">
+
+        </div>
+      </div>
+    </div>
+    <div class="usecases-box">
+      <div class="container">
+        <div class="row">
+
+        </div>
+      </div>
+    </div>
+    <div class="howitworks-box">
+      <div class="container">
+        <div class="row">
+
+        </div>
+      </div>
+    </div>
+    <div class="features-box">
+      <div class="container">
+        <div class="row">
+
+        </div>
+      </div>
+    </div>
+    <div class="letstalk-box">
+      <div class="container">
+        <div class="row">
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="portal-popup-box-login" style="display: none;">
+    <div class="portal-popup-innerbox">
+      <div class="header">
+        <div class="title left">Login</div>
+        <div class="close-icon right" onclick="onLoginClose()">close</div>
+      </div>
+      <div class="body">
+        <input type="text" name="email" id="email" class="portal-popup-email"/>
+        <input type="password" name="password" id="password" class="portal-popup-password"/>
+        <input type="submit" class="portal-popup-submit"/>
+      </div>
+      <div class="footer">
+        <p>Dont have an account? <a onClick="onSignupClick()">Sign up here</a></p>
+      </div>
+    </div>
+  </div>
+  <div class="portal-popup-box-signup" style="display: none;">
+    <div class="portal-popup-innerbox">
+      <div class="header">
+        <div class="title">Signup</div>
+        <div class="description">A basic account comes with 5 free users to play around with. Need more? Let's talk.</div>
+      </div>
+      <div class="body">
+        <input type="text" name="email" id="email" class="portal-popup-email"/>
+        <input type="password" name="password" id="password" class="portal-popup-password"/>
+        <input type="submit" class="portal-popup-submit"/>
+      </div>
+      <div class="footer">
+        <p>Dont have an account? <a onClick="onSignupClick()">Sign up here</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

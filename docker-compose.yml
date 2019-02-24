@@ -38,7 +38,10 @@ services:
     networks: 
       - app
   db:  
-    command: --disable-partition-engine-check  --innodb-buffer-pool-size=1G # Check more info about this command at: https://github.com/docker-library/mysql/issues/361
+    command: [
+      '--disable-partition-engine-check',
+      '--innodb-buffer-pool-size=1G'
+    ] # Check more info about this command at: https://github.com/docker-library/mysql/issues/361
     ports: 
       - 127.0.0.1:3306:3306
     volumes: 
@@ -73,8 +76,15 @@ services:
       - 127.0.0.1:8001:8001
     networks: 
       - app
+  frontend: 
+    build: ./app/frontend/ 
+    volumes: 
+      - ./app/frontend:/var/www/ovassistant/app/frontend 
+    ports: 
+      - 127.0.0.1:5000:5000
+    networks: 
+      - app 
 volumes:
-  portainer_data:
   redis-data:
   node_modules:
 networks: 
