@@ -16,10 +16,16 @@ app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
 app.use(cookieParser());
 app.set('view engine', 'pug');
 
+app.use(session({
+  secret: "KsgY6qqGX06L6hO492tZwZEU+romYEVR7YycWn4lV6I=",
+  resave: true,
+  saveUninitialized: true 
+}));
+
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 require('./modules/passport');
-app.use('/api', APIRouter); 
+app.use('/api/v1', APIRouter); 
 
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '/client', 'index.html'));

@@ -39,7 +39,7 @@
             <div class="logo-subsidiary">by Lionoda</div>
           </div>
           <div class="right">
-            <a href="docs.lionoda.com" class="docs-header">
+            <a href="https://docs.lionoda.com" class="docs-header">
               <div class="docs-header-label">API Docs</div>
             </a>
             <a onclick="onLoginClick()" class="devportal-header">
@@ -119,9 +119,11 @@
           <div class="close-icon right" onclick="onLoginClose()">close</div>
         </div>
         <div class="body">
-          <input type="text" name="email" id="email" class="portal-popup-email"/>
-          <input type="password" name="password" id="password" class="portal-popup-password"/>
-          <input type="submit" class="portal-popup-submit"/>
+          <form method="POST" action="/api/v1/dev/sessions/login">
+            <input type="text" name="email" id="email" class="portal-popup-email"/>
+            <input type="password" name="password" id="password" class="portal-popup-password"/>
+            <input type="submit" class="portal-popup-submit"/>
+          </form>
         </div>
         <div class="footer">
         </div>
@@ -139,9 +141,11 @@
           <div class="description">A basic account comes with 5 free users to play around with.</div>
         </div>
         <div class="body">
-          <input type="text" name="email" id="email" class="portal-popup-email"/>
-          <input type="password" name="password" id="password" class="portal-popup-password"/>
-          <input type="submit" class="portal-popup-submit"/>
+          <form method="POST" action="/api/v1/dev/sessions/signup">
+            <input type="text" name="email" id="email" class="portal-popup-email"/>
+            <input type="password" name="password" id="password" class="portal-popup-password"/>
+            <input type="submit" class="portal-popup-submit"/>
+          </form>
         </div>
         <div class="footer">
           

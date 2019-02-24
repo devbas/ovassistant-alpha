@@ -4,8 +4,12 @@ var passport        = require('passport');
 
 var router = express.Router(); 
 
-router.post('/dev/sessions', function(req, res, next) {
-  console.log('lets charge!');
+router.post('/signup', function(req, res, next) {
+  console.log('lets signup!');
+})
+
+router.post('/login', function(req, res, next) {
+  console.log('lets login!');
 })
 
 module.exports = router
