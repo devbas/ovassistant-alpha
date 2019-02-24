@@ -7,7 +7,13 @@ var router = express.Router();
 router.post('/signup', function(req, res, next) {
   passport.authenticate('local-signup', function(err, user, info) {
     if(!err && user) {
-      res.redirect('/developer')
+      req.login(user, function(err) {
+        if(!err) {
+          res.redirect('/developer')
+        } else {
+          console.log('err: ', err)
+        }
+      })
     } else {
       res.send(err)
     }
