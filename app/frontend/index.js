@@ -7,6 +7,7 @@ var passport = require('passport');
 var session = require('express-session');
 var pug = require('pug');
 var APIRouter = require('./api');
+var utils = require('./utils');
 
 var app = express(); 
 
@@ -29,6 +30,10 @@ app.use('/api/v1', APIRouter);
 
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '/client', 'index.html'));
+})
+
+app.get('/developer', utils.isLoggedIn, function(req, res) {
+  res.sendFile(path.join(__dirname, '/client', 'developer.html'));
 })
 
 app.use(express.static(path.join(__dirname, './client/')));
