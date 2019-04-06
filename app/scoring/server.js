@@ -5,6 +5,7 @@ const _              = require('lodash');
 const cors           = require('cors');             
 const bodyParser     = require('body-parser');
 const matchCalculationController = require('./controllers/calculate'); 
+const scoringController = require('./controllers/scoring');
 
 Sentry.init({ dsn: 'https://39c9c5b61e1d41eb93ba664950bd3416@sentry.io/1339156' });
 
@@ -28,7 +29,7 @@ router.get('/classify/location', async (req, res) => {
   const data = req.query
   
   if(data.userId) {
-    data.userId = parseInt(data.userId)
+    data.userId = data.userId
   }
 
   if(data.datetime) {
@@ -57,6 +58,33 @@ router.get('/classify/location', async (req, res) => {
     Sentry.captureException(err)
   }
 
+})
+
+router.get('/scoring', async (req, res) => {
+  console.log('he')
+  const data = req.query 
+
+  if(data.userId) {
+    data.userId = parseInt(data.userId) 
+  }
+
+  if(data.datetime) {
+    data.datetime = parseInt(data.datetime) 
+  }
+
+  if(data.lat) {
+    data.lat = parseFloat(data.lat) 
+  }
+
+  if(data.lon) {
+    data.lon = parseFloat(data.lon) 
+  }
+
+  try {
+    await scoringController.scoreDataPoint(data)
+  } catch(err) {
+    console.log('err: ', err)
+  }
 })
 
 router.get('/feedback', async (req, res) => {

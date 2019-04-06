@@ -9,6 +9,6 @@ mysql = {
 redis = {
   'host': 'redis', 
   'port': 6379, 
-  'db': 0, 
+  'db': 2, 
   'decode_responses': True 
 }

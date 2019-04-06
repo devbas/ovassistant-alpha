@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="18px" viewBox="0 0 24 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 43.2 (39069) - http://www.bohemiancoding.com/sketch -->
+    <title>validation-correct</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Desktop-HD" transform="translate(-470.000000, -1827.000000)" fill-rule="nonzero" fill="#0C1A24">
+            <g id="correct" transform="translate(461.000000, 1815.000000)">
+                <g id="validation-correct" transform="translate(9.333333, 11.666667)">
+                    <path d="M22.5936667,1.56255556 L21.9255556,0.895222222 C21.1921111,0.160222222 19.9904444,0.160222222 19.2546667,0.895222222 L7.91155556,12.2398889 L3.88655556,8.21644444 C3.15311111,7.48222222 1.95066667,7.48222222 1.21722222,8.21722222 L0.549888889,8.88377778 C-0.183555556,9.618 -0.183555556,10.8196667 0.549888889,11.5538889 L6.573,17.5832222 C7.30722222,18.3166667 8.50888889,18.3166667 9.24311111,17.5832222 L22.5936667,4.23266667 C23.3263333,3.49844444 23.3263333,2.29677778 22.5936667,1.56255556 Z" id="Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

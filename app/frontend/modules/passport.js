@@ -19,7 +19,7 @@ module.exports = function(passport) {
       } else if(organisation.length < 1) {
         done(false, null) 
       } else {
-        done(false, organisation)
+        done(false, organisation[0])
       }
 
     })

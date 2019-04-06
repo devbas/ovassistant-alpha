@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="19px" height="19px" viewBox="0 0 19 19" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 43.2 (39069) - http://www.bohemiancoding.com/sketch -->
+    <title>send-email-icon</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="square">
+        <g id="send-email-icon" transform="translate(1.000000, 2.000000)" stroke="#0C1A24" stroke-width="2">
+            <path d="M0,7 L10.5,7" id="Line" stroke-dasharray="5,4,1,5"></path>
+            <polyline id="Line" points="9 0 15.75 7.0383092 9 15.1109256"></polyline>
+        </g>
+    </g>
+</svg>

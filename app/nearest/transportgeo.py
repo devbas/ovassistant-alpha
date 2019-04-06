@@ -121,7 +121,7 @@ def great_circle_distance(a, b):
   
   return distance
 
-def vehicle_stop_great_circle_distance(vehicle): 
+def vehicle_stop_great_circle_distance(db, vehicle): 
   '''
     Returns a subset of shapes that include the previous and next stop for a given vehicle. 
   '''
@@ -153,13 +153,13 @@ def vehicle_stop_great_circle_distance(vehicle):
 
   try:
 
-    db = mysql.connector.connect(
-      host=cfg.mysql['host'],
-      user=cfg.mysql['user'],
-      passwd=cfg.mysql['password'], 
-      database=cfg.mysql['db'],
-      raise_on_warnings=True
-    )
+    # db = mysql.connector.connect(
+    #   host=cfg.mysql['host'],
+    #   user=cfg.mysql['user'],
+    #   passwd=cfg.mysql['password'], 
+    #   database=cfg.mysql['db'],
+    #   raise_on_warnings=True
+    # )
     # with db.cursor() as cursor: 
     cursor = db.cursor(dictionary=True,buffered=True) 
     cursor.execute("""SELECT * 
@@ -173,7 +173,7 @@ def vehicle_stop_great_circle_distance(vehicle):
     return fallback_response
   else:
     cursor.close()
-    db.close()   
+    # db.close()   
 
   try:   
     frame = nv.FrameE(a=6371e3, f=0)

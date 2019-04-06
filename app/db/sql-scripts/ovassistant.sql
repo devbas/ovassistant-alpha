@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.7.23)
 # Database: ovassistant
-# Generation Time: 2019-02-24 17:34:13 +0000
+# Generation Time: 2019-02-28 20:03:00 +0000
 # ************************************************************
 
 
@@ -22,6 +22,8 @@
 
 # Dump of table agency
 # ------------------------------------------------------------
+
+USE ovassistant;
 
 DROP TABLE IF EXISTS `agency`;
 
@@ -50,12 +52,23 @@ CREATE TABLE `calendar_dates` (
 
 
 
+# Dump of table feedback
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `feedback` (
+  `feedback_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `original_user_vehicle_match_id` int(11) DEFAULT NULL,
+  `corrected_user_vehicle_match_id` int(11) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`feedback_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+
 # Dump of table organisation
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `organisation`;
-
-CREATE TABLE `organisation` (
+CREATE TABLE IF NOT EXISTS `organisation` (
   `organisation_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `organisation` int(11) DEFAULT NULL,
   `max_users` int(11) DEFAULT '5',
@@ -63,6 +76,7 @@ CREATE TABLE `organisation` (
   `updated` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `email` varchar(255) DEFAULT NULL,
   `password` text,
+  `identifier` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`organisation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -201,11 +215,11 @@ CREATE TABLE `trips` (
 # Dump of table user
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `user`;
-
-CREATE TABLE `user` (
+CREATE TABLE IF NOT EXISTS `user` (
   `user_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
+  `organisation_id` int(11) DEFAULT NULL,
+  `identifier` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -214,9 +228,7 @@ CREATE TABLE `user` (
 # Dump of table user_location
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `user_location`;
-
-CREATE TABLE `user_location` (
+CREATE TABLE IF NOT EXISTS `user_location` (
   `user_location_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
   `datetime` int(45) DEFAULT NULL,
@@ -230,9 +242,7 @@ CREATE TABLE `user_location` (
 # Dump of table user_vehicle_match
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `user_vehicle_match`;
-
-CREATE TABLE `user_vehicle_match` (
+CREATE TABLE IF NOT EXISTS `user_vehicle_match` (
   `user_vehicle_match_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `inserted_at` int(11) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
@@ -262,9 +272,7 @@ CREATE TABLE `user_vehicle_match` (
 # Dump of table vehicle
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `vehicle`;
-
-CREATE TABLE `vehicle` (
+CREATE TABLE IF NOT EXISTS `vehicle` (
   `vehicle_id` int(11) NOT NULL AUTO_INCREMENT,
   `info` text,
   `identifier` varchar(45) DEFAULT NULL,
@@ -277,9 +285,7 @@ CREATE TABLE `vehicle` (
 # Dump of table vehicle_location
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `vehicle_location`;
-
-CREATE TABLE `vehicle_location` (
+CREATE TABLE IF NOT EXISTS `vehicle_location` (
   `vehicle_location_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `timestamp` int(45) DEFAULT NULL,
   `speed` int(11) DEFAULT NULL,

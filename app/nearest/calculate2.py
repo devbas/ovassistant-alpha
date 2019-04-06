@@ -6,10 +6,22 @@ import transportgeo
 import numpy as np 
 import json
 from sentry_sdk import capture_exception
+import config as cfg 
+import mysql.connector
+from mysql.connector import errorcode
 
 def get_vehicle_candidates(lon, lat, user_datetime, user_id): 
   user_id = int(user_id)
-  prev_user_location = user.get_user_location(user_id, user_datetime)
+  
+  db = mysql.connector.connect(
+    host=cfg.mysql['host'],
+    user=cfg.mysql['user'],
+    passwd=cfg.mysql['password'], 
+    database=cfg.mysql['db'],
+    raise_on_warnings=True
+  )
+
+  prev_user_location = user.get_user_location(db, user_id, user_datetime)
 
   observations = locationcache.get_vehicles_by_radius(lon, lat, 1000, user_datetime) 
   observations['current_neighbor_datetime'] = user_datetime
@@ -48,8 +60,8 @@ def get_vehicle_candidates(lon, lat, user_datetime, user_id):
     Calculate the great circle distance between the vehicle and
     the closest stop. 
   '''
-  observations['closest_stop'] = [transportgeo.vehicle_stop_great_circle_distance(row) for index, row in observations.iterrows()]
-
+  observations['closest_stop'] = [transportgeo.vehicle_stop_great_circle_distance(db, row) for index, row in observations.iterrows()]
+  db.close()
 
   '''
     Calculate the transition for each vehicle to each vehicle. 

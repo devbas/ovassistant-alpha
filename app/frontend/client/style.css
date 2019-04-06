@@ -8,15 +8,11 @@ body, html {
 }
 
 body {
-  background-color: #EBF3F4
+  background-color: #F8F4F1; 
 }
 
 .left {
   float: left; 
-}
-
-.right {
-  float: right;
 }
 
 .full-width {
@@ -28,140 +24,360 @@ body {
 }
 
 h1 {
+  font-weight: 600; 
+  font-size: 36px; 
+  line-height: 51px; 
+}
+
+h2 {
   font-weight: 700; 
-  font-size: 64px;
-  color: #F6FCFC;
-  letter-spacing: 0.2px;
+  font-size: 22px; 
 }
 
+.sand {
+  color: #FDE1CC; 
+}
 
+.charcoal {
+  color: #0C1A24 
+}
 
+.logo {
+  background-image: url('./img/logo.png');
+  background-image: url('./img/logo.svg'); 
+  background-repeat: no-repeat; 
+  width: 175px; 
+  height: 38px; 
+  background-size: contain; 
+  margin-top: 38px; 
+}
 
-header {
-  margin-top: 65px; 
+.superhero-primary {
+  background-color: #00575B; 
+  float: left; 
   width: 100%; 
+  border-top-right-radius: 5px; 
+  border-top-left-radius: 5px; 
+}
+
+.superhero-primary .title {
+  margin-left: 30px; 
+  margin-top: 80px; 
+  margin-bottom: 160px; 
+}
+
+.superhero-secundary {
   float: left; 
+  width: 100%; 
 }
 
-header .inner-box {
-  padding-left: 50px; 
-  padding-right: 50px; 
+.superhero-secundary .title {
+  margin-top: 70px; 
+  margin-left: 30px; 
 }
 
-header .logo-caption {
-  font-size: 18px;
-  color: #F6FCFC;
-  letter-spacing: 0.1px;
-  float: left; 
-  font-weight: 600;
-}
-
-header .logo-subsidiary {
-  font-size: 16px;
-  color: rgba(229,193,94,0.80);
-  letter-spacing: -0.13px;
-  float: left; 
-  margin-left: 10px;
-  margin-top: 2px; 
-}
-
-header .docs-header {
-  color: #F6FCFC; 
-  text-decoration: none; 
-  float: left; 
-  margin-top: 2px; 
-  font-size: 16px; 
-  letter-spacing: 0.5; 
-  font-weight: 500;
-  transition: 0.1s ease-in-out; 
-}
-
-header .docs-header:hover {
-  color: rgb(229,193,94); 
-  transition: 0.1s ease-in-out; 
-}
-
-header .devportal-header {
-  color: #F6FCFC; 
-  text-decoration: none; 
-  float: left; 
-  margin-top: 2px; 
-  font-size: 16px; 
-  letter-spacing: 0.5; 
-  font-weight: 500;
-  transition: 0.1s ease-in-out; 
-  margin-left: 40px;
-  cursor: pointer;
-}
-
-header .devportal-header:hover {
-  color: rgb(229,193,94); 
-  transition: 0.1s ease-in-out; 
-}
-
-header .letstalk-header {
-  color: #F6FCFC; 
-  text-decoration: none; 
-  float: left; 
-  margin-top: -16px; 
-  margin-left: 90px; 
-  background-color: #00969D;
-  border-radius: 15px 23px 23px 15px; 
-  padding: 17px 125px 17px 21px;
-  background-image: url(img/showmore.svg);
-  background-size: 11px; 
-  background-repeat: no-repeat;
-  background-position: 88% center;
-  font-size: 16px; 
-  letter-spacing: 0.7;
-  font-weight: 500; 
-  transition: 0.2s ease-in-out;
-}
-
-header .letstalk-header:hover {
-  background-position: 90% center; 
-  transition: 0.2s ease-in-out;
+.superhero-secundary .description {
+  margin-left: 30px; 
+  margin-bottom: 50px; 
+  font-size: 18px; 
 }
 
 .superhero-box {
-  background-color: #00575B; 
-  width: 100%; 
-  height: 600px;
+  background-color: #fff; 
+  border-radius: 5px; 
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.50);
+  margin-top: 25px; 
+  position: relative;
 }
 
-.menu-box {
-  background-color: #F6FCFC;
-  width: 100%; 
-  border-top: 2px solid #C8C7CC; 
-  border-bottom: 2px solid #C8C7CC; 
+.superhero-image {
+  background-image: url('./img/preview.svg');
+  width: 303px; 
+  height: 740px; 
+  background-size: contain; 
+  background-repeat: no-repeat;
+  position: absolute;
+  right: 30px;
+  top: 50px;  
+  z-index: 9; 
+}
+
+.usp-outer-box .usp, .usp-full-width {
+  background-color: #fff; 
+  border-radius: 5px; 
+  border: 1px solid #B2B4B5; 
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20);
+  margin-bottom: 40px; 
+}
+
+.usp-outer-box .usp .icon, .usp-full-width .icon {
+  width: 75px; 
+  height: 75px; 
+  background-repeat: no-repeat; 
+  background-size: contain; 
+  margin-top: 20px; 
+  margin-left: 20px; 
+}
+
+.extract-icon {
+  background-image: url('./img/extract-icon.png');
+  background-image: url('./img/extract-icon.svg')
+}
+
+.verify-icon {
+  background-image: url('./img/verify-icon.png');
+  background-image: url('./img/verify-icon.svg')
+}
+
+.analyze-icon {
+  background-image: url('./img/analyze-icon.png');
+  background-image: url('./img/analyze-icon.svg')
+}
+
+.getting-started-icon {
+  background-image: url('./img/getting-started-icon.png');
+  background-image: url('./img/getting-started-icon.svg')
+}
+
+.usp-outer-box .usp .title, .usp-full-width .title {
+  font-size: 20px; 
+  font-weight: 700; 
+  color: #0C1A24; 
+  padding-left: 20px; 
+  margin-top: 10px; 
+}
+
+.usp-outer-box .usp .description, .usp-full-width .description {
+  font-size: 16px; 
+  color: #0C1A24; 
+  padding-left: 20px; 
+  margin-top: 4px; 
+  padding-right: 20px; 
+  padding-bottom: 40px; 
+}
+
+.usp-full-width .description, .usp-full-width .title {
+  padding-left: 0; 
+}
+
+.usp-full-width .title {
+  margin-top: 23px; 
+}
+
+.title-box {
+  margin-top: 60px;
+}
+
+.questionnaire-box {
+  background-color: #fff; 
+  border: 1px solid #B2B4B5;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20);
+  border-radius: 5px;
+  margin-bottom: 60px; 
+}
+
+.questionnaire-box .progress-box .bar {
+  width: 15%; 
+  background-color: #399597; 
+  height: 8px; 
+  border-top-left-radius: 4px; 
+  margin-bottom: 12px; 
+  transition: width 400ms ease-in-out; 
+}
+
+.questionnaire-box .progress-box .label {
+  font-size: 16px; 
+  font-weight: 600; 
+  margin-bottom: 45px; 
+  padding-left: 20px; 
+}
+
+.questionnaire-box .question-box {
+  margin-bottom: 20px; 
+}
+
+.questionnaire-box .question {
+  font-size: 20px; 
+  margin-left: 20px; 
+  margin-right: 20px;
+}
+
+.questionnaire-box .answer-box {
+  margin-left: 20px; 
+  margin-bottom: 60px; 
+}
+
+.questionnaire-box .answer-box.email {
+  margin-bottom: 30px; 
+  margin-top: 28px;
+}
+
+.questionnaire-box .answer-box input {
+  font-size: 18px; 
+  padding: 12px 15px; 
+  border-radius: 3px; 
+  border: 1px solid #b2b4b5; 
+  width: 300px; 
+  border-bottom: 3px solid #0C1A24; 
+  outline: 0; 
+}
+
+.questionnaire-box .answer-box .answer {
+  width: 42px; 
+  height: 42px; 
+  border-radius: 25px; 
+  border: 2px solid #0C1A24; 
   float: left; 
+  background-position: center;  
+  background-repeat: no-repeat;
+  transition: background-color ease-in-out 0.15s; 
+  background-color: #fff; 
 }
 
-.menu-box ul {
-  float: right; 
-  margin: 0; 
+.questionnaire-box .answer-box .answer:hover {
+  cursor: pointer; 
+  background-color: rgba(0,0,0,0.20);
+  transition: background-color ease-in-out 0.15s; 
+}
+
+.questionnaire-box .answer-box .answer.agree {
+  background-image: url('./img/correct.png'); 
+  background-image: url('./img/correct.svg'); 
+  background-size: 53%; 
+}
+
+.questionnaire-box .answer-box .answer.disagree {
+  background-image: url('./img/incorrect.png'); 
+  background-image: url('./img/incorrect.svg'); 
+  background-size: 43%;
+  margin-left: 20px; 
+}
+
+.questionnaire-box .question-outer-box {
+  display: none; 
+}
+
+.questionnaire-box .question-outer-box.visible {
+  display: block; 
+}
+
+footer {
+  background-color: rgba(255, 255, 255, 0.6);
+  padding-top: 30px; 
+  float: left; 
+  width: 100%; 
+  border-top: 5px solid #0c1a24; 
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  padding-bottom: 50px; 
+}
+
+footer .title {
+  margin-left: 20px; 
+  font-weight: 600; 
+  font-size: 16px; 
+}
+
+.connect-intro {
+  margin-left: 20px; 
+  margin-top: 15px; 
+}
+
+.connect-intro button {
+	padding: 10px 13px; 
+	background-color: #dadbde; 
+	border: 0; 
+	border-radius: 3px; 
+	font-size: 16px; 
+	font-weight: 600;
+	float: left; 
+  transition: background-color ease-in-out 0.2s;
+  cursor: pointer; 
+}
+
+.connect-intro button:hover {
+	background-color: #afb2ba; 
+	transition: background-color ease-in-out 0.2s;
+}
+
+.email-submit {
+  padding: 15px 38px 16px 15px; 
+	background-color: #dadbde; 
+	border: 0; 
+	border-radius: 3px; 
+	font-size: 16px; 
+	font-weight: 600;
+	float: left; 
+  transition: background-color ease-in-out 0.2s;
+  cursor: pointer; 
+  margin-left: 15px; 
+  background-image: url('./img/send-email-icon.png');
+  background-image: url('./img/send-email-icon.svg');
+  background-position: 90% center; 
+  background-repeat: no-repeat;
+}
+
+.email-submit:hover {
+  background-color: #afb2ba; 
+	transition: background-color ease-in-out 0.2s;
+}
+
+.connect-intro a, .connect-intro a:hover {
+	text-decoration: none !important; 
+	color: #16213B; 
+}
+
+.twitter-box {
+	background-color: #1da1f2;
+	border-radius: 3px;
+	padding: 8px 20px;
+	clear: left;
+}
+
+.twitter-icon {
+	width: 38px;
+	height: 38px;
+	background-image: url(./img/twitter-icon.svg);
+	background-size: 60%;
+	background-repeat: no-repeat;
+	background-position: center; 
+	float: left; 
+	margin-left: 20px;
+	background-color: #dadbde; 
+	border: 0; 
+	border-radius: 3px; 
+	padding: 10px 15px; 
+	cursor: pointer; 
+  transition: background-color ease-in-out 0.2s;
+  margin-right: 20px; 
+}
+
+.twitter-icon:hover {
+	background-color: #afb2ba; 
+	transition: background-color ease-in-out 0.2s;
+}
+
+#honeypot {
+  display: none;
+}
+
+.usp-full-width-content {
   padding: 0; 
 }
 
-.menu-box ul li {
-  float: left; 
-  list-style-type: none;
+.email-box {
+  margin-left: 30px; 
+  margin-bottom: 50px;
 }
 
-.menu-box ul li.subsection {
-  border-left: 2px solid #C8C7CC; 
-  color: #00575B; 
-  padding: 16px 32px; 
-  letter-spacing: 0.5px;
-  font-size: 14px; 
-  font-weight: 700; 
-}
-
-.menu-box ul li.passive-label {
-  color: #64797A; 
-  font-size: 16px; 
-  padding: 14px 32px; 
-  font-weight: 600; 
+.email-box input {
+  font-size: 18px; 
+  padding: 12px 15px; 
+  border-radius: 3px; 
+  border: 1px solid #b2b4b5; 
+  width: 300px; 
+  border-bottom: 3px solid #0C1A24; 
+  outline: 0; 
 }
 
 .portal-popup-box-login, .portal-popup-box-signup {
@@ -170,13 +386,13 @@ header .letstalk-header:hover {
   left: 0; 
   width: 100%; 
   height: 100%; 
-  background-color: rgba(000,000,000,0.6);
-  z-index: 1; 
+  background-color: rgba(000,000,000,0.8);
+  z-index: 99; 
 }
 
 .portal-popup-innerbox {
   width: 300px; 
-  height: 300px; 
+  height: 400px; 
   margin: auto;
   z-index: 2; 
   border-radius: 15px;
@@ -196,4 +412,248 @@ header .letstalk-header:hover {
 
 .portal-popup-outerfooter {
   color: #F6FCFC; 
+  margin-left: 20px;
+}
+
+.portal-popup-outerfooter a {
+  text-decoration: underline;
+  cursor: pointer;
+  color: #E5C15E;
+}
+
+.portal header {
+  background-color: #00575B; 
+  margin-top: 0; 
+  padding-top: 20px; 
+  padding-bottom: 20px; 
+  padding-left: 50px; 
+  padding-right: 50px; 
+}
+
+.portal .sidebar {
+  width: 280px; 
+  border-right: 1px solid #C8C7CC; 
+  height: 100%; 
+  float: left; 
+}
+
+.portal-popup-outerbox .header {
+  width: 100%; 
+  float: left; 
+}
+
+.portal-popup-outerbox .header-inner-box {
+  padding: 20px; 
+  float: left;
+  width: 100%; 
+}
+
+.portal-popup-outerbox .header-inner-box .title {
+  font-weight: 700; 
+  font-size: 22px; 
+  color: #00575B; 
+}
+
+.portal-popup-outerbox .header-inner-box .close-icon {
+  background-image: url(./img/close.svg); 
+  background-position: center; 
+  width: 20px; 
+  height: 20px; 
+  background-size: contain; 
+  cursor: pointer;
+}
+
+.portal-popup-outerbox .input-box {
+  width: 100%; 
+  float: left; 
+  padding: 20px; 
+}
+
+.portal-popup-outerbox .input-box label {
+  font-size: 14px; 
+  color: #979898; 
+}
+
+.portal-popup-outerbox .input-box input {
+  width: 100%; 
+  border: 0; 
+  border-bottom: 2px solid #C8C7CC; 
+  font-size: 16px; 
+  background-color: rgba(255, 255, 255, 0.3);
+  padding: 4px 4px 4px 0px; 
+  margin-top: 5px; 
+}
+
+.portal-popup-outerbox input[type="submit"] {
+  color: #F6FCFC; 
+  text-decoration: none; 
+  float: left; 
+  background-color: #00969D;
+  border-radius: 15px 23px 23px 15px; 
+  padding: 17px 125px 17px 21px;
+  background-image: url(img/showmore.svg);
+  background-size: 11px; 
+  background-repeat: no-repeat;
+  background-position: 88% center;
+  font-size: 16px; 
+  letter-spacing: 0.7;
+  font-weight: 500; 
+  transition: 0.2s ease-in-out;
+  border: 0; 
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.portal-popup-outerbox input[type="submit"]:hover {
+  background-position: 90% center; 
+  transition: 0.2s ease-in-out;
+}
+
+
+.portal-popup-outerbox .input-box input:active, .portal-popup-outerbox .input-box input:focus {
+  border-bottom: 2px solid #00575B; 
+}
+
+.docs-header {
+  margin-top: 41px; 
+  float: left; 
+  font-size: 18px; 
+  font-weight: 600; 
+  color: #242f38; 
+  transition: 0.2s ease-in-out;
+  text-decoration: none;
+}
+
+.devportal-header {
+  margin-top: 41px; 
+  float: left; 
+  margin-right: 30px; 
+  margin-left: 50px; 
+  font-size: 18px; 
+  font-weight: 600;
+  color: #242f38; 
+  transition: 0.2s ease-in-out;
+  text-decoration: none; 
+  cursor: pointer;
+}
+
+.devportal-header:hover, .docs-header:hover {
+  text-decoration: underline; 
+  transition: 0.2s ease-in-out;
+}
+
+@media (min-width: 768px) and (max-width: 992px){ 
+  .usp-full-width-content {
+    padding-left: 30px !important; 
+    padding-right: 30px !important; 
+  }
+}
+
+@media only screen and (max-width: 767px){ 
+  .usp-full-width-content {
+    padding-left: 30px !important; 
+    padding-right: 30px !important; 
+  }
+
+  .usp-outer-box .usp .icon, .usp-full-width .icon {
+    width: 50px; 
+    height: 50px; 
+  }
+
+  .usp-outer-box .usp, .usp-full-width {
+    margin-bottom: 20px; 
+  }
+
+  .connect-intro button {
+    margin-bottom: 15px;
+  }
+
+  .twitter-icon {
+    margin-bottom: 16px;
+  }
+
+  .superhero-image {
+    width: 65%;
+    top: 280px;
+    margin-left: 15px; 
+    margin-right: auto; 
+    right: 0; 
+    left: 0;  
+    height: 44%;
+  }
+
+  .superhero-primary .title {
+    margin-left: 15px; 
+    margin-right: 15px; 
+    margin-top: 30px; 
+    margin-bottom: 85%; 
+  }
+
+  h1 {
+    font-size: 32px; 
+    line-height: 43px;
+  }
+
+  .superhero-secundary .title {
+    margin-left: 15px;  
+    margin-right: 15px; 
+    margin-top: 70%;
+  }
+
+  .superhero-secundary .description {
+    margin-left: 15px; 
+    margin-right: 15px; 
+    margin-bottom: 40px; 
+  }
+
+  .questionnaire-box .answer-box input {
+    width: 100%; 
+  }
+
+  .email-submit {
+    margin-top: 15px; 
+    margin-left: 0; 
+  }
+
+  .questionnaire-box .answer-box.email {
+    margin-right: 20px;
+  }
+
+  .email-box {
+    margin-left: 15px;
+    margin-right: 15px; 
+  }
+
+  .email-box input {
+    width: 100%; 
+  }
+}
+
+@media only screen and (min-width: 435px) and (max-width: 767px){ 
+  .superhero-image {
+    top: 170px; 
+    width: 280px;
+    height: 53%;
+  }
+
+  .superhero-primary .title {
+    margin-bottom: 350px;
+  }
+
+  .superhero-secundary .title {
+    margin-top: 280px;
+  }
+}
+
+@media only screen and (max-width: 434px){ 
+  .superhero-image {
+    top: 25%; 
+  }
+}
+
+@media only screen and (max-width: 347px){ 
+  .superhero-image {
+    top: 29%; 
+  }
 }

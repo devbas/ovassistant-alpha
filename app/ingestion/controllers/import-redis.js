@@ -5,7 +5,8 @@ const utils = require('../utils')
 const pool = require('../database')
 const moment = require('moment-timezone')
 const _ = require('lodash')
-const redisClient = require('../redis-client')
+// const redisClient = require('../redis-client')
+const redisClient = process.env.INGESTION_PERSIST ? require('../redis-client-persist') : require('../redis-client')
 
 // var stream = fs.createWriteStream("append.txt", {flags:'a'});
 
@@ -17,6 +18,8 @@ const importData = async data => {
     datetimeUnix: data.datetimeUnix
   }
 
+  var isPersist = process.env.INGESTION_PERSIST
+
   try {
     const vehiclePrevRaw = await redisClient.get(data.id + ':latest')
 
@@ -24,10 +27,20 @@ const importData = async data => {
       const vehiclePrev = JSON.parse(vehiclePrevRaw)
       const vehiclePointPrev = await redisClient.geopos('items', data.id + ':latest')
       const prevIdentifier = data.id + ':' + vehiclePrev['datetimeUnix']
-      redisClient.set(prevIdentifier, JSON.stringify(vehiclePrev), 'EX', 40)
+
+      if (isPersist) {
+        redisClient.set(prevIdentifier, JSON.stringify(vehiclePrev))
+      } else { 
+        redisClient.set(prevIdentifier, JSON.stringify(vehiclePrev), 'EX', 40)
+      }
 
       if(vehiclePointPrev[0]) {
-        redisClient.geoadd('items', vehiclePointPrev[0][0], vehiclePointPrev[0][1], prevIdentifier)
+
+        if (isPersist) {
+          redisClient.geoadd('items', vehiclePointPrev[0][0], vehiclePointPrev[0][1], prevIdentifier)
+        } else {
+          redisClient.geoadd('items', vehiclePointPrev[0][0], vehiclePointPrev[0][1], prevIdentifier)
+        }
 
         const prevPoint = new LatLon(vehiclePointPrev[0][1], vehiclePointPrev[0][0])
         const nextPoint = new LatLon(data.latitude, data.longitude)
@@ -43,8 +56,13 @@ const importData = async data => {
       row.speedPerSecond = 0 
     }
 
-    redisClient.set(data.id + ':latest', JSON.stringify(row), 'EX', 40)
-    redisClient.geoadd('items', data.longitude, data.latitude, data.id + ':latest')
+    if (isPersist) {
+      redisClient.set(data.id + ':latest', JSON.stringify(row))
+      redisClient.geoadd('items', data.longitude, data.latitude, data.id + ':latest')
+    } else {
+      redisClient.set(data.id + ':latest', JSON.stringify(row), 'EX', 40)
+      redisClient.geoadd('items', data.longitude, data.latitude, data.id + ':latest')
+    }
   } catch(err) {
     Sentry.captureException(err)
   }
@@ -54,6 +72,8 @@ const updateData = async (identifier, data) => {
 
   try {
     
+    var isPersist = process.env.INGESTION_PERSIST
+
     if(data.type === 'vehicle') {
 
       const tripInfo = await pool.query('SELECT * FROM trips WHERE realtime_trip_id = ?', [identifier.replace('vehicle:','')])
@@ -93,8 +113,12 @@ const updateData = async (identifier, data) => {
           console.log('no stops found')
         }                                       
       }                               
-
-      redisClient.set(identifier, JSON.stringify(data), 'EX', 40)
+      
+      if (isPersist) {
+        redisClient.set(identifier, JSON.stringify(data))
+      } else {
+        redisClient.set(identifier, JSON.stringify(data), 'EX', 40)
+      }
     }
 
     if(data.type === 'train') {
@@ -146,7 +170,11 @@ const updateData = async (identifier, data) => {
         console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
       }
 
-      redisClient.set(identifier, JSON.stringify(data), 'EX', 40)
+      if (isPersist) {
+        redisClient.set(identifier, JSON.stringify(data))
+      } else {
+        redisClient.set(identifier, JSON.stringify(data), 'EX', 40)
+      }
     }
       
   } catch(err) {  

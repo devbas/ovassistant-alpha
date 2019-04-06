@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="75px" height="75px" viewBox="0 0 75 75" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 43.2 (39069) - http://www.bohemiancoding.com/sketch -->
+    <title>getting-started-icon</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Desktop-HD" transform="translate(-260.000000, -1158.000000)">
+            <g id="getting-started-icon" transform="translate(260.000000, 1158.000000)">
+                <circle id="Oval-5-Copy-3" fill="#399597" cx="37.5" cy="37.5" r="37.5"></circle>
+                <path d="M21.5,37.1666667 L52.5,37.1666667" id="Line" stroke="#FFFFFF" stroke-width="2" stroke-linecap="square" stroke-dasharray="5,4,1,5"></path>
+                <polyline id="Line" stroke="#FFFFFF" stroke-width="2" stroke-linecap="square" points="49 30 55.75 37.0383092 49 45.1109256"></polyline>
+            </g>
+        </g>
+    </g>
+</svg>

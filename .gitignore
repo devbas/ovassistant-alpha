@@ -1,2 +1,3 @@
 /.vscode
-/nearest/__pycache__
+/app/nearest/__pycache__
+/app/frontend/tmp

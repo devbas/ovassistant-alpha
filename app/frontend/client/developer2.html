@@ -1,0 +1,46 @@
+<html>
+<head>
+  <link rel="stylesheet" id="style" href="./style.css" type="text/css" media="all">
+  <link rel="stylesheet" id="style" href="./bootstrap.min.css" type="text/css" media="all">
+  <link rel="stylesheet" id="style" href="./animate.css" type="text/css" media="all">
+  <link href="https://fonts.googleapis.com/css?family=Barlow:400,500,600,700" rel="stylesheet">
+  <title>Nearest SDK By Lionoda</title>
+  <script
+    src="./libs/jquery-2.1.3.min.js"
+    crossorigin="anonymous">
+  </script>
+  <script>
+    function onNewUserClick() {
+      $.ajax({
+        method: 'POST', 
+        // url: 
+      })
+    }
+  </script>
+  <title>Nearest | Developer Portal</title>
+</head>
+<body class="portal">
+  <div class="portal-page">
+    <header>
+      <div class="left">
+          <div class="logo-caption">NEAREST</div>
+          <div class="logo-subsidiary">by Lionoda</div>
+        </div>
+        <div class="right">
+          <a href="https://docs.lionoda.com" class="docs-header">
+            <div class="docs-header-label">API Docs</div>
+          </a>
+        </div>
+    </header>
+    <div class="sidebar">
+      <ul>
+        <li>Users</li>
+        <li>Segments</li>
+      </ul>
+    </div>
+    <div class="content">
+      <a onClick="onNewUserClick()" href="">Create new user</a>
+    </div>
+  </div>
+</body>
+</html>
