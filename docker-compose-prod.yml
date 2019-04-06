@@ -1,0 +1,19 @@
+version: '3'
+services: 
+  redis:
+    image: redis
+    command: ["redis-server", "--appendonly", "yes"]
+    hostname: redis
+    sysctls:
+      net.core.somaxconn: 1024
+    # volumes:
+      # - redis-data:/data
+    ports: 
+      - 127.0.0.1:6379:6379
+    networks: 
+      - app
+volumes:
+  redis-data:
+  node_modules:
+networks: 
+  app:

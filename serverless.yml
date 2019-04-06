@@ -1,0 +1,44 @@
+service: ovassisant-alpha
+
+provider:
+  name: aws
+  runtime: python3.6
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-central-1'}
+  memorySize: 3008  
+
+package:
+  exclude:
+    - node_modules/**
+    - .gitignore
+    - .git/**
+
+plugins:
+  - serverless-offline
+  - serverless-python-requirements
+functions:
+  scoring:
+    name: scoring
+    handler: app/scoring/lambda.handler
+    runtime: nodejs8.10
+    timeout: 30
+    memorySize: 3008
+    environment:
+      REDIS_URL: redis://localhost/0
+    events:
+      - http:
+          path: /scoring
+          method: ANY
+      - http:
+          path: /scoring/{any+}
+          method: ANY
+  nearest:
+    name: nearest
+    handler: app/nearest/calculate2
+    runtime: python3.6
+    timeout: 30
+    memorySize: 3008
+    events:
+      - http:
+          path: /nearest
+          method: GET
