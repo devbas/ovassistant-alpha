@@ -1,0 +1,29 @@
+{
+  "name": "ovassistant-alpha",
+  "version": "1.0.0",
+  "description": "Alpha implementation of OV Assistant",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devbas/ovassistant-alpha.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/devbas/ovassistant-alpha/issues"
+  },
+  "homepage": "https://github.com/devbas/ovassistant-alpha#readme",
+  "dependencies": {
+    "serverless": "^1.40.0"
+  },
+  "devDependencies": {
+    "serverless-offline": "^4.9.4",
+    "serverless-python-requirements": "^4.3.0"
+  }
+}

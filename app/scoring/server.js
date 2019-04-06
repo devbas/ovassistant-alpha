@@ -14,7 +14,6 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json()); 
 
-var port = process.env.PORT || 8001;
 var router = express.Router();
 
 router.use((req, res, next) => {
@@ -107,9 +106,9 @@ app.use(function onError(err, req, res, next) {
 });
 
 // REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
-app.use('/api', router);
+// all of our routes will be prefixed with /scoring/api
+app.use('/scoring/api', router);
+
 app.set('view engine', 'jade'); 
 
-app.listen(port);
-console.log('servert listening on: ', port);
+module.exports = app

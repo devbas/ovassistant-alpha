@@ -156,4 +156,11 @@ def get_vehicle_candidates(lon, lat, user_datetime, user_id):
     # print(str(observations))
 
   # print('observations: ' + str(observations))
-  return { 'observations': observations.to_json(orient='records'), 'matches': matches }
+  body = { 'observations': observations.to_json(orient='records'), 'matches': matches }
+
+  lambdaResponse = {
+      "statusCode": 200,
+      "body": json.dumps(body)
+  }
+
+  return lambdaResponse
