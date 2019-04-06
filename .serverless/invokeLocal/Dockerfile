@@ -1,1 +1,0 @@
-FROM lambci/lambda:python37
