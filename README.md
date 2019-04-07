@@ -77,8 +77,3 @@ We score device coordinates against all current vehicles with a convolutional ne
 
 ### Read more
 - (Hidden Markov Map Matching Through Noise and Sparseness)[http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.187.5145&rep=rep1&type=pdf]
-
-
-
-#### RUN LOCAL
-```docker-compose --file docker-compose-prod.yml up   ```
