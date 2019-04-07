@@ -10,5 +10,6 @@ redis = {
   'host': 'redis', 
   'port': 6379, 
   'db': 2, 
+  'shape_db': 3, 
   'decode_responses': True 
 }

@@ -7,6 +7,7 @@ import json
 import calculate2 
 import sentry_sdk
 import logging
+import time 
 sentry_sdk.init("https://29436939613d4654864055395fa84a2d@sentry.io/1339196")
 
 HOST_NAME = '0.0.0.0'
@@ -51,8 +52,11 @@ class NearestVehicle(BaseHTTPRequestHandler):
       self.respond({'status': 500})
       return 
 
-    
+    start_millis = int(round(time.time() * 1000))
     vehicles = calculate2.get_vehicle_candidates(lon, lat, int(datetime), user_id)
+    end_millis = int(round(time.time() * 1000))
+
+    print('exec time: ' + str(end_millis - start_millis))
     self.send_response(200)  
     self.send_header('Content-type','text-html')  
     self.send_header('Access-Control-Allow-Origin','*')  
