@@ -2,3 +2,5 @@
 /app/nearest/__pycache__
 /app/frontend/tmp
 node_modules
+.DS_Store
+.terraform

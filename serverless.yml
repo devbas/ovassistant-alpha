@@ -16,6 +16,7 @@ package:
 plugins:
   - serverless-offline
   - serverless-python-requirements
+  
 functions:
   scoring:
     name: scoring
