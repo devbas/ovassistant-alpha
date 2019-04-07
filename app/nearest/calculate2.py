@@ -56,102 +56,101 @@ def get_vehicle_candidates(lon, lat, user_datetime, user_id):
     '''
     observations['closest_stop'] = [transportgeo.vehicle_stop_great_circle_distance(row) for index, row in observations.iterrows()]
 
-    return { 'observations': observations.to_json(orient='records'), 'matches': {} }
+    '''
+      Calculate the transition for each vehicle to each vehicle. 
+    '''
+    observations['transition_matrix'] = [transportgeo.transition_matrix(vehicle, observations) for index, vehicle in observations.iterrows()]
 
-    # '''
-    #   Calculate the transition for each vehicle to each vehicle. 
-    # '''
-    # observations['transition_matrix'] = [transportgeo.transition_matrix(vehicle, observations) for index, vehicle in observations.iterrows()]
+    # Get all other observations from database
+    historic_obs = locationcache.get_observations(user_id, user_datetime) 
 
-    # # Get all other observations from database
-    # # historic_obs = locationcache.get_observations(user_id, user_datetime) 
     # historic_obs = []
     # print('historic obs: ' + str(len(historic_obs)))
     
-    # vit_layers = pd.DataFrame()
-    # vit_layers = vit_layers.append(observations, ignore_index=True) 
-    # if historic_obs: 
-    #   for obs in historic_obs: 
-    #     vit_layers = vit_layers.append(obs, ignore_index=True)
+    vit_layers = pd.DataFrame()
+    vit_layers = vit_layers.append(observations, ignore_index=True) 
+    if historic_obs: 
+      for obs in historic_obs: 
+        vit_layers = vit_layers.append(obs, ignore_index=True)
 
-    #   # Get all unique vehicles from observations
-    #   states = vit_layers['vehicle_id'].unique()
-    #   vit_layers = vit_layers.sort_values(by=['current_neighbor_datetime'], ascending=False)
+      # Get all unique vehicles from observations
+      states = vit_layers['vehicle_id'].unique()
+      vit_layers = vit_layers.sort_values(by=['current_neighbor_datetime'], ascending=False)
 
-    #   try: 
-    #     # Get number of unique current_neighbor_datetime 
-    #     num_layers = [str(i) for i in range(0, len(vit_layers['current_neighbor_datetime'].unique()))]
-    #     start_prob = dict()
-    #     emit_prob = dict()
-    #     trans_prob = dict()
-    #     i = 1
-    #     for neighbor_datetime in vit_layers['current_neighbor_datetime'].unique(): 
-    #       layer = vit_layers[vit_layers['current_neighbor_datetime'] == neighbor_datetime]
-    #       nonmatching = [state for state in states if state not in layer['vehicle_id'].unique()]
+      try: 
+        # Get number of unique current_neighbor_datetime 
+        num_layers = [str(i) for i in range(0, len(vit_layers['current_neighbor_datetime'].unique()))]
+        start_prob = dict()
+        emit_prob = dict()
+        trans_prob = dict()
+        i = 1
+        for neighbor_datetime in vit_layers['current_neighbor_datetime'].unique(): 
+          layer = vit_layers[vit_layers['current_neighbor_datetime'] == neighbor_datetime]
+          nonmatching = [state for state in states if state not in layer['vehicle_id'].unique()]
 
-    #       for index, vehicle in layer.iterrows():
+          for index, vehicle in layer.iterrows():
 
-    #         if not vehicle['vehicle_id'] in emit_prob: 
-    #           emit_prob[vehicle['vehicle_id']] = dict() 
+            if not vehicle['vehicle_id'] in emit_prob: 
+              emit_prob[vehicle['vehicle_id']] = dict() 
 
-    #         emit_prob[vehicle['vehicle_id']][str(i - 1)] = vehicle['emission_prob']
+            emit_prob[vehicle['vehicle_id']][str(i - 1)] = vehicle['emission_prob']
 
-    #         if i == 1: 
-    #           start_prob[vehicle['vehicle_id']] = vehicle['emission_prob']
+            if i == 1: 
+              start_prob[vehicle['vehicle_id']] = vehicle['emission_prob']
             
-    #         if i == len(num_layers): 
+            if i == len(num_layers): 
 
-    #           if isinstance(vehicle['transition_matrix'], dict): 
-    #             vehicle_trans_matrix = json.loads(json.dumps(vehicle['transition_matrix']))
-    #           else: 
-    #             vehicle_trans_matrix = json.loads(vehicle['transition_matrix'])
+              if isinstance(vehicle['transition_matrix'], dict): 
+                vehicle_trans_matrix = json.loads(json.dumps(vehicle['transition_matrix']))
+              else: 
+                vehicle_trans_matrix = json.loads(vehicle['transition_matrix'])
               
-    #           if not vehicle['vehicle_id'] in trans_prob: 
-    #             trans_prob[vehicle['vehicle_id']] = dict() 
+              if not vehicle['vehicle_id'] in trans_prob: 
+                trans_prob[vehicle['vehicle_id']] = dict() 
 
-    #           trans_prob[vehicle['vehicle_id']] = vehicle_trans_matrix[vehicle['vehicle_id']]
+              trans_prob[vehicle['vehicle_id']] = vehicle_trans_matrix[vehicle['vehicle_id']]
 
-    #           # Fill the missing transitions with zero's     
-    #           for state in states: 
-    #             if state not in trans_prob[vehicle['vehicle_id']]: 
-    #               trans_prob[vehicle['vehicle_id']][state] = 0
+              # Fill the missing transitions with zero's     
+              for state in states: 
+                if state not in trans_prob[vehicle['vehicle_id']]: 
+                  trans_prob[vehicle['vehicle_id']][state] = 0
           
-    #       # Fill the missing states with zero's
-    #       for nonmatch in nonmatching: 
-    #         if i == 1: 
-    #           start_prob[nonmatch] = 0
+          # Fill the missing states with zero's
+          for nonmatch in nonmatching: 
+            if i == 1: 
+              start_prob[nonmatch] = 0
             
-    #         if not nonmatch in emit_prob: 
-    #           emit_prob[nonmatch] = dict() 
+            if not nonmatch in emit_prob: 
+              emit_prob[nonmatch] = dict() 
 
-    #         emit_prob[nonmatch][str(i - 1)] = 0
+            emit_prob[nonmatch][str(i - 1)] = 0
 
-    #         if i == len(num_layers): 
-    #           trans_prob[nonmatch] = dict() 
+            if i == len(num_layers): 
+              trans_prob[nonmatch] = dict() 
 
-    #           for state in states: 
-    #             trans_prob[nonmatch][state] = 0
+              for state in states: 
+                trans_prob[nonmatch][state] = 0
 
-    #       i = i + 1
+          i = i + 1
 
-    #     # print('num_layers: ' + str(num_layers))
-    #     # print('states: ' + str(states))
-    #     # print('start_prob: ' + str(start_prob))
-    #     # print('trans_prob: ' + str(trans_prob))
-    #     # print('emit_prob: ' + str(emit_prob))
-    #     matches = transportgeo.viterbi(num_layers, states, start_prob, trans_prob, emit_prob)
+        # print('num_layers: ' + str(num_layers))
+        # print('states: ' + str(states))
+        # print('start_prob: ' + str(start_prob))
+        # print('trans_prob: ' + str(trans_prob))
+        # print('emit_prob: ' + str(emit_prob))
+        matches = transportgeo.viterbi(num_layers, states, start_prob, trans_prob, emit_prob)
       
-    #   except Exception as e:
-    #     print('exception here: ' + str(e))
-    #     capture_exception(e)
-    # else: 
-    #   matches = False 
+      except Exception as e:
+        print('exception here: ' + str(e))
+        capture_exception(e)
+    else: 
+      matches = False 
 
-    # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-      # print(str(observations))
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+      print(str(observations))
 
+    return { 'observations': observations.to_json(orient='records'), 'matches': matches }
     # print('observations: ' + str(observations))
-    # return { 'observations': {}, 'matches': {} } 
   
   except Exception as e:
     capture_exception(e)

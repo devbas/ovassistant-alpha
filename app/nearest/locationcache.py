@@ -11,6 +11,7 @@ from sentry_sdk import capture_exception
 import json
 
 redis_client = redis.StrictRedis(host=cfg.redis['host'], port=cfg.redis['port'], db=cfg.redis['db'], decode_responses=cfg.redis['decode_responses'])
+redis_layer_store = redis.StrictRedis(host=cfg.redis['host'], port=cfg.redis['port'], db=cfg.redis['layer_db'], decode_responses=cfg.redis['decode_responses'])
 
 def georadius(lon, lat, radius): 
   return redis_client.georadius('items', lon, lat, radius, 'm', 'WITHDIST', 'WITHCOORD', 'COUNT', 50)
@@ -118,7 +119,7 @@ def get_vehicles_by_radius(lon, lat, radius, user_datetime):
         'inserted_at': int(time.time()) 
       }, ignore_index=True)
     
-    
+
   return vehicles_df
 
     # prev_neighbors = datapoints_df[(datapoints_df['vehicle_id'] == vehicle_id) & (datapoints_df['historic'] == True)].sort_values(by='time_distance', ascending=True)
@@ -204,23 +205,18 @@ def get_observations(user_id, datetime):
   observations = False 
   try:
 
-    db = mysql.connector.connect(
-      host=cfg.mysql['host'],
-      user=cfg.mysql['user'],
-      passwd=cfg.mysql['password'], 
-      database=cfg.mysql['db'], 
-      raise_on_warnings=True
-    )
+    observations = redis_layer_store.get(user_id)
 
-    print('user_id and datetime: ' + str(user_id)  + ' ' + str(int(datetime) - 60))
-    cursor = db.cursor(dictionary=True,buffered=True) 
+    # cursor = db.cursor(dictionary=True,buffered=True) 
 
     # with db.cursor() as cursor: 
-    cursor.execute('SELECT * FROM user_vehicle_match WHERE user_id = %s AND current_neighbor_datetime > %s', (user_id, int(datetime) - 120))
+    # cursor.execute('SELECT * FROM user_vehicle_match WHERE user_id = %s AND current_neighbor_datetime > %s', (user_id, int(datetime) - 120))
     # cursor.execute('SELECT * FROM user_vehicle_match WHERE user_id = %s', (user_id))
-    observations = cursor.fetchall()
-    print('query: ' + str(cursor.statement))
-    db.close()
+    # observations = cursor.fetchall()
+    # print('query: ' + str(cursor.statement))
+    # db.close()
+
+    print('observations: ' + str(observations))
     
   except Exception as e:
     capture_exception(e)

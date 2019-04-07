@@ -11,7 +11,7 @@ import time
 sentry_sdk.init("https://29436939613d4654864055395fa84a2d@sentry.io/1339196")
 
 HOST_NAME = '0.0.0.0'
-PORT_NUMBER = 9001
+PORT_NUMBER = 9002
 
 class NearestVehicle(BaseHTTPRequestHandler):
   def do_HEAD(self):

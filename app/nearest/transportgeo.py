@@ -154,22 +154,28 @@ def vehicle_stop_great_circle_distance(vehicle):
     # print('shape id: ' + str(shape_id) + str(vehicle['current_user_coords'][0]) + '   and  ' + str(vehicle['current_user_coords'][1]))
     closest_shape_point = shapestore.georadius(shape_id, vehicle['current_user_coords'][0], vehicle['current_user_coords'][1], 10000)
     # print('closest point: ' + str(closest_shape_point))
-
+ 
     distance_to_shape_point = closest_shape_point[0][1]
     shape_point_info = closest_shape_point[0][0].split(':')
-    shape_point_dist_traveled = shape_point_info[shape_point_info.length-1]
+    shape_point_dist_traveled = shape_point_info[len(shape_point_info)-1]
 
-    print('shape point dist traveled: ' + str(shape_point_dist_traveled))
+    print('distance to shape point: ' + str(distance_to_shape_point))
+    print('distance to next stop: ' + str(int(next_stop_dist_traveled) - int(shape_point_dist_traveled) + int(distance_to_shape_point)) )
 
     # 724696:24:38367 --> shape_id, sequence, distance_traveled 
+    distance_to_next_stop = int(next_stop_dist_traveled) - int(shape_point_dist_traveled) + int(distance_to_shape_point)
+    distance_to_prev_stop = int(next_stop_dist_traveled) - int(distance_to_shape_point) - int(prev_stop_dist_traveled)
 
-
-    distance_to_prev_stop = next_stop_dist_traveled - prev_stop_dist_traveled
-
-    return {
-      'closest_stop_id': vehicle_info['nextStop'][0]['stop_id'],
-      'stop_distance': 0
-    }
+    if distance_to_next_stop > distance_to_prev_stop: 
+      return {
+        'closest_stop_id': vehicle_info['prevStop'][0]['stop_id'],
+        'stop_distance': distance_to_prev_stop
+      }
+    else: 
+      return {
+        'closest_stop_id': vehicle_info['nextStop'][0]['stop_id'], 
+        'stop_distance': distance_to_next_stop
+      }
   
   except Exception as e:
     capture_exception(e)
