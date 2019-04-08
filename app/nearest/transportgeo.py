@@ -182,68 +182,6 @@ def vehicle_stop_great_circle_distance(vehicle):
     print('exception: ' + str(e))
     return fallback_response
 
-
-    # cursor = db.cursor(dictionary=True,buffered=True) 
-    # cursor.execute("""SELECT * 
-    #                   FROM shapes S 
-    #                   WHERE S.shape_id = %s
-    #                   AND shape_dist_traveled >= %s
-    #                   AND shape_dist_traveled <= %s""", (shape_id, int(prev_stop_dist_traveled), int(next_stop_dist_traveled)))
-    # shape_points = cursor.fetchall() 
-
-  # else:
-    # cursor.close()
-
-  # try:   
-  #   frame = nv.FrameE(a=6371e3, f=0)
-  #   min_distance = 1000000
-  #   current_path = {}
-
-  #   for i in range(len(shape_points) - 1): 
-  #     j = int(i) + 1
-        
-  #     # Get line with smallest cross track distance
-  #     start_point = frame.GeoPoint(float(shape_points[i]['shape_pt_lat']), float(shape_points[i]['shape_pt_lon']), degrees=True)
-  #     end_point = frame.GeoPoint(float(shape_points[j]['shape_pt_lat']), float(shape_points[j]['shape_pt_lon']), degrees=True)
-  #     along_point = frame.GeoPoint(vehicle['current_neighbor_coords'][1], vehicle['current_neighbor_coords'][0], degrees=True)
-  #     path = nv.GeoPath(start_point, end_point)
-
-  #     track_distance = path.cross_track_distance(along_point, method='greatcircle').ravel() 
-
-  #     if track_distance < min_distance: 
-  #       min_distance = track_distance
-  #       current_path = {  'start_lat': float(shape_points[i]['shape_pt_lat']), 
-  #                         'start_lon': float(shape_points[i]['shape_pt_lon']), 
-  #                         'start_shape_pt_sequence': shape_points[i]['shape_pt_sequence'],
-  #                         'start_shape_dist_traveled': shape_points[i]['shape_dist_traveled'],
-  #                         'end_lat': float(shape_points[j]['shape_pt_lat']), 
-  #                         'end_lon': float(shape_points[j]['shape_pt_lon']), 
-  #                         'end_shape_pt_sequence': shape_points[j]['shape_pt_sequence'], 
-  #                         'end_shape_dist_traveled': shape_points[j]['shape_dist_traveled']
-  #                       }
-
-  #       path_point = path.closest_point_on_great_circle(along_point)
-
-
-  #   normalized_point = [path_point.latitude_deg[0], path_point.longitude_deg[0]]
-
-  #   distance_to_next_shape = great_circle_distance(normalized_point, [current_path['end_lat'], current_path['end_lon']]) 
-  #   distance_to_prev_shape = great_circle_distance(normalized_point, [current_path['start_lat'], current_path['start_lon']])
-  #   current_path['normalized_point'] = normalized_point
-  #   distance_to_next_stop = next_stop_dist_traveled - current_path['end_shape_dist_traveled'] - distance_to_next_shape
-  #   distance_to_prev_stop = (current_path['start_shape_dist_traveled'] - prev_stop_dist_traveled) + distance_to_prev_shape
-
-  #   if distance_to_next_stop > distance_to_prev_stop: 
-  #     return {
-  #       'closest_stop_id': vehicle_info['nextStop'][0]['stop_id'], 
-  #       'stop_distance': distance_to_next_stop
-  #     }
-  #   else: 
-  #     return {
-  #       'closest_stop_id': vehicle_info['prevStop'][0]['stop_id'], 
-  #       'stop_distance': distance_to_prev_stop
-  #     }
-
 def transition(candidate, vehicle): 
   non_direct_tolerance = 1000 # Tuning parameter
   # Calculate 3D distance 
@@ -264,9 +202,6 @@ def transition_matrix(candidate, fleet):
       transition_item_prob[vehicle['vehicle_id']] = 1
     elif candidate['closest_stop']['closest_stop_id'] == vehicle['closest_stop']['closest_stop_id']: 
       transition_item_prob[vehicle['vehicle_id']] = transition(candidate, vehicle)
-    # else: 
-    #   return False 
-      # Fill with 0?
 
   transition_candidate_prob = {}
   transition_candidate_prob[candidate['vehicle_id']] = transition_item_prob

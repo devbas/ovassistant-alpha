@@ -62,30 +62,22 @@ def get_vehicle_candidates(lon, lat, user_datetime, user_id):
     observations['transition_matrix'] = [transportgeo.transition_matrix(vehicle, observations) for index, vehicle in observations.iterrows()]
 
     # Get all other observations from database
-    historic_obs = locationcache.get_observations(user_id, user_datetime) 
+    vit_layers = locationcache.get_observations(user_id, user_datetime) 
 
-    # historic_obs = []
-    # print('historic obs: ' + str(len(historic_obs)))
-    
-    vit_layers = pd.DataFrame()
-    vit_layers = vit_layers.append(observations, ignore_index=True) 
-    if historic_obs: 
-      for obs in historic_obs: 
-        vit_layers = vit_layers.append(obs, ignore_index=True)
-
+    if not vit_layers.empty: 
       # Get all unique vehicles from observations
       states = vit_layers['vehicle_id'].unique()
-      vit_layers = vit_layers.sort_values(by=['current_neighbor_datetime'], ascending=False)
+      vit_layers = vit_layers.sort_values(by=['inserted_at'], ascending=False)
 
       try: 
-        # Get number of unique current_neighbor_datetime 
-        num_layers = [str(i) for i in range(0, len(vit_layers['current_neighbor_datetime'].unique()))]
+        # Get number of unique inserted_at 
+        num_layers = [str(i) for i in range(0, len(vit_layers['inserted_at'].unique()))]
         start_prob = dict()
         emit_prob = dict()
         trans_prob = dict()
         i = 1
-        for neighbor_datetime in vit_layers['current_neighbor_datetime'].unique(): 
-          layer = vit_layers[vit_layers['current_neighbor_datetime'] == neighbor_datetime]
+        for neighbor_datetime in vit_layers['inserted_at'].unique(): 
+          layer = vit_layers[vit_layers['inserted_at'] == neighbor_datetime]
           nonmatching = [state for state in states if state not in layer['vehicle_id'].unique()]
 
           for index, vehicle in layer.iterrows():
