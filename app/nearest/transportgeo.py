@@ -3,15 +3,10 @@ import numpy as np
 import locationcache
 import shapestore
 import config as cfg 
-import mysql.connector
-from mysql.connector import errorcode
 import nvector as nv
 import json
 from sentry_sdk import capture_exception
 import time
-
-
-# db = pymysql.connect(host=cfg.mysql['host'], port=cfg.mysql['port'], db=cfg.mysql['db'], user=cfg.mysql['user'], password=cfg.mysql['password'], cursorclass=pymysql.cursors.DictCursor)
 
 def bearing(a, b): 
   """
