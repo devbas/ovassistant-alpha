@@ -27,16 +27,15 @@ router.post('/file', [utils.isLoggedIn, upload.single('file')], function(req, re
         const userId = data[3].match(/\d/g).join("");
         axios.get(`http://scoring:8001/api/classify/location/?lon=${data[0]}&lat=${data[1]}&datetime=${data[2]}&userId=${userId}`)
           .then(function(response) {
-            console.log('response: ', response.data)
+            // console.log('response: ', response.data)
           })
           .catch(function(err) {
-            console.log('error: ', err) 
+            // console.log('error: ', err) 
           })
 
         fileRows.push(data); // push each row
       })
       .on("end", function () {
-        console.log(fileRows)
         fs.unlinkSync(req.file.path);   // remove temp file
         //process "fileRows" and respond
       })

@@ -31,7 +31,7 @@ services:
       - redis
       - db
     ports: 
-      - 127.0.0.1:9001:9001
+      - 127.0.0.1:9002:9002
     command: python calculate.py 
     volumes: 
       - ./app/nearest/:/usr/src/app

@@ -6,17 +6,15 @@ import pandas as pd
 import numpy as np 
 import transportgeo
 import math
-# import pymysql.cursors
-import mysql.connector
 import time
 from sentry_sdk import capture_exception
 import json
 
-# db = pymysql.connect(host=cfg.mysql['host'], port=cfg.mysql['port'], db=cfg.mysql['db'], user=cfg.mysql['user'], password=cfg.mysql['password'], cursorclass=pymysql.cursors.DictCursor)
 redis_client = redis.StrictRedis(host=cfg.redis['host'], port=cfg.redis['port'], db=cfg.redis['db'], decode_responses=cfg.redis['decode_responses'])
+redis_layer_store = redis.StrictRedis(host=cfg.redis['host'], port=cfg.redis['port'], db=cfg.redis['layer_db'], decode_responses=cfg.redis['decode_responses'])
 
 def georadius(lon, lat, radius): 
-  return redis_client.georadius('items', lon, lat, radius, 'm', 'WITHDIST', 'WITHCOORD')
+  return redis_client.georadius('items', lon, lat, radius, 'm', 'WITHDIST', 'WITHCOORD', 'COUNT', 50)
 
 
 def get(itemKey): 
@@ -31,138 +29,121 @@ def get_vehicles_by_radius(lon, lat, radius, user_datetime):
     vehicle, datetime = datapoint[0].rsplit(':', 1)
     vehicle_type, vehicle_id = vehicle.split(':', 1)
 
-    if datetime == 'latest':
-      vehicle_info = get(datapoint[0])
-      if vehicle_info:
-        vehicle_info = json.loads(vehicle_info)
+    vehicle_info = get(datapoint[0])
+
+    if vehicle_info: 
+      vehicle_info = json.loads(vehicle_info) 
+
+      if datetime == 'latest': 
         datetime = int(vehicle_info['datetimeUnix'])
       else: 
-        datetime = False
-    else: 
-      datetime = int(datetime)
+        datetime = int(datetime) 
+
+      if 'vehiclePrevPoint' not in vehicle_info: 
+        vehicle_prev_point = False
+      else: 
+        vehicle_prev_point = vehicle_info['vehiclePrevPoint']
     
-    if datetime and datetime <= user_datetime + 120 and datetime >= user_datetime - 120: 
+    if datetime and datetime <= user_datetime + 30 and datetime >= user_datetime - 120: 
+      coordinates = datapoint[3]
+
       datapoints_df = datapoints_df.append({
         'vehicle_id': vehicle_id, 
         'vehicle_type': vehicle_type, 
         'vehicle_datetime': datetime, 
-        'coordinates': list([datapoint[2][0], datapoint[2][1]]), 
+        'coordinates': [coordinates[0], coordinates[1]], 
         'time_distance': math.sqrt((datetime - user_datetime)**2), # Basic Manhattan distance
-        'historic': True if datetime - user_datetime < 0 else False 
+        'historic': True if datetime - user_datetime < 0 else False, 
+        'vehicle_prev_point': vehicle_prev_point
       }, ignore_index=True)
 
   vehicles_df = pd.DataFrame()
   for vehicle_id in datapoints_df['vehicle_id'].unique(): 
-    
     vehicle_type = datapoints_df[datapoints_df['vehicle_id'] == vehicle_id]['vehicle_type'].iloc[0]
+
+    vehicle_datapoints = datapoints_df[(datapoints_df['vehicle_id'] == vehicle_id)].sort_values(by='time_distance', ascending=True)
+  
+    # In case only one datapoint falls within the search radius, populate the vehicle with the prev data point to make a line. 
+    if len(vehicle_datapoints) < 2 and vehicle_datapoints['vehicle_prev_point'].iloc[0]: 
+      prev_vehicle_datapoint = get(vehicle_datapoints['vehicle_prev_point'].iloc[0])
+
+      if prev_vehicle_datapoint: 
+        prev_vehicle_datapoint = json.loads(prev_vehicle_datapoint)
+
+        vehicle_datapoints = vehicle_datapoints.append({
+          'vehicle_id': vehicle_id, 
+          'vehicle_type': vehicle_type, 
+          'vehicle_datetime': int(prev_vehicle_datapoint['datetimeUnix']), 
+          'coordinates': [prev_vehicle_datapoint['longitude'], prev_vehicle_datapoint['latitude']],
+          'time_distance': math.sqrt((int(prev_vehicle_datapoint['datetimeUnix']) - user_datetime)**2)
+        }, ignore_index=True)
+
     
-    prev_neighbors = datapoints_df[(datapoints_df['vehicle_id'] == vehicle_id) & (datapoints_df['historic'] == True)].sort_values(by='time_distance', ascending=True)
-    next_neighbors = datapoints_df[(datapoints_df['vehicle_id'] == vehicle_id) & (datapoints_df['historic'] == False)].sort_values(by='time_distance', ascending=True)
-    
-    if not (prev_neighbors.empty and len(next_neighbors.index) < 2) and not (next_neighbors.empty and len(prev_neighbors.index) < 2): 
-      #   # The minimum amount of datapoints to work with is 2.
-
-      if prev_neighbors.empty: 
-        
-        prev_neighbor_coords = next_neighbors['coordinates'].iloc[1]
-        prev_neighbor_datetime = next_neighbors['vehicle_datetime'].iloc[1]
-
-        next_neighbor_coords = next_neighbors['coordinates'].iloc[0]
-        next_neighbor_datetime = next_neighbors['vehicle_datetime'].iloc[0]
-        # print('prev coords: ' + str(prev_neighbor_coords) + ' next coords: ' + str(next_neighbor_coords))
-        bearing = transportgeo.bearing(next_neighbor_coords, prev_neighbor_coords)
-        speed = transportgeo.speed(
-          next_neighbor_coords, 
-          prev_neighbor_coords, 
-          next_neighbor_datetime, 
-          prev_neighbor_datetime
-        )
-        neighbor_extrapolated_distance = math.sqrt((speed * (user_datetime - prev_neighbor_datetime))**2)
-        current_neighbor_coords = transportgeo.destination(prev_neighbor_coords, bearing, neighbor_extrapolated_distance)
-        # print('1current_neighbor_coords: ' + str(current_neighbor_coords) + ' and prev neighbor coords: ' + str(prev_neighbor_coords) + ' with a distance of: ' + str(neighbor_extrapolated_distance))
-      elif next_neighbors.empty: 
-        # Backpropagate further into the history
-
-        prev_neighbor_coords = prev_neighbors['coordinates'].iloc[0]
-        prev_neighbor_datetime = prev_neighbors['vehicle_datetime'].iloc[0]
-
-        next_neighbor_coords = prev_neighbors['coordinates'].iloc[1]
-        next_neighbor_datetime = prev_neighbors['vehicle_datetime'].iloc[1]
-        # print('prev coords: ' + str(prev_neighbor_coords) + ' next coords: ' + str(next_neighbor_coords))
-        bearing = transportgeo.bearing(prev_neighbor_coords, next_neighbor_coords)
-        speed = transportgeo.speed(
-          prev_neighbor_coords, 
-          next_neighbor_coords,
-          prev_neighbor_datetime,
-          next_neighbor_datetime
-        )
-        neighbor_extrapolated_distance = math.sqrt((speed * (user_datetime - prev_neighbors['vehicle_datetime'].iloc[0]))**2)
-        current_neighbor_coords = transportgeo.destination(prev_neighbors['coordinates'].iloc[0], bearing, neighbor_extrapolated_distance)
-        # print('2current_neighbor_coords: ' + str(current_neighbor_coords) + ' and prev neighbor coords: ' + str(prev_neighbor_coords) + ' with a distance of: ' + str(neighbor_extrapolated_distance))
+    if len(vehicle_datapoints) >= 2: 
+      if vehicle_datapoints['vehicle_datetime'].iloc[0] > vehicle_datapoints['vehicle_datetime'].iloc[1]: 
+        start_path_datetime = vehicle_datapoints['vehicle_datetime'].iloc[1]
+        start_path_coordinates = vehicle_datapoints['coordinates'].iloc[1]
+        end_path_datetime = vehicle_datapoints['vehicle_datetime'].iloc[0]
+        end_path_coordinates = vehicle_datapoints['coordinates'].iloc[0]
+      elif vehicle_datapoints['vehicle_datetime'].iloc[0] < vehicle_datapoints['vehicle_datetime'].iloc[1]: 
+        start_path_datetime = vehicle_datapoints['vehicle_datetime'].iloc[0]
+        start_path_coordinates = vehicle_datapoints['coordinates'].iloc[0]
+        end_path_datetime = vehicle_datapoints['vehicle_datetime'].iloc[1]
+        end_path_coordinates = vehicle_datapoints['coordinates'].iloc[1]
       else: 
-        prev_neighbor_coords = prev_neighbors['coordinates'].iloc[0]
-        prev_neighbor_datetime = prev_neighbors['vehicle_datetime'].iloc[0]
+        print('uncanny situation??')
+      
+      bearing = transportgeo.bearing(end_path_coordinates, start_path_coordinates)
+      speed = transportgeo.speed(
+        end_path_coordinates, 
+        start_path_coordinates, 
+        end_path_datetime, 
+        start_path_datetime
+      )
 
-        next_neighbor_coords = next_neighbors['coordinates'].iloc[0]
-        next_neighbor_datetime = next_neighbors['vehicle_datetime'].iloc[0]
-        # print('prev coords: ' + str(prev_neighbor_coords) + ' next coords: ' + str(next_neighbor_coords))
-        bearing = transportgeo.bearing(prev_neighbor_coords, next_neighbor_coords)
-        speed = transportgeo.speed(
-          prev_neighbor_coords, 
-          next_neighbor_coords, 
-          prev_neighbor_datetime, 
-          next_neighbor_datetime
-        )
-        neighbor_extrapolated_distance = math.sqrt((speed * (user_datetime - prev_neighbor_datetime))**2)
-        current_neighbor_coords = transportgeo.destination(prev_neighbor_coords, bearing, neighbor_extrapolated_distance)
-        # print('3current_neighbor_coords: ' + str(current_neighbor_coords) + ' and prev neighbor coords: ' + str(prev_neighbor_coords) + ' with a distance of: ' + str(neighbor_extrapolated_distance) + ' a speed of: ' + str(speed))
+      extrapolated_distance = math.sqrt((speed * (user_datetime - start_path_datetime))**2)
+      current_path_coordinates = transportgeo.destination(start_path_coordinates, bearing, extrapolated_distance)
+
       vehicles_df = vehicles_df.append({
         'vehicle_id': vehicle_id, 
         'vehicle_type': vehicle_type,
-        'prev_neighbor_coords': prev_neighbor_coords, 
-        'prev_neighbor_datetime': prev_neighbor_datetime, 
-        'current_neighbor_coords': current_neighbor_coords, 
-        'current_neighbor_datetime': user_datetime, 
-        'next_neighbor_coords': next_neighbor_coords, 
-        'next_neighbor_datetime': next_neighbor_datetime, 
+        'start_path_coordinates': start_path_coordinates, 
+        'start_path_datetime': start_path_datetime, 
+        'current_path_coordinates': current_path_coordinates, 
+        'current_path_datetime': user_datetime, 
+        'end_path_coordinates': end_path_coordinates, 
+        'end_path_datetime': end_path_datetime, 
         'bearing': bearing, 
         'speed': speed, 
         'current_user_coords': [lon, lat], 
         'inserted_at': int(time.time()) 
       }, ignore_index=True)
-  
+    
+
   return vehicles_df
 
 def get_observations(user_id, datetime): 
 
   # Get observations from Redis
-
+  df = pd.DataFrame() 
   observations = False 
+
   try:
 
-    db = mysql.connector.connect(
-      host=cfg.mysql['host'],
-      user=cfg.mysql['user'],
-      passwd=cfg.mysql['password'], 
-      database=cfg.mysql['db'], 
-      raise_on_warnings=True
-    )
+    observations = redis_layer_store.get(user_id)
 
-    print('user_id and datetime: ' + str(user_id)  + ' ' + str(int(datetime) - 60))
-    cursor = db.cursor(dictionary=True,buffered=True) 
+    if observations: 
+      json_data = json.loads(observations)
 
-    # with db.cursor() as cursor: 
-    cursor.execute('SELECT * FROM user_vehicle_match WHERE user_id = %s AND current_neighbor_datetime > %s', (user_id, int(datetime) - 120))
-    # cursor.execute('SELECT * FROM user_vehicle_match WHERE user_id = %s', (user_id))
-    observations = cursor.fetchall()
-    print('query: ' + str(cursor.statement))
-    db.close()
+      for row in json_data: 
+        df = df.append(row, ignore_index=True)
     
   except Exception as e:
+    print('execption: ' + str(e))
     capture_exception(e)
   finally:
 
-    if observations: 
-      return observations
+    if not df.empty: 
+      return df
     else: 
       return ()

@@ -65,94 +65,64 @@ const getVehicleCandidates = async (data) => {
     }
 
     // Save the user location for further analysis
-    const userLocation = await pool.query('INSERT INTO user_location SET `user_id` = ?, `lon` = ?, `lat` = ?, `datetime` = ?', 
+    pool.query('INSERT INTO user_location SET `user_id` = ?, `lon` = ?, `lat` = ?, `datetime` = ?', 
                       [parseInt(data.userId), data.lon, data.lat, data.datetime])
+
+    const prevUserLocation = await pool.query('SELECT * FROM user_location WHERE `user_id` = ? AND `datetime` > (? - 60) ORDER BY datetime DESC LIMIT 0,1',
+                            [parseInt(data.userId), data.datetime])
+    console.log('hit send', prevUserLocation)
+    // Get vehicle candidates from Nearest   
+    const vehicleCandidatesRaw = await axios.get(`http://nearest:9002/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}&prev_user_location=${prevUserLocation[0] ? JSON.stringify(prevUserLocation[0]) : ''}`)                                  
     
-    // Get vehicle candidates from Nearest 
-    const vehicleCandidatesRaw = await axios.get(`http://nearest:9001/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}`)                                  
     let vehicleCandidates = JSON.parse(vehicleCandidatesRaw.data.observations)
     const matches = vehicleCandidatesRaw.data.matches
-    vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo))
-    
-    // Insert this into Redis
-    // ID: user_id:vehicle_id:user_measurement_timestamp
-    await redisLayerStore.set(`${data.user_id}:${candidate.vehicle_id}`, JSON.stringify({
-      user_id: data.userId, 
-      bearing: candidate.bearing, 
-      current_neighbor_coords: candidate.current_neighbor_coords, 
-      current_neighbor_datetime: candidate.current_neighbor_datetime, 
-      current_user_coords: candidate.current_user_coords, 
-      next_neighbor_coords: candidate.next_neighbor_coords, 
-      next_neighbor_datetime: candidate.next_neighbor_datetime, 
-      prev_neighbor_coords: candidate.prev_neighbor_coords,
-      prev_neighbor_datetime: candidate.prev_neighbor_datetime, 
-      speed: candidate.speed,
-      vehicle_id: candidate.vehicle_id, 
-      vehicle_type: candidate.vehicle_type, 
-      vehicle_travel_distance: candidate.vehicle_travel_distance, 
-      user_travel_distance: candidate.user_travel_distance, 
-      user_vehicle_distance: candidate.user_vehicle_distance, 
-      emission_prob: candidate.emission_prob, 
-      closest_stop_id: candidate.closest_stop ? candidate.closest_stop.closest_stop_id : 0,
-      closest_stop_distance: candidate.closest_stop ? candidate.closest_stop.stop_distance : -1,
-      transition_matrix: candidate.transition_matrix, 
-      inserted_at: Math.round((new Date()).getTime() / 1000)
-    }))
 
-    vehicleCandidates.forEach((candidate) => {
-      pool.query(`INSERT INTO user_vehicle_match SET 
-        user_id = ?, 
-        bearing = ?,
-        current_neighbor_coords = ?,
-        current_neighbor_datetime = ?,
-        current_user_coords = ?,
-        next_neighbor_coords = ?,
-        next_neighbor_datetime = ?,
-        prev_neighbor_coords = ?,
-        prev_neighbor_datetime = ?,
-        speed = ?,
-        vehicle_id = ?, 
-        vehicle_type = ?, 
-        vehicle_travel_distance = ?,
-        user_travel_distance = ?, 
-        user_vehicle_distance = ?,
-        emission_prob = ?, 
-        closest_stop_id = ?, 
-        closest_stop_distance = ?,
-        transition_matrix = ?,
-        inserted_at = ?
-      `, [
-        data.userId, 
-        candidate.bearing,
-        JSON.stringify(candidate.current_neighbor_coords),
-        candidate.current_neighbor_datetime,
-        JSON.stringify(candidate.current_user_coords),
-        JSON.stringify(candidate.next_neighbor_coords),
-        candidate.next_neighbor_datetime,
-        JSON.stringify(candidate.prev_neighbor_coords),
-        candidate.prev_neighbor_datetime,
-        candidate.speed,
-        candidate.vehicle_id,
-        candidate.vehicle_type,
-        candidate.vehicle_travel_distance,
-        candidate.user_travel_distance,
-        candidate.user_vehicle_distance,
-        candidate.emission_prob,
-        candidate.closest_stop ? candidate.closest_stop.closest_stop_id : 0,
-        candidate.closest_stop ? candidate.closest_stop.stop_distance : -1,
-        JSON.stringify(candidate.transition_matrix), 
-        Math.round((new Date()).getTime() / 1000)
-      ])
-      // // user_location_id = ?
+    if(!_.isEmpty(vehicleCandidates)) {
+      vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo))
+      // item per layer, layer expires after 120 seconds. How to name keys? userId:latest, userId:sequenceNumber
+      const userLayersRaw = await redisLayerStore.get(data.userId)
 
-      // Get vehicle item info for candidate with highest probability
+      if(userLayersRaw === null) {
+        await redisLayerStore.set(data.userId, JSON.stringify([vehicleCandidates]))
+      } else {
+        let userLayers = JSON.parse(userLayersRaw)
+        
+        await redisLayerStore.set(data.userId, JSON.stringify([...userLayers, vehicleCandidates]))
+      }
 
-    }); 
+      // vehicleCandidates.forEach(async (candidate) => {
+      //   // Insert this into Redis
+      //   // ID: user_id:vehicle_id:user_measurement_timestamp
+      //   await redisLayerStore.set(`${data.userId}:${candidate.vehicle_id}`, JSON.stringify({
+      //     user_id: data.userId, 
+      //     bearing: candidate.bearing, 
+      //     current_user_coords: candidate.current_user_coords, 
+      //     start_path_coordinates: candidate.start_path_coordinates,
+      //     start_path_datetime: candidate.start_path_datetime, 
+      //     current_path_coordinates: candidate.current_path_coordinates,
+      //     current_path_datetime: candidate.current_path_datetime, 
+      //     end_path_coordinates: candidate.end_path_coordinates,
+      //     end_path_datetime: candidate.end_path_datetime, 
+      //     speed: candidate.speed,
+      //     vehicle_id: candidate.vehicle_id, 
+      //     vehicle_type: candidate.vehicle_type, 
+      //     vehicle_travel_distance: candidate.vehicle_travel_distance, 
+      //     user_travel_distance: candidate.user_travel_distance, 
+      //     user_vehicle_distance: candidate.user_vehicle_distance, 
+      //     emission_prob: candidate.emission_prob, 
+      //     closest_stop_id: candidate.closest_stop ? candidate.closest_stop.closest_stop_id : 0,
+      //     closest_stop_distance: candidate.closest_stop ? candidate.closest_stop.stop_distance : -1,
+      //     transition_matrix: candidate.transition_matrix, 
+      //     inserted_at: Math.round((new Date()).getTime() / 1000)
+      //   }))
+      // })
+
+    }
     const response = { user: user, vehicleCandidates: vehicleCandidates, matches: matches }
     return response
   } catch(err) {
     Sentry.captureException(err)
-    console.log('errL: ')
+    console.log('err: ', err)
     throw(err)
   }
 

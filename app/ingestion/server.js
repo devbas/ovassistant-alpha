@@ -163,7 +163,7 @@ sock1.on('message', async (topic, message) => {
                 measurementTimestamp: positionMessage.timestamp[0]
               }
 
-              if (positionMessage['rd-x']) {
+              if (positionMessage['rd-x'] && positionMessage['rd-x'][0] != -1 && positionMessage['rd-y'][0] != -1) {
                 data.latitude = utils.RD2lat(positionMessage['rd-x'][0], positionMessage['rd-y'][0]);
                 data.longitude = utils.RD2lng(positionMessage['rd-x'][0], positionMessage['rd-y'][0]);
 
@@ -228,50 +228,6 @@ router.use((req, res, next) => {
   console.log('Something is happening.');
   next(); // make sure we go to the next routes and don't stop here
 });
-
-router.get('/generate-sample', async (req, res) => {
-
-  const response = await redisClientPersist.zrange('items', 0, -1)
-  const file = fs.createWriteStream('sample.csv');
-
-  file.on('error', function(err) { console.log('error writing to file: ', err) });
-  console.log('total length: ', response[0])
-  // let i = 0; 
-
-  for(let i = 0; i < response.length; i++) {
-    
-    try {
-      const coordinates = await redisClientPersist.geopos('items', response[i])
-      const datetime = response[i].substring(response[i].lastIndexOf(':') + 1, response[i].length);
-      
-      let vehicle = response[i].substring(0, response[i].lastIndexOf(":") + 1);
-      vehicle = vehicle.substring(0, vehicle.length-1)
-
-      if(datetime !== 'latest') {
-        const csvRow = [...coordinates[0], datetime, vehicle]
-        file.write(csvRow.join(',') + '\n');
-      }
-    } catch(e) {
-      console.log('erroer: ', e, typeof(response[i]))
-    }
-  }
-  // response.forEach(async (row) => {
-  //   i = i + 1 
-
-  //   // if(i < 20) {
-  //   // const coordinates = await redisClientPersist.geopos(row)
-
-  //     // const datetime = row.substring(row.lastIndexOf(':') + 1, row.length);
-
-  //     console.log('coordinates and stuff: ', coordinates)
-
-  //     file.write(JSON.stringify(coordinates) + '\n');
-  //   // }
-  // })
-
-  file.end();
-
-})
 
 router.get('/*', (req, res) => {
   res.json({ message: '200' });   

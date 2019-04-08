@@ -1,21 +1,19 @@
 const LatLon = require('../movable.js');
 const Sentry = require('@sentry/node');
 const utils = require('../utils')
-// const fs = require('fs')
 const pool = require('../database')
 const moment = require('moment-timezone')
 const _ = require('lodash')
-// const redisClient = require('../redis-client')
 const redisClient = process.env.INGESTION_PERSIST ? require('../redis-client-persist') : require('../redis-client')
-
-// var stream = fs.createWriteStream("append.txt", {flags:'a'});
 
 const importData = async data => {
   var row = {
     speed: data.speed, 
     type: data.type, 
     id: data.id + ':latest', 
-    datetimeUnix: data.datetimeUnix
+    datetimeUnix: data.datetimeUnix, 
+    latitude: data.latitude,
+    longitude: data.longitude 
   }
 
   var isPersist = process.env.INGESTION_PERSIST
@@ -47,6 +45,7 @@ const importData = async data => {
       
         row.bearing = prevPoint.bearingTo(nextPoint)
         row.speedPerSecond = prevPoint.speedPerSecond(nextPoint, vehiclePrev.datetimeUnix, data.datetimeUnix)
+        row.vehiclePrevPoint = prevIdentifier
       } else {
         row.bearing = -1 
         row.speedPerSecond = 0
@@ -185,8 +184,8 @@ const updateData = async (identifier, data) => {
 
 const locationSanitaryCheck = async (id) => {
   // Get all Redis geo items 
-  let cursor = 0 
-  vehicleLocations = await redisClient.zscan('items', cursor, 'match', `${id}:*`)
+  // let cursor = 0 
+  // vehicleLocations = await redisClient.zscan('items', cursor, 'match', `${id}:*`)
   /*
   * Foreach item: 
   *   check if item exists in 
