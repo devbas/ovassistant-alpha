@@ -90,33 +90,6 @@ const getVehicleCandidates = async (data) => {
         await redisLayerStore.set(data.userId, JSON.stringify([...userLayers, vehicleCandidates]))
       }
 
-      // vehicleCandidates.forEach(async (candidate) => {
-      //   // Insert this into Redis
-      //   // ID: user_id:vehicle_id:user_measurement_timestamp
-      //   await redisLayerStore.set(`${data.userId}:${candidate.vehicle_id}`, JSON.stringify({
-      //     user_id: data.userId, 
-      //     bearing: candidate.bearing, 
-      //     current_user_coords: candidate.current_user_coords, 
-      //     start_path_coordinates: candidate.start_path_coordinates,
-      //     start_path_datetime: candidate.start_path_datetime, 
-      //     current_path_coordinates: candidate.current_path_coordinates,
-      //     current_path_datetime: candidate.current_path_datetime, 
-      //     end_path_coordinates: candidate.end_path_coordinates,
-      //     end_path_datetime: candidate.end_path_datetime, 
-      //     speed: candidate.speed,
-      //     vehicle_id: candidate.vehicle_id, 
-      //     vehicle_type: candidate.vehicle_type, 
-      //     vehicle_travel_distance: candidate.vehicle_travel_distance, 
-      //     user_travel_distance: candidate.user_travel_distance, 
-      //     user_vehicle_distance: candidate.user_vehicle_distance, 
-      //     emission_prob: candidate.emission_prob, 
-      //     closest_stop_id: candidate.closest_stop ? candidate.closest_stop.closest_stop_id : 0,
-      //     closest_stop_distance: candidate.closest_stop ? candidate.closest_stop.stop_distance : -1,
-      //     transition_matrix: candidate.transition_matrix, 
-      //     inserted_at: Math.round((new Date()).getTime() / 1000)
-      //   }))
-      // })
-
     }
     const response = { user: user, vehicleCandidates: vehicleCandidates, matches: matches }
     return response

@@ -19,86 +19,7 @@
   </script>
   <script>
     $(document).ready(function() {
-      $('#validation-submit').on('click', function(e) {
-        e.preventDefault()
-        $.ajax({
-          // Your server script to process the upload
-          url: '/api/v1/dev/ingestion/file',
-          type: 'POST',
-
-          // Form data
-          data: new FormData($('form')[0]),
-
-          // Tell jQuery not to process data or worry about content-type
-          // You *must* include these options!
-          cache: false,
-          contentType: false,
-          processData: false,
-          timeout: 10000000,
-
-          // Custom XMLHttpRequest
-          xhr: function () {
-            $('#step-two-box').css('display', 'block')
-            $('#file-status-success').css('display', 'none')
-            $('#file-status-error').css('display', 'none')
-            $('#file-status-processing').css('display', 'block')
-            var myXhr = $.ajaxSettings.xhr();
-            if (myXhr.upload) {
-              // For handling the progress of the upload
-              myXhr.upload.addEventListener('progress', function (e) {
-                if (e.lengthComputable) {
-                  $('progress').attr({
-                    value: e.loaded,
-                    max: e.total,
-                  });
-                }
-              }, false);
-            }
-            console.log('myXhr: ', myXhr)
-            return myXhr;
-          }
-        }).done(function(data) {
-          $('#file-status-processing').css('display', 'none')
-          $('#file-status-success').css('display', 'block')
-          $('#step-three-box').css('display', 'block')
-          
-          if(data.accuracy) {
-            $('#accuracy').text(`${parseFloat(data.accuracy * 100).toFixed(2)}%`)
-          }
-
-          if(data.avgDatapointsDevice) {
-            $('#avg-datapoints-device').text(parseFloat(data.avgDatapointsDevice).toFixed(2))
-          }
-
-          if(data.f1score) {
-            $('#f1score').text(parseFloat(data.f1score).toFixed(2))
-          }
-
-          if(data.numberOfRows) {
-            $('#amount-rows').text(data.numberOfRows)
-          }
-
-          if(data.precision) {
-            $('#precision').text(parseFloat(data.precision).toFixed(2))
-          }
-
-          if(data.recall) {
-            $('#recall').text(parseFloat(data.recall).toFixed(2))
-          }
-
-          if(data.stdDatapointsDevice) {
-            $('#std-datapoints-device').text(parseFloat(data.stdDatapointsDevice).toFixed(2))
-          }
-
-          if(data.uniqueDevices) {
-            $('#amount-unique-devices').text(data.uniqueDevices)
-          }
-        }).fail(function(err) {
-          $('#file-status-processing').css('display', 'none')
-          $('#file-status-error').css('display', 'block')
-          console.log('error: ', err) 
-        })
-      })
+      
     })
   </script>
   <title>Delight travellers with Nearest.</title>
@@ -113,11 +34,11 @@
               <div class="logo"></div>
             </div>
             <div class="pull-right">
-              <a href="https://docs.lionoda.com" class="docs-header">
+              <a href="https://docs.lionoda.com" class="docs-header" >
                 <div class="docs-header-label" style="text-decoration: underline;">API Docs</div>
               </a>
               <a href="/developer" class="devportal-header">
-                <div class="docs-header-label">Playground</div>
+                <div class="docs-header-label" style="text-decoration: underline;">Playground</div>
               </a>
               <a href="/devices" class="devportal-header">
                 <div class="docs-header-label" style="text-decoration: underline;">Devices</div>
@@ -135,7 +56,7 @@
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
           <div class="title-box">
-            <h2 class="charcoal" style="margin: 0;">Algorithm Playground</h2>
+            <h2 class="charcoal" style="margin: 0;">Segments</h2>
           </div>
         </div>
       </div>
