@@ -543,6 +543,16 @@ footer .title {
   transition: 0.2s ease-in-out;
 }
 
+.results-summary-header {
+  background-color: #E1E1E1; 
+  font-size: 12px;
+  color: #7D7D7D; 
+  padding-left: 15px; 
+  padding-right: 15px; 
+  padding-top: 5px; 
+  padding-bottom: 5px; 
+}
+
 @media (min-width: 768px) and (max-width: 992px){ 
   .usp-full-width-content {
     padding-left: 30px !important; 

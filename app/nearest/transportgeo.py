@@ -253,9 +253,10 @@ def viterbi(obs, states, start_p, trans_p, emit_p):
   for state in V[-1]:
     if V[-1][state]["prob"] > highest_match["prob"]: 
       highest_match = { "vehicle_id": state, "prob": V[-1][state]["prob"] }
-    print('deze state: ' + str(state) + str(V[-1][state]))
+    # print('deze state: ' + str(state) + str(V[-1][state]))
   # print('max stuff: ' + str(max(value for value in V[-1].values())))
   
-  print('The steps of states are ' + ' '.join(opt) + ' with highest probability of %s' % max_prob)
+  # print('The steps of states are ' + ' '.join(opt) + ' with highest probability of %s' % max_prob)
+  # print('highest match: ' + str(highest_match))
 
   return highest_match

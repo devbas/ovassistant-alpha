@@ -48,12 +48,12 @@ router.get('/classify/location', async (req, res) => {
 
   try {
     const { user, vehicleCandidates, matches } = await matchCalculationController.getVehicleCandidates(data)
-    const response = await matchCalculationController.travelSituationRouter({ 
-      vehicleContext: vehicleCandidates, 
-      matches: matches, 
-      userData: data 
-    })
-    res.status(200).send({...response, user: user})
+    // const response = await matchCalculationController.travelSituationRouter({ 
+    //   vehicleContext: vehicleCandidates, 
+    //   matches: matches, 
+    //   userData: data 
+    // })
+    res.status(200).send({ userData: data, matches: matches, vehicleContext: vehicleCandidates, user: user})
   } catch(err) {
     // console.log('err: ', err)
     res.status(500).send({ error: JSON.stringify(err) })
@@ -130,7 +130,7 @@ router.get('/shapes-to-redis', (req, res) => {
 
 router.get('/generate-sample', async (req, res) => {
 
-  const response = await redisClientPersist.zrange('items', 1000, 1010)
+  const response = await redisClientPersist.zrange('items', 1000, 2000)
   const file = fs.createWriteStream('sample.csv');
 
   file.on('error', function(err) { console.log('error writing to file: ', err) });

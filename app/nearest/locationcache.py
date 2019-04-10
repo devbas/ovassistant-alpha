@@ -142,8 +142,4 @@ def get_observations(user_id, datetime):
     print('execption: ' + str(e))
     capture_exception(e)
   finally:
-
-    if not df.empty: 
-      return df
-    else: 
-      return ()
+    return df

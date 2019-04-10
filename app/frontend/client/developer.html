@@ -17,6 +17,58 @@
 
     gtag('config', 'UA-38394966-4');
   </script>
+  <script>
+    $(document).ready(function() {
+      $('#validation-submit').on('click', function(e) {
+        e.preventDefault()
+        $.ajax({
+          // Your server script to process the upload
+          url: '/api/v1/dev/ingestion/file',
+          type: 'POST',
+
+          // Form data
+          data: new FormData($('form')[0]),
+
+          // Tell jQuery not to process data or worry about content-type
+          // You *must* include these options!
+          cache: false,
+          contentType: false,
+          processData: false,
+
+          // Custom XMLHttpRequest
+          xhr: function () {
+            $('#step-two-box').css('display', 'block')
+            $('#file-status-success').css('display', 'none')
+            $('#file-status-error').css('display', 'none')
+            $('#file-status-processing').css('display', 'block')
+            var myXhr = $.ajaxSettings.xhr();
+            if (myXhr.upload) {
+              // For handling the progress of the upload
+              myXhr.upload.addEventListener('progress', function (e) {
+                if (e.lengthComputable) {
+                  $('progress').attr({
+                    value: e.loaded,
+                    max: e.total,
+                  });
+                }
+              }, false);
+            }
+            console.log('myXhr: ', myXhr)
+            return myXhr;
+          }
+        }).done(function(data) {
+          $('#file-status-processing').css('display', 'none')
+          $('#file-status-success').css('display', 'block')
+          $('#step-three-box').css('display', 'block')
+          console.log('data: ', data)
+        }).fail(function(err) {
+          $('#file-status-processing').css('display', 'none')
+          $('#file-status-error').css('display', 'block')
+          console.log('error: ', err) 
+        })
+      })
+    })
+  </script>
   <title>Delight travellers with Nearest.</title>
 </head>
 <body>
@@ -48,7 +100,7 @@
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
           <div class="title-box">
-            <h2 class="charcoal">Dataset</h2>
+            <h2 class="charcoal" style="margin: 0;">Algorithm Playground</h2>
           </div>
         </div>
       </div>
@@ -62,183 +114,139 @@
               <div class="col-md-12">
                 <div class="superhero-secundary">
                   <div class="row">
-                    <div class="col-md-7 col-sm-6">
+                    <div class="col-md-11 col-sm-6">
                       <div class="title">
                         <h2 class="charcoal"></h2>
                       </div>
-                      <div class="description">
+                      <div class="description" style="margin-bottom: 10px;">
+                        <strong>1. Upload a CSV file.</strong></br>
+                        <p style="margin-top: 3px;">Test the Nearest algorithm by uploading a CSV file. Make sure the CSV file has the markup as defined below, divided by a comma. The first row is not skipped.<br/><br/>
+                          <table>
+                            <thead>
+                              <tr>
+                                <td><strong>Key</strong></td>
+                                <td><strong>Description</strong></td>
+                                <td><strong>Status</strong></td>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td style="font-family: 'Courier'; margin-right: 20px; margin-top: 3px; margin-bottom: 3px; float: left; ">Latitude</td>
+                                <td style="margin-right: 15px;">GPS Latitude, expressed in radians.</td>
+                                <td>Required</td>
+                              </tr>
+                              <tr>
+                                <td style="font-family: 'Courier'; margin-right: 20px; margin-top: 3px; margin-bottom: 3px; float: left; ">Longitude</td>
+                                <td style="margin-right: 15px;">GPS Longitude, expressed in radians.</td>
+                                <td>Required</td>
+                              </tr>
+                              <tr>
+                                <td style="font-family: 'Courier'; margin-right: 20px; margin-top: 3px; margin-bottom: 3px; float: left; ">Datetime</td>
+                                <td style="margin-right: 15px;">Datetime of the measured GPS location, expressed in a UNIX timestamp.</td>
+                                <td>Required</td>
+                              </tr>
+                              <tr>
+                                <td style="font-family: 'Courier'; margin-right: 20px; margin-top: 3px; margin-bottom: 3px; float: left; ">Device ID</td>
+                                <td style="margin-right: 15px;">Unique number to identify the device and correlate amongst events.</td>
+                                <td>Required</td>
+                              </tr>
+                              <tr>
+                                <td style="font-family: 'Courier'; margin-right: 20px; margin-top: 3px; margin-bottom: 3px; float: left; ">Class</td>
+                                <td style="margin-right: 15px;">Boolean to indicate whether the device is labelled 'on-the-go'<br/>in a public vehicle or not.</td>
+                                <td>Optional</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </p>
+
                       </div>
                       <div class="email-box email left" id="email-box">
-                        <form method="POST" action="/api/v1/dev/ingestion/file" enctype="multipart/form-data">
-                          <input type="file" class="left" name="file" placeholder="email" id="email" accept=".csv"/>
-                          <button class="instant-send left email-submit" name="email-submit">Submit</button>
+                        <!--  method="POST" action="/api/v1/dev/ingestion/file"  -->
+                        <form enctype="multipart/form-data">
+                          <input type="file" class="left" name="file" placeholder="Validation set" id="validation-set" accept=".csv"/>
+                          <button class="instant-send left email-submit" name="validation-submit" id="validation-submit">Upload</button>
                         </form>
+                        <br/><br/>
+                        <div style="margin-top: 3px;">
+                          <small><i>Currently only a small set of time ranges within The Netherlands<br/>are supported to validate against.</i></small>
+                        </div>
+                      </div>
+                      <div class="description" style="float: left; width: 100%; display: none; " id="step-two-box">
+                        <br/>
+                        <strong>2. File Status</strong>
+                        <div id="file-status-processing">
+                          <p style="margin-top: 3px;">
+                            <div style="
+                              width: 45px; 
+                              height: 45px; 
+                              border-radius: 50px; 
+                              background-color: #006372; 
+                              float: left;
+                              background-image: url(./img/animated-loader.svg);
+                              background-position: 90% 50%;
+                              background-size: 30px; 
+                              background-repeat: no-repeat;
+                            "></div>
+                            <div style="float: left; margin-top: 12px; margin-left: 10px;"><i>Processing...</i></div>
+                          </p>
+                        </div>
+                        <div id="file-status-error">
+                          <p style="margin-top: 3px;">
+                            <div style="
+                              width: 45px; 
+                              height: 45px; 
+                              border-radius: 50px; 
+                              background-color: #DC0000; 
+                              float: left;
+                              background-image: url(./img/error.svg);
+                              background-position: center;
+                              background-size: 15px; 
+                              background-repeat: no-repeat;
+                            "></div>
+                            <div style="float: left; margin-top: 12px; margin-left: 10px;"><i>Something went wrong. Did you upload a correct CSV?</i></div>
+                          </p>
+                        </div>
+                        <div id="file-status-success">
+                          <p style="margin-top: 3px;">
+                            <div style="
+                              width: 45px; 
+                              height: 45px; 
+                              border-radius: 50px; 
+                              background-color: #81C85B; 
+                              float: left;
+                              background-image: url(./img/correct-validated.svg);
+                              background-position: center;
+                              background-size: 20px; 
+                              background-repeat: no-repeat;
+                            "></div>
+                            <div style="float: left; margin-top: 12px; margin-left: 10px;"><i>Successfully validated.</i></div>
+                          </p>
+                        </div>
+                      </div>
+                      <div class="description" style="float: left; width: 100%;" id="step-three-box">
+                        <br/>
+                        <strong>3. Results</strong>
+                        <table>
+                          <tr>
+                            <td class="results-summary-header"># rows</td>
+                            <td class="results-summary-header"># unique devices</td>
+                            <td class="results-summary-header">Avg. datapoints per device</td>
+                            <td class="results-summary-header">Std. datapoints per device</td>
+                            <td class="results-summary-header">Accuracy</td>
+                            <td class="results-summary-header">Precision</td>
+                            <td class="results-summary-header">Recall</td>
+                            <td class="results-summary-header">F1 Score</td>
+                          </tr>
+                          <tr>
+                            <td id="amount-rows"></td>
+                            <td id="amount-unique-devices"></td>
+                            <td id="avg-datapoints-device"></td>
+                            <td id="accuracy"></td>
+                          </tr>
+                        </table>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="container">
-      <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-          <div class="title-box">
-            <h2 class="charcoal">Evaluation</h2>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="container">
-      <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-          <div class="superhero-box">
-            <div class="row">
-              <div class="col-md-12">
-                <div class="superhero-secundary">
-                  <div class="row">
-                    <div class="col-md-7 col-sm-6">
-                      <div class="title">
-                        <h2 class="charcoal"></h2>
-                      </div>
-                      <div class="description">
-                        <!-- <p>TripleStrife makes Linked Data creation fun by making it a free multiplayer word game.</p> -->
-                      </div>
-                      <div class="email-box email left" id="email-box">
-                        <form>
-                          <input type="file" class="left" name="email" placeholder="email" id="email"/>
-                          <button class="instant-send left email-submit" name="email-submit">Submit</button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- <div class="container">
-      <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-          <div class="usp-full-width">
-            <div class="row">
-              <div class="col-md-2">
-                <div class="icon getting-started-icon"></div>
-              </div>
-              <div class="col-md-8 col-sm-12 usp-full-width-content">
-                <div class="title left full-width">Getting started</div>
-                <div class="description left full-width">After text is uploaded, TripleStrife pre-processes the text and saves dependencies, co-references and part of speech as meta-data to enable triple analysis.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div> -->
-
-    <div class="container">
-      <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-          <div class="usp-outer-box">
-            <div class="row">
-              <div class="col-md-5">
-
-              </div>
-              <div class="col-md-7">
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="usp">
-                      <div class="row">
-                        <div class="col-md-2">
-                          <div class="icon extract-icon"></div>
-                        </div>
-                        <div class="col-md-10">
-                          <div class="title">Contextually Aware Information</div>
-                          <div class="description">TripleStrife employs gamification methods to motivate players for the task of triple extraction.</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="usp">
-                      <div class="row">
-                        <div class="col-md-2">
-                          <div class="icon verify-icon"></div>
-                        </div>
-                        <div class="col-md-10">
-                          <div class="title">Personalise Outreach with Behaviour-based Audience Profiles</div>
-                          <div class="description">To reach high-quality triples and measure disagreement, triples are verified by other players.</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="usp">
-                      <div class="row">
-                        <div class="col-md-2">
-                          <div class="icon analyze-icon"></div>
-                        </div>
-                        <div class="col-md-10">
-                          <div class="title">Know Travellers Based on Movement</div>
-                          <div class="description">Analyze disagreement for an extracted triple along with the metadata or export as RDF.</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="container">
-      <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-          <div class="title-box">
-            <h2 class="charcoal">Key Features</h2>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="container">
-      <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-          <div class="usp-outer-box">
-            <div class="row">
-              <div class="col-md-4">
-                <div class="usp">
-                  <div class="icon extract-icon"></div>
-                  <div class="title">Audience analytics</div>
-                  <div class="description">Visualise user and venue data in one dashboard.</div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="usp">
-                  <div class="icon verify-icon"></div>
-                  <div class="title">Home & Work detection</div>
-                  <div class="description">Flag repeat locations like home or work.</div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="usp">
-                  <div class="icon analyze-icon"></div>
-                  <div class="title">Triple analysis</div>
-                  <div class="description">Analyze disagreement for an extracted triple along with the metadata or export as RDF.</div>
                 </div>
               </div>
             </div>
@@ -338,14 +346,8 @@
                 <div class="question charcoal" style="margin-top: 25px; margin-bottom: 25px;"><strong>Thank you for subscribing. We'll be in touch.</strong></div>
               </div>
             </div> -->
-            <input id="honeypot" type="text" name="honeypot" value="" />
-            
-          </div>
-        </div>
-      </div>
-    </div> 
 
-    <div class="container">
+    <div class="container" style="margin-top: 100px;">
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
           <footer>
@@ -432,12 +434,12 @@
       </div>
     </div>
 
-  <script type="application/javascript">
-    function getIP(json) {
-      document.getElementById('is-repetitive-ip').value = json.ip
-    }
-  </script>
-  <script type="application/javascript" src="https://api.ipify.org?format=jsonp&callback=getIP"></script>
-  <script data-cfasync="false" type="text/javascript" src="form-submission-handler.js"></script>
+  <!-- <script type="application/javascript"> -->
+    <!-- function getIP(json) { -->
+      <!-- document.getElementById('is-repetitive-ip').value = json.ip -->
+    <!-- } -->
+  <!-- </script> -->
+  <!-- <script type="application/javascript" src="https://api.ipify.org?format=jsonp&callback=getIP"></script> -->
+  <!-- <script data-cfasync="false" type="text/javascript" src="form-submission-handler.js"></script> -->
 </body>
 </html>

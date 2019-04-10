@@ -138,8 +138,8 @@ def get_vehicle_candidates(lon, lat, user_datetime, user_id):
     else: 
       matches = False 
 
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-      print(str(observations))
+    # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+      # print(str(observations))
 
     return { 'observations': observations.to_json(orient='records'), 'matches': matches }
     # print('observations: ' + str(observations))
