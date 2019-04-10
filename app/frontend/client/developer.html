@@ -19,6 +19,29 @@
   </script>
   <script>
     $(document).ready(function() {
+
+      $.ajax({
+        url: '/api/v1/user/playground-results',
+        type: 'GET',
+      }).done(function(playgroundResults) {
+        if(playgroundResults.results) {
+          console.log('playground: ', playgroundResults.results)
+          playgroundResults.results.forEach(element => {
+            $('#playground-results-table').append(`<tr>
+                            <td id="datetime" style="padding-left: 15px;">${element.created_at}</td>
+                            <td id="amount-rows" style="padding-left: 15px;">${element.number_of_rows}</td>
+                            <td id="amount-unique-devices" style="padding-left: 15px;">${element.unique_devices}</td>
+                            <td id="avg-datapoints-device" style="padding-left: 15px;">${parseFloat(element.avg_datapoints_device).toFixed(2)}</td>
+                            <td id="std-datapoints-device" style="padding-left: 15px;">${parseFloat(element.std_datapoints_device).toFixed(2)}</td>
+                            <td id="accuracy" style="padding-left: 15px;">${parseFloat(element.accuracy).toFixed(2)}%</td>
+                            <td id="precision" style="padding-left: 15px;">${parseFloat(element.precision).toFixed(2)}</td>
+                            <td id="recall" style="padding-left: 15px;">${parseFloat(element.recall).toFixed(2)}</td>
+                            <td id="f1score" style="padding-left: 15px;">${parseFloat(element.f1score).toFixed(2)}</td>
+                          </tr>`)
+          });
+        }
+      })
+
       $('#validation-submit').on('click', function(e) {
         e.preventDefault()
         $.ajax({
@@ -222,7 +245,7 @@
                               background-size: 30px; 
                               background-repeat: no-repeat;
                             "></div>
-                            <div style="float: left; margin-top: 12px; margin-left: 10px;"><i>Processing...</i></div>
+                            <div style="float: left; margin-top: 12px; margin-left: 10px;"><i>Analysis job started. Feel free to check back later.</i></div>
                           </p>
                         </div>
                         <div id="file-status-error">
@@ -261,8 +284,9 @@
                       <div class="description" style="float: left; width: 100%;" id="step-three-box">
                         <br/>
                         <strong>3. Results</strong>
-                        <table>
+                        <table id="playground-results-table">
                           <tr>
+                            <td class="results-summary-header">Datetime</td>
                             <td class="results-summary-header"># rows</td>
                             <td class="results-summary-header"># unique devices</td>
                             <td class="results-summary-header">Avg. datapoints per device</td>
@@ -271,16 +295,6 @@
                             <td class="results-summary-header">Precision</td>
                             <td class="results-summary-header">Recall</td>
                             <td class="results-summary-header">F1 Score</td>
-                          </tr>
-                          <tr>
-                            <td id="amount-rows" style="padding-left: 15px;"></td>
-                            <td id="amount-unique-devices" style="padding-left: 15px;"></td>
-                            <td id="avg-datapoints-device" style="padding-left: 15px;"></td>
-                            <td id="std-datapoints-device" style="padding-left: 15px;"></td>
-                            <td id="accuracy" style="padding-left: 15px;"></td>
-                            <td id="precision" style="padding-left: 15px;"></td>
-                            <td id="recall" style="padding-left: 15px;"></td>
-                            <td id="f1score" style="padding-left: 15px;"></td>
                           </tr>
                         </table>
                       </div>

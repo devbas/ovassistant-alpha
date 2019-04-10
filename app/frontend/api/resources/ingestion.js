@@ -15,10 +15,6 @@ router.post('/file', [utils.isLoggedIn, upload.single('file')], function(req, re
   const fileValidationResult = []
   let numberOfRows = 0
   let deviceObject = []
-  let accuracy = 0
-  let precision = 0
-  let recall = 0
-  let f1score = 0
   let TP = 0 
   let FP = 0 
   let FN = 0 
@@ -113,18 +109,32 @@ router.post('/file', [utils.isLoggedIn, upload.single('file')], function(req, re
         let stdDatapointsDevice = standardDeviation(values) 
         let precision = TP / (TP + FP)
         let recall = TP / (TP + FN)
+        let accuracy = (TP + TN) / (TP + TN + FP + FN)
+        let f1score = 2 * (precision * recall) / (precision + recall)
+        
+        database.query('INSERT INTO dev_playground_results SET `created_at` = ?, `accuracy` = ?, `number_of_rows` = ?, `unique_devices` = ?, `avg_datapoints_device` = ?, `std_datapoints_device` = ?, `precision` = ?, `recall` = ?, `f1score` = ?, `organisation_id` = ?', 
+                      [new Date(), accuracy, numberOfRows, values.length, avgDatapointsDevice, stdDatapointsDevice, precision, recall, f1score, req.user.organisation_id], function(err, status) {
+                        if(err) {
+                          console.log('dev playground results error: ', err) 
+                        } else {
+                          console.log('status dev playground: ', status, values.length)
+                        }
+                      })
 
-        res.send({ 
-          fileValidationResult: fileValidationResult, 
-          accuracy: (TP + TN) / (TP + TN + FP + FN), 
-          numberOfRows: numberOfRows, 
-          uniqueDevices: deviceObject.length, 
-          avgDatapointsDevice: avgDatapointsDevice,
-          stdDatapointsDevice: stdDatapointsDevice,
-          precision: precision, 
-          recall: recall, 
-          f1score: 2 * (precision * recall) / (precision + recall)
-        })
+                      // Object.values(deviceObject).length
+
+        // res.send({ 
+        //   fileValidationResult: fileValidationResult, 
+        //   accuracy: (TP + TN) / (TP + TN + FP + FN), 
+        //   numberOfRows: numberOfRows, 
+        //   uniqueDevices: deviceObject.length, 
+        //   avgDatapointsDevice: avgDatapointsDevice,
+        //   stdDatapointsDevice: stdDatapointsDevice,
+        //   precision: precision, 
+        //   recall: recall, 
+        //   f1score: 2 * (precision * recall) / (precision + recall)
+        // })
+        res.send('OK')
         //process "fileRows" and respond
       })
   } catch(e) {

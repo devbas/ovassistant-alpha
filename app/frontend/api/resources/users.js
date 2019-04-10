@@ -50,4 +50,14 @@ router.get('/organisation-id', utils.isLoggedIn, function(req, res) {
   })
 })
 
+router.get('/playground-results', utils.isLoggedIn, function(req, res) {
+  database.query('SELECT * FROM dev_playground_results WHERE organisation_id = ?', [req.user.organisation_id], function(err, playgroundResults) {
+    if(err) {
+      res.send(err) 
+    } else {
+      res.send({ results: playgroundResults })
+    }
+  })
+})
+
 module.exports = router
