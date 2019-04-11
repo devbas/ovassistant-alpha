@@ -51,11 +51,15 @@ data "template_file" "buildspec" {
   template = "${file("${path.module}/buildspec.yml")}"
 
   vars {
-    repository_url     = "${var.repository_url}"
-    region             = "${var.region}"
-    cluster_name       = "${var.ecs_cluster_name}"
-    subnet_id          = "${var.run_task_subnet_id}"
-    security_group_ids = "${join(",", var.run_task_security_group_ids)}"
+    repository_url_scoring      = "${var.repository_url_scoring}"
+    ovassistant_nearest         = "${var.ovassistant_nearest}"
+    ovassistant_ingestion       = "${var.ovassistant_ingestion}"
+    ovassistant_frontend        = "${var.ovassistant_frontend}"
+    ovassistant_api             = "${var.ovassistant_api}"
+    region                      = "${var.region}"
+    cluster_name                = "${var.ecs_cluster_name}"
+    subnet_id                   = "${var.run_task_subnet_id}"
+    security_group_ids          = "${join(",", var.run_task_security_group_ids)}"
   }
 }
 

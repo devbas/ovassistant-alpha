@@ -1,0 +1,43 @@
+[
+  {
+    "name": "db",
+    "image": "${image}",
+    "memory": 300,
+    "networkMode": "awsvpc",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "eu-central-1",
+        "awslogs-stream-prefix": "db"
+      }
+    },
+    "environment": [
+      {
+        "name": "NODE_ENV",
+        "value": "production"
+      },
+      {
+        "name": "MYSQL_URL",
+        "value": "${database_url}"
+      },
+      {
+        "name": "MYSQL_DATABASE",
+        "value": "${database_name}"
+      },
+      {
+        "name": "MYSQL_USERNAME",
+        "value": "${database_username}"
+      },
+      {
+        "name": "MYSQL_PASSWORD",
+        "value": "${database_password}"
+      },
+      {
+        "name": "MYSQL_HOST",
+        "value": "${database_host}"
+      }
+    ]
+  }
+]
+

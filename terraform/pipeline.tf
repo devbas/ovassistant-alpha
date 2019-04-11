@@ -1,7 +1,11 @@
 
 module "code_pipeline" {
   source                      = "./modules/code_pipeline"
-  repository_url              = "${module.ecs.repository_url}"
+  repository_url_scoring      = "${module.ecs.repository_url_scoring}"
+  repository_url_frontend     = "${module.ecs.repository_url_frontend}"
+  repository_url_nearest      = "${module.ecs.repository_url_nearest}"
+  repository_url_ingestion    = "${module.ecs.repository_url_ingestion}"
+  repository_url_db           = "${module.ecs.repository_url_db}"
   github_user                 = "${var.github_user}"
   github_repo                 = "${var.github_repo}"
   github_branch               = "master"

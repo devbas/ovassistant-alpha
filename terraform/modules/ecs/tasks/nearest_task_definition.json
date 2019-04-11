@@ -1,0 +1,37 @@
+[
+  {
+    "name": "nearest",
+    "image": "${image}",
+    "portMappings": [
+      {
+        "containerPort": 9002,
+        "hostPort": 9002
+      }
+    ],
+    "memory": 300,
+    "networkMode": "awsvpc",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "eu-central-1",
+        "awslogs-stream-prefix": "nearest"
+      }
+    },
+    "environment": [
+      {
+        "name": "NODE_ENV",
+        "value": "production"
+      },
+      {
+        "name": "REDIS_URL",
+        "value": "${redis_host}"
+      },
+      {
+        "name": "PORT",
+        "value": "9002"
+      }
+    ]
+  }
+]
+

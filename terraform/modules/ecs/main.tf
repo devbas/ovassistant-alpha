@@ -10,10 +10,57 @@ resource "aws_cloudwatch_log_group" "ovassistant" {
   }
 }
 
+
+resource "aws_cloudwatch_log_group" "ovassistant" {
+  name = "ovassistant"
+
+  tags {
+    Environment = "${var.environment}"
+    Application = "OV Assistant"
+  }
+}
+
+
+resource "aws_cloudwatch_log_group" "ovassistant" {
+  name = "ovassistant"
+
+  tags {
+    Environment = "${var.environment}"
+    Application = "OV Assistant"
+  }
+}
+
+
+resource "aws_cloudwatch_log_group" "ovassistant" {
+  name = "ovassistant"
+
+  tags {
+    Environment = "${var.environment}"
+    Application = "OV Assistant"
+  }
+}
+
+
 /*====
 ECR repository to store our Docker images
 ======*/
-resource "aws_ecr_repository" "ovassistant_app" {
+resource "aws_ecr_repository" "ovassistant_scoring" {
+  name = "${var.repository_name}"
+}
+
+resource "aws_ecr_repository" "ovassistant_nearest" {
+  name = "${var.repository_name}"
+}
+
+resource "aws_ecr_repository" "ovassistant_ingestion" {
+  name = "${var.repository_name}"
+}
+
+resource "aws_ecr_repository" "ovassistant_frontend" {
+  name = "${var.repository_name}"
+}
+
+resource "aws_ecr_repository" "ovassistant_api" {
   name = "${var.repository_name}"
 }
 
@@ -28,25 +75,133 @@ resource "aws_ecs_cluster" "cluster" {
 ECS task definitions
 ======*/
 
-/* the task definition for the web service */
-data "template_file" "web_task" {
-  template = "${file("${path.module}/tasks/web_task_definition.json")}"
+/* the task definition for the ingestion service */
+data "template_file" "ingestion_task" {
+  template = "${file("${path.module}/tasks/ingestion_task_definition.json")}"
 
   vars {
-    image             = "${aws_ecr_repository.ovassistant_app.repository_url}"
-    database_url      = "mysql://${var.database_username}:${var.database_password}@${var.database_endpoint}:3306/${var.database_name}?encoding=utf8&pool=40"
-    database_username = "${var.database_username}"
-    database_password = "${var.database_password}"
-    database_host     = "${var.database_endpoint}"
-    database_name     = "${var.database_name}"
-    redis_host        = "${var.cache_address}"
-    log_group         = "${aws_cloudwatch_log_group.ovassistant.name}"
+    image           = "${aws_ecr_repository.ovassistant_ingestion.repository_url}"
+    database_url              = "mysql://${var.database_username}:${var.database_password}@${var.database_endpoint}:3306/${var.database_name}?encoding=utf8&pool=40"
+    database_username         = "${var.database_username}"
+    database_password         = "${var.database_password}"
+    database_host             = "${var.database_endpoint}"
+    database_name             = "${var.database_name}"
+    redis_host                = "${var.cache_address}"
+    log_group                 = "${aws_cloudwatch_log_group.ovassistant.name}"
   }
 }
 
-resource "aws_ecs_task_definition" "web" {
-  family                   = "${var.environment}_web"
-  container_definitions    = "${data.template_file.web_task.rendered}"
+resource "aws_ecs_task_definition" "ingestion" {
+  family                   = "${var.environment}_ingestion"
+  container_definitions    = "${data.template_file.ingestion_task.rendered}"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = "${aws_iam_role.ecs_execution_role.arn}"
+  task_role_arn            = "${aws_iam_role.ecs_execution_role.arn}"
+}
+
+/* the task definition for the nearest service */
+data "template_file" "nearest_task" {
+  template = "${file("${path.module}/tasks/nearest_task_definition.json")}"
+
+  vars {
+    image             = "${aws_ecr_repository.ovassistant_nearest.repository_url}"
+    database_url              = "mysql://${var.database_username}:${var.database_password}@${var.database_endpoint}:3306/${var.database_name}?encoding=utf8&pool=40"
+    database_username         = "${var.database_username}"
+    database_password         = "${var.database_password}"
+    database_host             = "${var.database_endpoint}"
+    database_name             = "${var.database_name}"
+    redis_host                = "${var.cache_address}"
+    log_group                 = "${aws_cloudwatch_log_group.ovassistant.name}"
+  }
+}
+
+resource "aws_ecs_task_definition" "nearest" {
+  family                   = "${var.environment}_nearest"
+  container_definitions    = "${data.template_file.nearest_task.rendered}"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = "${aws_iam_role.ecs_execution_role.arn}"
+  task_role_arn            = "${aws_iam_role.ecs_execution_role.arn}"
+}
+
+
+/* the task definition for the scoring service */
+data "template_file" "scoring_task" {
+  template = "${file("${path.module}/tasks/scoring_task_definition.json")}"
+
+  vars {
+    image             = "${aws_ecr_repository.ovassistant_scoring.repository_url}"
+    database_url              = "mysql://${var.database_username}:${var.database_password}@${var.database_endpoint}:3306/${var.database_name}?encoding=utf8&pool=40"
+    database_username         = "${var.database_username}"
+    database_password         = "${var.database_password}"
+    database_host             = "${var.database_endpoint}"
+    database_name             = "${var.database_name}"
+    redis_host                = "${var.cache_address}"
+    log_group                 = "${aws_cloudwatch_log_group.ovassistant.name}"
+  }
+}
+
+resource "aws_ecs_task_definition" "scoring" {
+  family                   = "${var.environment}_scoring"
+  container_definitions    = "${data.template_file.scoring_task.rendered}"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = "${aws_iam_role.ecs_execution_role.arn}"
+  task_role_arn            = "${aws_iam_role.ecs_execution_role.arn}"
+}
+
+/* the task definition for the frontend service */
+data "template_file" "frontend_task" {
+  template = "${file("${path.module}/tasks/frontend_task_definition.json")}"
+
+  vars {
+    image            = "${aws_ecr_repository.ovassistant_frontend.repository_url}"
+    database_url              = "mysql://${var.database_username}:${var.database_password}@${var.database_endpoint}:3306/${var.database_name}?encoding=utf8&pool=40"
+    database_username         = "${var.database_username}"
+    database_password         = "${var.database_password}"
+    database_host             = "${var.database_endpoint}"
+    database_name             = "${var.database_name}"
+    redis_host                = "${var.cache_address}"
+    log_group                 = "${aws_cloudwatch_log_group.ovassistant.name}"
+  }
+}
+
+resource "aws_ecs_task_definition" "frontend" {
+  family                   = "${var.environment}_frontend"
+  container_definitions    = "${data.template_file.frontend_task.rendered}"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = "${aws_iam_role.ecs_execution_role.arn}"
+  task_role_arn            = "${aws_iam_role.ecs_execution_role.arn}"
+}
+
+/* the task definition for the db service */
+data "template_file" "db_task" {
+  template = "${file("${path.module}/tasks/db_task_definition.json")}"
+
+  vars {
+    image            = "${aws_ecr_repository.ovassistant_db.repository_url}"
+    database_url              = "mysql://${var.database_username}:${var.database_password}@${var.database_endpoint}:3306/${var.database_name}?encoding=utf8&pool=40"
+    database_username         = "${var.database_username}"
+    database_password         = "${var.database_password}"
+    database_host             = "${var.database_endpoint}"
+    database_name             = "${var.database_name}"
+    log_group                 = "${aws_cloudwatch_log_group.ovassistant.name}"
+  }
+}
+
+resource "aws_ecs_task_definition" "db" {
+  family                   = "${var.environment}_db"
+  container_definitions    = "${data.template_file.db_task.rendered}"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = "256"

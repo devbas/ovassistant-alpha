@@ -1,7 +1,7 @@
 region                        = "eu-central-1"
 
-github_user                   = "stepri"
-github_repo                   = "nodejs-connection-test"
+github_user                   = "devbas"
+github_repo                   = "ovassistant_alpha"
 
 /* rds */
 production_database_name      = "ovassistant_mysql"

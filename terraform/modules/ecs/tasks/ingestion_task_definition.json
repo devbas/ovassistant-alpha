@@ -1,11 +1,11 @@
 [
   {
-    "name": "web",
+    "name": "ingestion",
     "image": "${image}",
     "portMappings": [
       {
-        "containerPort": 4000,
-        "hostPort": 4000
+        "containerPort": 8000,
+        "hostPort": 8000
       }
     ],
     "memory": 300,
@@ -15,7 +15,7 @@
       "options": {
         "awslogs-group": "${log_group}",
         "awslogs-region": "eu-central-1",
-        "awslogs-stream-prefix": "web"
+        "awslogs-stream-prefix": "ingestion"
       }
     },
     "environment": [
@@ -44,12 +44,12 @@
         "value": "${database_host}"
       },
       {
-        "name": "REDIS_HOST",
+        "name": "REDIS_URL",
         "value": "${redis_host}"
       },
       {
         "name": "PORT",
-        "value": "4000"
+        "value": "8000"
       }
     ]
   }

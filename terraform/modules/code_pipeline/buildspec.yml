@@ -7,17 +7,37 @@ phases:
       - echo `aws --version`
       - echo Logging in to Amazon ECR...
       - $(aws ecr get-login --region ${region} --no-include-email)
-      - REPOSITORY_URI=${repository_url}
+      - REPOSITORY_URI_SCORING=${repository_url_scoring}
+      - REPOSITORY_URI_NEAREST=${repository_url_nearest}
+      - REPOSITORY_URI_INGESTION=${repository_url_ingestion}
+      - REPOSITORY_URI_FRONTEND=${repository_url_frontend}
+      - REPOSITORY_URI_DB=${repository_url_db}
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - echo Entered the pre_build phase...
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-#      - cd app/api
-      - docker build -t $REPOSITORY_URI:latest .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
-#      - cd ../../
+      - cd app/db
+      - docker build -t $REPOSITORY_URI_DB:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI_DB:$IMAGE_TAG
+      - cd ../../
+      - cd app/frontend
+      - docker build -t $REPOSITORY_URI_FRONTEND:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI_FRONTEND:$IMAGE_TAG
+      - cd ../../
+      - cd app/ingestion
+      - docker build -t $REPOSITORY_URI_INGESTION:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI_INGESTION:$IMAGE_TAG
+      - cd ../../
+      - cd app/nearest
+      - docker build -t $REPOSITORY_URI_NEAREST:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI_NEAREST:$IMAGE_TAG
+      - cd ../../
+      - cd app/ 	scoring
+      - docker build -t $REPOSITORY_URI_SCORING:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI_SCORING:$IMAGE_TAG
+      - cd ../../
   post_build:
     commands:
       - echo Build completed on `date`
