@@ -22,7 +22,7 @@ router.post('/create', utils.isLoggedIn, function(req, res) {
               res.send(500) 
             } else {
               res.send({ identifier: identifier, name: req.body.name })
-            }
+            } 
           })
         }
       })
@@ -36,6 +36,26 @@ router.get('/', utils.isLoggedIn, function(req, res) {
       res.send(err)
     } else {
       res.send(users)
+    }
+  })
+})
+
+router.get('/organisation-id', utils.isLoggedIn, function(req, res) {
+  database.query('SELECT * FROM organisation WHERE organisation_id = ?', [req.user.organisation_id], function(err, organisation) {
+    if(err) {
+      res.send(err)
+    } else {
+      res.send({ identifier: organisation[0].identifier })
+    }
+  })
+})
+
+router.get('/playground-results', utils.isLoggedIn, function(req, res) {
+  database.query('SELECT * FROM dev_playground_results WHERE organisation_id = ?', [req.user.organisation_id], function(err, playgroundResults) {
+    if(err) {
+      res.send(err) 
+    } else {
+      res.send({ results: playgroundResults })
     }
   })
 })

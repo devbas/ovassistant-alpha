@@ -297,7 +297,18 @@ CREATE TABLE IF NOT EXISTS `vehicle_location` (
   PRIMARY KEY (`vehicle_location_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-
+CREATE TABLE IF NOT EXISTS `dev_playground_results` (
+  `created_at` datetime DEFAULT NULL, 
+  `accuracy` varchar(45) DEFAULT NULL, 
+  `number_of_rows` varchar(45) DEFAULT NULL, 
+  `unique_devices` varchar(45) DEFAULT NULL, 
+  `avg_datapoints_device` varchar(45) DEFAULT NULL, 
+  `std_datapoints_device` varchar(45) DEFAULT NULL, 
+  `precision` varchar(45) DEFAULT NULL,
+  `recall` varchar(45) DEFAULT NULL,
+  `f1score` varchar(45) DEFAULT NULL, 
+  `organisation_id` int(11) DEFAULT NULL
+)
 
 
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;

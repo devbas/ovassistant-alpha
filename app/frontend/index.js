@@ -36,6 +36,14 @@ app.get('/developer', utils.isLoggedIn, function(req, res) {
   res.sendFile(path.join(__dirname, '/client', 'developer.html'));
 })
 
+app.get('/devices', utils.isLoggedIn, function(req, res) {
+  res.sendFile(path.join(__dirname, '/client', 'devices.html'));
+})
+
+app.get('/segments', utils.isLoggedIn, function(req, res) {
+  res.sendFile(path.join(__dirname, '/client', 'segments.html'));
+})
+
 app.use(express.static(path.join(__dirname, './client/')));
 
 app.use(function(req, res, next) {

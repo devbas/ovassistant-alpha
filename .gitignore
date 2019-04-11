@@ -1,5 +1,3 @@
 /.vscode
 /app/nearest/__pycache__
 /app/frontend/tmp
-.DS_Store
-.terraform
