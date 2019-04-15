@@ -52,10 +52,10 @@ data "template_file" "buildspec" {
 
   vars {
     repository_url_scoring      = "${var.repository_url_scoring}"
-    ovassistant_nearest         = "${var.ovassistant_nearest}"
-    ovassistant_ingestion       = "${var.ovassistant_ingestion}"
-    ovassistant_frontend        = "${var.ovassistant_frontend}"
-    ovassistant_api             = "${var.ovassistant_api}"
+    repository_url_nearest         = "${var.repository_url_nearest}"
+    repository_url_ingestion       = "${var.repository_url_ingestion}"
+    repository_url_frontend        = "${var.repository_url_frontend}"
+    repository_url_db             = "${var.repository_url_db}"
     region                      = "${var.region}"
     cluster_name                = "${var.ecs_cluster_name}"
     subnet_id                   = "${var.run_task_subnet_id}"
@@ -76,7 +76,7 @@ resource "aws_codebuild_project" "ovassistant_build" {
   environment {
     compute_type    = "BUILD_GENERAL1_SMALL"
     // https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html
-    image           = "aws/codebuild/docker:1.12.1"
+    image           = "aws/codebuild/docker:18.09.0"
     type            = "LINUX_CONTAINER"
     privileged_mode = true
   }

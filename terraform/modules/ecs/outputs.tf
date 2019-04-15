@@ -19,15 +19,15 @@ output "cluster_name" {
 }
 
 output "service_name" {
-  value = "${aws_ecs_service.web.name}"
+  value = "${aws_ecs_service.scoring.name}"
 }
 
-output "alb_dns_name" {
-  value = "${aws_alb.alb_ovassistant.dns_name}"
+output "alb_nearest_dns_name" {
+  value = "${aws_alb.alb_ovassistant_scoring.dns_name}"
 }
 
 output "alb_zone_id" {
-  value = "${aws_alb.alb_ovassistant.zone_id}"
+  value = "${aws_alb.alb_ovassistant_scoring.zone_id}"
 }
 
 output "security_group_id" {

@@ -1,4 +1,19 @@
-variable "repository_url" {
+variable "repository_url_ingestion" {
+  description = "The url of the ECR repository"
+}
+
+variable "repository_url_nearest" {
+  description = "The url of the ECR repository"
+}
+
+variable "repository_url_frontend" {
+  description = "The url of the ECR repository"
+}
+variable "repository_url_db" {
+  description = "The url of the ECR repository"
+}
+
+variable "repository_url_scoring" {
   description = "The url of the ECR repository"
 }
 

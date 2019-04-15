@@ -1,5 +1,5 @@
-output "alb_dns_name" {
-  value = "${module.ecs.alb_dns_name}"
+output "alb_nearest_dns_name" {
+  value = "${module.ecs.alb_nearest_dns_name}"
 }
 
 output "mysql_host" {
