@@ -1,4 +1,4 @@
-{
+module.exports = {
   "mysql": {
     "connectionLimit": 80,
     "host": "db", 
