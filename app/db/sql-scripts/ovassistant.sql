@@ -297,5 +297,6 @@ CREATE TABLE IF NOT EXISTS `dev_playground_results` (
   `std_datapoints_device` varchar(45) DEFAULT NULL, 
   `precision` varchar(45) DEFAULT NULL,
   `recall` varchar(45) DEFAULT NULL,
-  `f1score` varchar(45) DEFAULT NULL
+  `f1score` varchar(45) DEFAULT NULL, 
+  `organisation_id` int(11) DEFAULT NULL
 )
