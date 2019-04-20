@@ -8,7 +8,8 @@ body, html {
 }
 
 body {
-  background-color: #F8F4F1; 
+  /* background-color: #F8F4F1;  */
+  background-color: #d6e8e2; 
 }
 
 .left {
@@ -35,7 +36,7 @@ h2 {
 }
 
 .sand {
-  color: #FDE1CC; 
+  color: #FACB38; 
 }
 
 .charcoal {
@@ -53,22 +54,25 @@ h2 {
 }
 
 .superhero-primary {
-  background-color: #00575B; 
+  background-color: #004346; 
   float: left; 
   width: 100%; 
   border-top-right-radius: 5px; 
   border-top-left-radius: 5px; 
+  position: relative;
 }
 
 .superhero-primary .title {
   margin-left: 30px; 
   margin-top: 80px; 
-  margin-bottom: 160px; 
+  margin-bottom: 200px; 
 }
 
 .superhero-secundary {
   float: left; 
   width: 100%; 
+  /* background-color: #fff;  */
+  background-color: #f2fdfa;
 }
 
 .superhero-secundary .title {
@@ -91,15 +95,17 @@ h2 {
 }
 
 .superhero-image {
-  background-image: url('./img/preview.svg');
-  width: 303px; 
-  height: 740px; 
+  background-image: url('./img/ovassistant-homepage2.png');
+  width: 408px; 
+  height: 410px; 
   background-size: contain; 
   background-repeat: no-repeat;
   position: absolute;
   right: 30px;
-  top: 50px;  
+  /* top: 50px;   */
   z-index: 9; 
+  background-position: bottom;
+  bottom: 0;
 }
 
 .usp-outer-box .usp, .usp-full-width {
@@ -262,7 +268,8 @@ h2 {
 }
 
 footer {
-  background-color: rgba(255, 255, 255, 0.6);
+  /* background-color: rgba(255, 255, 255, 0.6); */
+  background-color: #f2fdfa;
   padding-top: 30px; 
   float: left; 
   width: 100%; 
@@ -585,13 +592,13 @@ footer .title {
   }
 
   .superhero-image {
-    width: 65%;
-    top: 280px;
+    width: 95%;
     margin-left: 15px; 
     margin-right: auto; 
     right: 0; 
     left: 0;  
-    height: 44%;
+    height: 270px;
+    bottom: 0; 
   }
 
   .superhero-primary .title {
@@ -609,7 +616,7 @@ footer .title {
   .superhero-secundary .title {
     margin-left: 15px;  
     margin-right: 15px; 
-    margin-top: 70%;
+    /* margin-top: 70%; */
   }
 
   .superhero-secundary .description {
@@ -643,28 +650,24 @@ footer .title {
 
 @media only screen and (min-width: 435px) and (max-width: 767px){ 
   .superhero-image {
-    top: 170px; 
+    /* top: 170px; 
     width: 280px;
-    height: 53%;
+    height: 53%; */
   }
 
   .superhero-primary .title {
     margin-bottom: 350px;
   }
-
-  .superhero-secundary .title {
-    margin-top: 280px;
-  }
 }
 
 @media only screen and (max-width: 434px){ 
   .superhero-image {
-    top: 25%; 
+    /* top: 14%;  */
   }
 }
 
 @media only screen and (max-width: 347px){ 
   .superhero-image {
-    top: 29%; 
+    /* top: 15%;  */
   }
 }
