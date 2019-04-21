@@ -417,7 +417,7 @@ resource "aws_security_group" "db_inbound_sg" {
 }
 
 resource "aws_alb" "alb_ovassistant_scoring" {
-  name            = "${var.environment}-alb-ovassistant_scoring"
+  name            = "${var.environment}-alb-ov-scoring"
   subnets         = ["${var.public_subnet_ids}"]
   security_groups = ["${var.security_groups_ids}", "${aws_security_group.scoring_inbound_sg.id}"]
 
@@ -463,7 +463,7 @@ resource "aws_alb_listener" "nearest" {
 }
 
 resource "aws_alb" "alb_ovassistant_ingestion" {
-  name            = "${var.environment}-alb-ovassistant_ingestion"
+  name            = "${var.environment}-alb-ov-ingestion"
   subnets         = ["${var.public_subnet_ids}"]
   security_groups = ["${var.security_groups_ids}", "${aws_security_group.ingestion_inbound_sg.id}"]
 
@@ -486,7 +486,7 @@ resource "aws_alb_listener" "ovassistant_ingestion" {
 }
 
 resource "aws_alb" "alb_ovassistant_frontend" {
-  name            = "${var.environment}-alb-ovassistant_frontend"
+  name            = "${var.environment}-alb-ov-frontend"
   subnets         = ["${var.public_subnet_ids}"]
   security_groups = ["${var.security_groups_ids}", "${aws_security_group.frontend_inbound_sg.id}"]
 
@@ -509,7 +509,7 @@ resource "aws_alb_listener" "ovassistant_frontend" {
 }
 
 resource "aws_alb" "alb_ovassistant_db" {
-  name            = "${var.environment}-alb-ovassistant_db"
+  name            = "${var.environment}-alb-ov-db"
   subnets         = ["${var.public_subnet_ids}"]
   security_groups = ["${var.security_groups_ids}", "${aws_security_group.db_inbound_sg.id}"]
 
