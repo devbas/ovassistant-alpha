@@ -9,7 +9,8 @@ body, html {
 
 body {
   /* background-color: #F8F4F1;  */
-  background-color: #d6e8e2; 
+  /* background-color: #e1f1eb;  */
+  background-color: #e7ecea;
 }
 
 .left {
@@ -73,6 +74,8 @@ h2 {
   width: 100%; 
   /* background-color: #fff;  */
   background-color: #f2fdfa;
+  border-bottom-left-radius: 5px; 
+  border-bottom-right-radius: 5px; 
 }
 
 .superhero-secundary .title {
@@ -106,6 +109,56 @@ h2 {
   z-index: 9; 
   background-position: bottom;
   bottom: 0;
+}
+
+.usp-row {
+
+}
+
+.usp-box {
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.50);
+  margin-top: 30px; 
+  border-radius: 5px; 
+}
+
+.usp-item-start {
+  background-color: #f2fdfa; 
+  border-top-right-radius: 5px; 
+  border-top-left-radius: 5px;
+  float: left; 
+  width: 100%;
+}
+
+.usp-item-middle {
+  background-color: #f2fdfa; 
+  float: left; 
+  width: 100%;
+}
+
+.usp-item-end {
+  background-color: #f2fdfa; 
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  float: left; 
+  width: 100%;
+}
+
+.usp-item {
+  transition: background-color ease-in-out 0.2s;
+  padding-top: 30px; 
+  padding-bottom: 30px; 
+  padding-right: 20px; 
+}
+
+.usp-item:hover {
+  background-color: #fff; 
+  transition: background-color ease-in-out 0.2s;
+}
+
+.usp-item .usp-item-title {
+  font-size: 20px; 
+  font-weight: 700; 
+  color: #0C1A24; 
 }
 
 .usp-outer-box .usp, .usp-full-width {
@@ -273,7 +326,7 @@ footer {
   padding-top: 30px; 
   float: left; 
   width: 100%; 
-  border-top: 5px solid #0c1a24; 
+  border-top: 5px solid #004346; 
   border-top-right-radius: 3px;
   border-top-left-radius: 3px;
   padding-bottom: 50px; 
@@ -383,7 +436,7 @@ footer .title {
   border-radius: 3px; 
   border: 1px solid #b2b4b5; 
   width: 300px; 
-  border-bottom: 3px solid #0C1A24; 
+  border-bottom: 3px solid #004346; 
   outline: 0; 
 }
 
@@ -561,6 +614,59 @@ footer .title {
   padding-bottom: 5px; 
 }
 
+.row-title-box {
+  margin-top: 60px;
+}
+
+.row-title-box .subtitle {
+  color: #475e5f;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 7px; 
+}
+
+.row-title-box .title {
+  font-weight: 700; 
+  font-size: 32px; 
+  line-height: 36px; 
+  color: #004346;
+}
+
+.concern-box {
+  background-color: #004346; 
+  border-radius: 5px; 
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.50);
+  width: 100%; 
+  padding-top: 30px; 
+  padding-bottom: 15px; 
+  margin-top: 100px; 
+}
+
+.concern-box .question {
+  padding-left: 30px; 
+  color: #FACB38; 
+  font-weight: 600;
+  font-size: 21px; 
+}
+
+.concern-box .answer {
+  padding-left: 30px; 
+  color: #fff; 
+  padding-right: 30px; 
+  padding-top: 20px; 
+  padding-bottom: 30px;
+}
+
+.profile-building-img {
+  background-image: url('./img/ovassistant-profile-building.png'); 
+  width: 100%; 
+  background-size: contain;
+  height: 400px; 
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-top: 170px; 
+}
+
 @media (min-width: 768px) and (max-width: 992px){ 
   .usp-full-width-content {
     padding-left: 30px !important; 
@@ -645,6 +751,13 @@ footer .title {
 
   .email-box input {
     width: 100%; 
+  }
+  .profile-building-img {
+    height: 200px; 
+  }
+
+  .usp-item {
+    padding-left: 20px; 
   }
 }
 
