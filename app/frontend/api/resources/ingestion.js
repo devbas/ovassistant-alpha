@@ -6,6 +6,9 @@ var csv = require('fast-csv');
 var fs = require('fs');
 var path = require('path');
 var axios = require('axios');
+var sentry = require('@sentry/node');
+
+sentry.init({ dsn: 'https://c128f276d3a54c0eb59cb7754ef492c1@sentry.io/1452175' });
 
 var upload = multer({ dest: 'tmp/csv/' });
 var router = express.Router(); 
@@ -30,7 +33,6 @@ router.post('/file', [utils.isLoggedIn, upload.single('file')], function(req, re
       //   return (row.id % 2) === 0;
       // })
       .on("data", function (data) {
-        console.log('process')
 
         numberOfRows = numberOfRows + 1 
 
@@ -91,7 +93,6 @@ router.post('/file', [utils.isLoggedIn, upload.single('file')], function(req, re
         // fileRows.push(data); // push each row
       })
       .on("end", function () {
-        console.log('done')
         fs.unlinkSync(req.file.path);   // remove temp file
 
         const standardDeviation = (arr, usePopulation = false) => {
@@ -102,7 +103,6 @@ router.post('/file', [utils.isLoggedIn, upload.single('file')], function(req, re
           );
         };
         
-        console.log('deviceObject: ', deviceObject)
         let values = Object.values(deviceObject)
         let sum = values.reduce((previous, current) => current += previous)
         let avgDatapointsDevice = sum / values.length 
@@ -121,21 +121,7 @@ router.post('/file', [utils.isLoggedIn, upload.single('file')], function(req, re
                         }
                       })
 
-                      // Object.values(deviceObject).length
-
-        // res.send({ 
-        //   fileValidationResult: fileValidationResult, 
-        //   accuracy: (TP + TN) / (TP + TN + FP + FN), 
-        //   numberOfRows: numberOfRows, 
-        //   uniqueDevices: deviceObject.length, 
-        //   avgDatapointsDevice: avgDatapointsDevice,
-        //   stdDatapointsDevice: stdDatapointsDevice,
-        //   precision: precision, 
-        //   recall: recall, 
-        //   f1score: 2 * (precision * recall) / (precision + recall)
-        // })
         res.send('OK')
-        //process "fileRows" and respond
       })
   } catch(e) {
     console.log('e: ', e)

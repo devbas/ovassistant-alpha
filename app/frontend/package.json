@@ -10,8 +10,9 @@
   "author": "Bastian Geneugelijk (Lionoda)",
   "license": "ISC",
   "dependencies": {
+    "@sentry/node": "^5.1.0",
     "axios": "^0.18.0",
-    "bcrypt": "^3.0.5",
+    "bcrypt": "^3.0.6",
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.4",
     "express": "^4.16.4",
