@@ -211,6 +211,9 @@ CREATE TABLE IF NOT EXISTS `user` (
   `name` varchar(255) DEFAULT NULL,
   `organisation_id` int(11) DEFAULT NULL,
   `identifier` varchar(255) DEFAULT NULL,
+  `password` text, DEFAULT NOT NULL, 
+  `created` datetime DEFAULT NULL,
+  `last_used` datetime DEFAULT NULL
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
