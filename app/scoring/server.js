@@ -1,13 +1,15 @@
-const express        = require('express');  
-const app            = express();   
-const Sentry         = require('@sentry/node');
-const _              = require('lodash');
-const cors           = require('cors');             
-const bodyParser     = require('body-parser');
+const express = require('express');  
+const app = express();   
+const Sentry = require('@sentry/node');
+const _ = require('lodash');
+const cors = require('cors');             
+const bodyParser = require('body-parser');
 const matchCalculationController = require('./controllers/calculate'); 
 const scoringController = require('./controllers/scoring');
 const redisClientPersist = require('./redis-client-persist');
 const fs = require('fs');
+const APIRouter = require('./api');
+const passport = require('passport');
 
 Sentry.init({ dsn: 'https://39c9c5b61e1d41eb93ba664950bd3416@sentry.io/1339156' });
 
@@ -15,6 +17,10 @@ app.use(Sentry.Handlers.requestHandler());
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());   
+app.use(passport.initialize());
+app.use(passport.session()); // persistent login sessions
+require('./modules/passport');
+
 
 var port = process.env.PORT || 8001;
 var router = express.Router();
@@ -26,6 +32,9 @@ router.use((req, res, next) => {
   console.log('Something is happening.');
   next(); 
 });
+
+app.use('/api/v1', APIRouter); 
+
 
 router.get('/classify/location', async (req, res) => {
   const data = req.query

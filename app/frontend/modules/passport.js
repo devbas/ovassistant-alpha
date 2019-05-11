@@ -1,10 +1,11 @@
 var LocalStrategy   = require('passport-local').Strategy;
-var passport        = require('passport');
 var database        = require('../database');
 var bcrypt          = require('bcrypt');
 var uuidv4          = require('uuid/v4');
+var utils           = require('../utils');
+var config          = require('../config');
 
-var saltRounds = 10;
+var saltRounds = 20;
 
 module.exports = function(passport) {
   passport.serializeUser(function(user, done) {
