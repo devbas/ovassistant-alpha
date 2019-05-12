@@ -35,42 +35,6 @@ router.use((req, res, next) => {
 
 app.use('/api/v1', APIRouter); 
 
-
-router.get('/classify/location', async (req, res) => {
-  const data = req.query
-  
-  if(data.userId) {
-    data.userId = data.userId
-  }
-
-  if(data.datetime) {
-    data.datetime = parseInt(data.datetime)
-  }
-
-  if(data.lat) {
-    data.lat = parseFloat(data.lat)
-  }
-
-  if(data.lon) {
-    data.lon = parseFloat(data.lon) 
-  }
-
-  try {
-    const { user, vehicleCandidates, matches } = await matchCalculationController.getVehicleCandidates(data)
-    // const response = await matchCalculationController.travelSituationRouter({ 
-    //   vehicleContext: vehicleCandidates, 
-    //   matches: matches, 
-    //   userData: data 
-    // })
-    res.status(200).send({ userData: data, matches: matches, vehicleContext: vehicleCandidates, user: user})
-  } catch(err) {
-    // console.log('err: ', err)
-    res.status(500).send({ error: JSON.stringify(err) })
-    Sentry.captureException(err)
-  }
-
-})
-
 // In progress: 
 router.get('/scoring', async (req, res) => {
   console.log('he')

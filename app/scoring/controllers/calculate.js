@@ -54,14 +54,9 @@ const getVehicleItemInfo = async (vehicle) => {
 const getVehicleCandidates = async (data) => { 
 
   try {
+    console.log('data', data)
     if(!data.userId || !data.lon || !data.lat || !data.datetime) {
-      throw 'Please send all parameters in the proper format.'
-    }
-    
-    // Get or create a user we can assign the location to. 
-    let user = await pool.query('SELECT * FROM user WHERE user_id = ? ', [data.userId])
-    if(user.length === 0) {
-      user = await pool.query('INSERT INTO user SET user_id = ?', [data.userId])
+      throw { 'message': 'Make sure to send the longitude, latitude and datetime for an event.', 'status': 500 }
     }
 
     // Save the user location for further analysis
@@ -72,7 +67,11 @@ const getVehicleCandidates = async (data) => {
                             [parseInt(data.userId), data.datetime])
     console.log('hit send', prevUserLocation)
     // Get vehicle candidates from Nearest   
-    const vehicleCandidatesRaw = await axios.get(`http://nearest:9002/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}&prev_user_location=${prevUserLocation[0] ? JSON.stringify(prevUserLocation[0]) : ''}`)                                  
+    const vehicleCandidatesRaw = await axios.get(`http://nearest:9002/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}&prev_user_location=${prevUserLocation[0] ? JSON.stringify(prevUserLocation[0]) : ''}`)
+                                              .catch(err => {
+                                                Sentry.captureException(err)
+                                                throw { 'message': 'Something went wrong on our end. Please try again later.', 'status': 500 }
+                                              })
     
     let vehicleCandidates = JSON.parse(vehicleCandidatesRaw.data.observations)
     const matches = vehicleCandidatesRaw.data.matches
@@ -91,11 +90,10 @@ const getVehicleCandidates = async (data) => {
       }
 
     }
-    const response = { user: user, vehicleCandidates: vehicleCandidates, matches: matches }
+    const response = { vehicleCandidates: vehicleCandidates, matches: matches }
     return response
   } catch(err) {
-    Sentry.captureException(err)
-    console.log('err: ', err)
+    // console.log('err: ', err)
     throw(err)
   }
 

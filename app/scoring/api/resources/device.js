@@ -3,6 +3,8 @@ const passport = require('passport')
 const utils = require('../../modules/utils')
 const jwt = require('jsonwebtoken')
 const config = require('../../config/config')
+const Sentry = require('@sentry/node')
+const matchCalculationController = require('../../controllers/calculate')
 require('../../modules/passport.js')(passport)
 
 var router = express.Router()
@@ -37,8 +39,39 @@ router.post('/create', (req, res, next) => {
   })(req, res, next)
 })
 
-router.get('/is-logged-in', passport.authenticate('jwt-login', { session: false }), (req, res) => {
-  res.send('Apparently you are logged in!')
+router.post('/score', passport.authenticate('jwt-login', { session: false }), async (req, res) => {
+  const data = req.body
+
+  data.userId = req.user.user_id
+
+  if(data.datetime) {
+    data.datetime = parseInt(data.datetime)
+  }
+
+  if(data.lat) {
+    data.lat = parseFloat(data.lat)
+  }
+
+  if(data.lon) {
+    data.lon = parseFloat(data.lon) 
+  }
+
+  try {
+    const { vehicleCandidates, matches } = await matchCalculationController.getVehicleCandidates(data)
+    // const response = await matchCalculationController.travelSituationRouter({ 
+    //   vehicleContext: vehicleCandidates, 
+    //   matches: matches, 
+    //   userData: data 
+    // })
+    res.status(200).send({ matches: matches, vehicleContext: vehicleCandidates })
+  } catch(err) {
+    res.status(500).send({ error: JSON.stringify(err) })
+    Sentry.captureException(err)
+  }
+})
+
+router.get('/context', passport.authenticate('jwt-login', { session: false }), (req, res) => {
+
 })
 
 module.exports = router
