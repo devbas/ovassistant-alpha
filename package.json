@@ -1,0 +1,11 @@
+{
+  "name": "ovassistant-alpha",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/devbas/ovassistant-alpha",
+  "author": "stepri <git@stevenprins.com>",
+  "license": "MIT",
+  "dependencies": {
+    "serverless": "^1.42.3"
+  }
+}
