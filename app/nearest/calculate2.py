@@ -141,10 +141,25 @@ def get_vehicle_candidates(lon, lat, user_datetime, user_id):
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
       # print(str(observations))
 
-    return { 'observations': observations.to_json(orient='records'), 'matches': matches }
+   # return { 'observations': observations.to_json(orient='records'), 'matches': matches }
     # print('observations: ' + str(observations))
-  
+    body = { 'observations': observations.to_json(orient='records'), 'matches': matches }
+
+    lambdaResponse = {
+        "statusCode": 200,
+        "body": json.dumps(body)
+    }
+
+    return lambdaResponse
+
   except Exception as e:
     capture_exception(e)
     print('exception: ' + str(e))
-    return { 'observations': {}, 'matches': {} } 
+    body = { 'observations': {}, 'matches': {} } 
+
+    lambdaResponse = {
+        "statusCode": 200,
+        "body": json.dumps(body)
+    }
+
+    return lambdaResponse

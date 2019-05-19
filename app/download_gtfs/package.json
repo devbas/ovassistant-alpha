@@ -1,0 +1,9 @@
+{
+  "name": "download_gtfs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "request-promise": "^4.2.4"
+  }
+}

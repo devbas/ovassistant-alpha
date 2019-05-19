@@ -1,0 +1,303 @@
+service: ${self:custom.name}
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-central-1'}
+  memorySize: 3008  
+  vpc:
+    securityGroupIds:
+      - Ref: PrivateSecurityGroup
+    subnetIds:
+      - Ref: PrivateSubnet1a
+      - Ref: PrivateSubnet1b
+
+package:
+  exclude:
+    - node_modules/**
+    - .gitignore
+    - .git/**
+
+plugins:
+  - serverless-offline
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+  name: ovassistant-alpha-${self:provider.stage}
+  db_username: test
+  db_password: testtest
+  db_name: test
+  gtfs_bucket: ${self:custom.name}-gtfs'
+
+functions:
+  download_gtfs:
+    name: ${self:custom.name}-download_gtfs
+    handler: app/download_gtfs/index.handler
+    runtime: nodejs10.x
+    timeout: 10
+    memorySize: 3008
+    environment:
+      gtfs_bucket: ${self:custom.gtfs_bucket}
+  db_import:
+    name: ${self:custom.name}-db_import
+    handler: app/db_import/index.handler
+    runtime: nodejs10.x
+    timeout: 20
+    memorySize: 3008
+    environment:
+      MYSQL_HOST: 
+        'Fn::GetAtt': MysqlDatabase.Endpoint.Address
+      MYSQL_USERNAME: ${self:custom.db_username}
+      MYSQL_PASSWORD: ${self:custom.db_password}
+      MYSQL_DB: ${self:custom.db_name}
+  scoring:
+    name: ${self:custom.name}-scoring
+    handler: app/scoring/lambda.handler
+    runtime: nodejs10.x
+    timeout: 30
+    memorySize: 3008
+    environment:
+      REDIS_URL: 
+        'Fn::GetAtt': Redis.RedisEndpoint.Address
+      MYSQL_HOST: 
+        'Fn::GetAtt': MysqlDatabase.Endpoint.Address
+     # MYSQL_USER: ${self:custom.db_username}
+     # MYSQL_PASSWORD: ${self:custom.db_password}
+    events:
+      - http:
+          path: /scoring
+          method: ANY
+      - http:
+          path: /scoring/{any+}
+          method: ANY
+  frontend:
+    name: ${self:custom.name}-frontend
+    handler: app/frontend/lambda.handler
+    runtime: nodejs10.x
+    timeout: 30
+    memorySize: 3008
+    events:
+      - http:
+          path: /frontend
+          method: ANY
+      - http:
+          path: /frontend/{any+}
+          method: ANY
+  nearest:
+    name: ${self:custom.name}-nearest
+    handler: app/nearest/calculate2
+    runtime: python3.7
+    timeout: 30
+    memorySize: 3008
+    events:
+      - http:
+          path: /nearest
+          method: GET
+
+resources:
+  Resources:
+    AWSLambdaVPCAccessExecutionRole:
+      Type: AWS::IAM::ManagedPolicy
+      Properties:
+        Description: Creating policy for vpc connetion.
+        Roles:
+          - {"Ref" : "IamRoleLambdaExecution"}
+        PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+                - ec2:CreateNetworkInterface
+                - ec2:DescribeNetworkInterfaces
+                - ec2:DeleteNetworkInterface
+              Resource: "*"
+    #networking
+    VPC:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: "10.0.0.0/16"
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+        InstanceTenancy: default
+        Tags:
+          - Key: Name
+            Value: ${self:custom.name}-vpc
+    InternetGateway:
+      Type: AWS::EC2::InternetGateway
+      Properties: 
+        Tags:
+          - Key: Name
+            Value: ${self:custom.name}-internet-gateway
+    VPCGatewayAttachment:
+      Type: AWS::EC2::VPCGatewayAttachment
+      Properties:
+        VpcId: 
+          Ref: VPC
+        InternetGatewayId:
+          Ref: InternetGateway
+    RouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: 
+          Ref: VPC
+    InternetRoute:
+      Type: AWS::EC2::Route
+      DependsOn: VPCGatewayAttachment
+      Properties:
+        DestinationCidrBlock: 0.0.0.0/0
+        GatewayId:
+          Ref: InternetGateway
+        RouteTableId: 
+          Ref: RouteTable
+    PublicSubnet1a:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: VPC
+        CidrBlock: "10.0.1.0/24"
+        AvailabilityZone: eu-central-1a
+        MapPublicIpOnLaunch: true
+        Tags:
+          - Key: Name
+            Value: ${self:custom.name}-public-subnet-1a
+    PublicSubnet1aRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: 
+          Ref: RouteTable
+        SubnetId: 
+          Ref: PrivateSubnet1a
+    PublicSubnet1b:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: VPC
+        CidrBlock: "10.0.2.0/24"
+        AvailabilityZone: eu-central-1b
+        MapPublicIpOnLaunch: true
+        Tags:
+          - Key: Name
+            Value: ${self:custom.name}-public-subnet-1b
+    PublicSubnet1bARouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: 
+          Ref: RouteTable
+        SubnetId: 
+          Ref: PublicSubnet1b
+    PrivateSubnet1a:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: VPC
+        CidrBlock: "10.0.10.0/24"
+        AvailabilityZone: eu-central-1a
+        Tags:
+          - Key: Name
+            Value: ${self:custom.name}-private-subnet-1a
+    PrivateSubnet1aARouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: 
+          Ref: RouteTable
+        SubnetId: 
+          Ref: PrivateSubnet1a
+    PrivateSubnet1b:
+      Type: AWS::EC2::Subnet
+      Properties:
+        VpcId:
+          Ref: VPC
+        CidrBlock: "10.0.20.0/24"
+        AvailabilityZone: eu-central-1b
+        Tags:
+          - Key: Name
+            Value: ${self:custom.name}-private-subnet-1b
+    PrivateSubnet1bARouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: 
+          Ref: RouteTable
+        SubnetId: 
+          Ref: PrivateSubnet1b
+    PrivateSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties: 
+        GroupDescription: String
+        GroupName: ${self:custom.name}-private-security-group
+        SecurityGroupIngress:
+          - IpProtocol: "-1"
+        SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0
+        Tags:
+          - Key: Name
+            Value: ${self:custom.name}-private-security-group
+        VpcId:
+          Ref: VPC
+    PrivateSecurityGroupIngress:
+      Type: 'AWS::EC2::SecurityGroupIngress'
+      Properties:
+          GroupId:
+            Ref: PrivateSecurityGroup
+          IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId:
+            Ref: PrivateSecurityGroup
+    S3GTFS:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.gtfs_bucket}
+    MysqlDatabase:
+      Type: AWS::RDS::DBInstance
+      DeletionPolicy: Delete
+      Properties:
+        VPCSecurityGroups:
+          - Ref: PrivateSecurityGroup
+        DBSubnetGroupName:
+          Ref: MysqlDatabaseSubnet
+        AllocatedStorage: '5'
+        DBInstanceClass: db.t2.micro
+        #DBName: ${self:custom.name}
+        #DBInstanceIdentifier: ${self:custom.name}-mysql-master
+        #Engine: MySQL
+        Engine: aurora
+        EngineMode: serverless
+        ScalingConfiguration:
+          AutoPause: true
+          MaxCapacity: 2
+          MinCapacity: 2
+          SecondsUntilAutoPause: 300
+        MasterUsername: ${self:custom.db_username}
+        MasterUserPassword: ${self:custom.db_password}
+        AvailabilityZone: 'eu-central-1a'
+    MysqlDatabaseSubnet:
+      Type: AWS::RDS::DBSubnetGroup
+      Properties: 
+        DBSubnetGroupName: ${self:custom.name}-mysql-subnet-group
+        DBSubnetGroupDescription: ${self:custom.name}-mysql-subnet-group
+        SubnetIds: 
+          - Ref: PrivateSubnet1a
+          - Ref: PrivateSubnet1b
+    Redis:
+      Type: AWS::ElastiCache::CacheCluster
+      Properties:
+        ClusterName: ovas-${self:provider.stage}-redis
+        CacheNodeType: cache.t2.micro
+        NumCacheNodes: 1
+        Engine: redis
+        VpcSecurityGroupIds:
+          - Ref: PrivateSecurityGroup
+        CacheSubnetGroupName:
+          Ref: RedisSubnet
+    RedisSubnet:
+      Type: AWS::ElastiCache::SubnetGroup
+      Properties: 
+        CacheSubnetGroupName: ${self:custom.name}-redis-subnet-group
+        Description: ${self:custom.name}-redis-subnet-group
+        SubnetIds: 
+          - Ref: PrivateSubnet1a
+          - Ref: PrivateSubnet1b

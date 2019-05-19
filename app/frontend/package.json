@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@sentry/node": "5.1.0",
+    "aws-serverless-express": "^3.3.6",
     "axios": "0.18.0",
     "bcrypt": "3.0.6",
     "body-parser": "1.18.3",

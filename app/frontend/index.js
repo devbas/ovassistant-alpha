@@ -65,8 +65,4 @@ app.use(function(err, req, res, next) {
 
 app.disable('x-powered-by');
 
-var port = 5000;
-
-app.listen(port, () => {
-  console.log('Server is running on http://localhost:', port);
-});
+module.exports = app;

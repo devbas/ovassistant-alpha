@@ -12,6 +12,7 @@
   "dependencies": {
     "@sentry/node": "4.4.1",
     "async": "2.6.1",
+    "aws-serverless-express": "^3.3.6",
     "axios": "0.18.0",
     "bcrypt": "^3.0.6",
     "cors": "2.8.5",
