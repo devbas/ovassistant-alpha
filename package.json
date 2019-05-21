@@ -7,7 +7,8 @@
   "author": "stepri <git@stevenprins.com>",
   "license": "MIT",
   "dependencies": {
-    "serverless": "^1.42.3"
+    "serverless": "^1.42.3",
+    "serverless-domain-manager": "^3.2.2"
   },
   "engines": {
     "node": "10"
@@ -16,5 +17,10 @@
     "serverless-offline": "=4.10.0",
     "serverless-python-requirements": "^4.3.0"
   },
-  "workspaces": ["app/scoring", "app/frontend", "app/download_gtfs"]
+  "workspaces": [
+    "app/scoring",
+    "app/frontend",
+    "app/download_gtfs",
+    "app/import_gtfs"
+  ]
 }

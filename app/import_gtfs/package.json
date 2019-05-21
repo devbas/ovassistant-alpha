@@ -1,5 +1,5 @@
 {
-  "name": "db_import",
+  "name": "import_gtfs",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",

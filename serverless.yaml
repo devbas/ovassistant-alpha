@@ -1,4 +1,4 @@
-service: ${self:custom.name}
+service: ovassistant-alpha
 
 provider:
   name: aws
@@ -6,6 +6,8 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-central-1'}
   memorySize: 3008  
+  environment:
+    SERVICE_NAME: ${self:service}
   vpc:
     securityGroupIds:
       - Ref: PrivateSecurityGroup
@@ -15,13 +17,13 @@ provider:
 
 package:
   exclude:
-    - node_modules/**
     - .gitignore
     - .git/**
 
 plugins:
   - serverless-offline
   - serverless-python-requirements
+# - serverless-domain-manager
 
 custom:
   pythonRequirements:
@@ -30,29 +32,47 @@ custom:
   db_username: test
   db_password: testtest
   db_name: test
-  gtfs_bucket: ${self:custom.name}-gtfs'
+  gtfs_bucket: ${self:custom.name}-gtfs
+
+custom_extra:
+  domains:
+    prod: api.ovassistent.stevenprins.com
+    staging: staging-api.ovassistent.stevenprins.com
+    dev: dev-api.ovassistent.stevenprins.com
+  customDomain:
+    basePath: ""
+    domainName: ${self:custom.domains.${self:provider.stage}}
+    stage: "${self:provider.stage}"
+    createRoute53Record: false
 
 functions:
   download_gtfs:
     name: ${self:custom.name}-download_gtfs
     handler: app/download_gtfs/index.handler
     runtime: nodejs10.x
-    timeout: 10
+    timeout: 900
     memorySize: 3008
     environment:
       gtfs_bucket: ${self:custom.gtfs_bucket}
-  db_import:
-    name: ${self:custom.name}-db_import
-    handler: app/db_import/index.handler
+  import_gtfs:
+    name: ${self:custom.name}-import_gtfs
+    handler: app/import_gtfs/index.handler
     runtime: nodejs10.x
     timeout: 20
     memorySize: 3008
     environment:
       MYSQL_HOST: 
-        'Fn::GetAtt': MysqlDatabase.Endpoint.Address
+        'Fn::GetAtt': MysqlDatabaseCluster.Endpoint.Address
       MYSQL_USERNAME: ${self:custom.db_username}
       MYSQL_PASSWORD: ${self:custom.db_password}
       MYSQL_DB: ${self:custom.db_name}
+    events:
+      - s3:
+          bucket: ${self:custom.gtfs_bucket}
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: uploads/
+            - suffix: .zip
   scoring:
     name: ${self:custom.name}-scoring
     handler: app/scoring/lambda.handler
@@ -63,7 +83,7 @@ functions:
       REDIS_URL: 
         'Fn::GetAtt': Redis.RedisEndpoint.Address
       MYSQL_HOST: 
-        'Fn::GetAtt': MysqlDatabase.Endpoint.Address
+        'Fn::GetAtt': MysqlDatabaseCluster.Endpoint.Address
      # MYSQL_USER: ${self:custom.db_username}
      # MYSQL_PASSWORD: ${self:custom.db_password}
     events:
@@ -247,33 +267,28 @@ resources:
           ToPort: 3306
           SourceSecurityGroupId:
             Ref: PrivateSecurityGroup
-    S3GTFS:
-      Type: AWS::S3::Bucket
+    MysqlDatabaseCluster:
+      Type: AWS::RDS::DBCluster
+      DeletionPolicy: Delete
       Properties:
-        BucketName: ${self:custom.gtfs_bucket}
-    MysqlDatabase:
+        VpcSecurityGroupIds:
+          - Ref: PrivateSecurityGroup
+        MasterUsername: ${self:custom.db_username}
+        MasterUserPassword: ${self:custom.db_password}
+        Engine: aurora-mysql
+        DatabaseName: ${self:custom.name}
+        DBClusterIdentifier: ${self:custom.name}-mysql-master
+    MysqlDatabaseInstance:
       Type: AWS::RDS::DBInstance
       DeletionPolicy: Delete
       Properties:
-        VPCSecurityGroups:
-          - Ref: PrivateSecurityGroup
         DBSubnetGroupName:
           Ref: MysqlDatabaseSubnet
-        AllocatedStorage: '5'
-        DBInstanceClass: db.t2.micro
-        #DBName: ${self:custom.name}
-        #DBInstanceIdentifier: ${self:custom.name}-mysql-master
+        DBClusterIdentifier: ${self:custom.name}-mysql-master
+        DBInstanceClass: db.t3.small
         #Engine: MySQL
-        Engine: aurora
-        EngineMode: serverless
-        ScalingConfiguration:
-          AutoPause: true
-          MaxCapacity: 2
-          MinCapacity: 2
-          SecondsUntilAutoPause: 300
-        MasterUsername: ${self:custom.db_username}
-        MasterUserPassword: ${self:custom.db_password}
-        AvailabilityZone: 'eu-central-1a'
+        Engine: aurora-mysql
+        #EngineMode: serverless
     MysqlDatabaseSubnet:
       Type: AWS::RDS::DBSubnetGroup
       Properties: 
@@ -301,3 +316,32 @@ resources:
         SubnetIds: 
           - Ref: PrivateSubnet1a
           - Ref: PrivateSubnet1b
+
+out-of-service:
+    MysqlDatabase:
+      #Type: AWS::RDS::DBInstance
+      Type: AWS::RDS::DBCluster
+      DeletionPolicy: Delete
+      Properties:
+        #VPCSecurityGroups: (for DBInstance)
+        #  - Ref: PrivateSecurityGroup
+        VpcSecurityGroupIds:
+          - Ref: PrivateSecurityGroup
+        DBSubnetGroupName:
+          Ref: MysqlDatabaseSubnet
+        #AllocatedStorage: '5'
+        #DBInstanceClass: db.t2.micro
+        #DBName: ${self:custom.name}
+        #DBInstanceIdentifier: ${self:custom.name}-mysql-master
+        #Engine: MySQL
+        Engine: aurora
+        EngineMode: serverless
+        ScalingConfiguration:
+          AutoPause: true
+          MaxCapacity: 1
+          MinCapacity: 1
+          SecondsUntilAutoPause: 300
+        MasterUsername: ${self:custom.db_username}
+        MasterUserPassword: ${self:custom.db_password}
+        AvailabilityZones: 
+          - 'eu-central-1a'
