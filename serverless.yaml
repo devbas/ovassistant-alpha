@@ -68,7 +68,7 @@ functions:
     memorySize: 3008
     environment:
       MYSQL_HOST: 
-        'Fn::GetAtt': MysqlDatabaseCluster.Endpoint.Address
+        'Fn::GetAtt': PostgresqlDatabaseCluster.Endpoint.Address
       MYSQL_USERNAME: ${self:custom.db_username}
       MYSQL_PASSWORD: ${self:custom.db_password}
       MYSQL_DB: ${self:custom.db_name}
@@ -89,7 +89,7 @@ functions:
       REDIS_URL: 
         'Fn::GetAtt': Redis.RedisEndpoint.Address
       MYSQL_HOST: 
-        'Fn::GetAtt': MysqlDatabaseCluster.Endpoint.Address
+        'Fn::GetAtt': PostgresqlDatabaseCluster.Endpoint.Address
      # MYSQL_USER: ${self:custom.db_username}
      # MYSQL_PASSWORD: ${self:custom.db_password}
     events:
@@ -140,7 +140,9 @@ resources:
                 - ec2:DescribeNetworkInterfaces
                 - ec2:DeleteNetworkInterface
               Resource: "*"
-    #networking
+###############################################################################
+# Networking
+###############################################################################
     VPC:
       Type: AWS::EC2::VPC
       Properties:
@@ -273,36 +275,49 @@ resources:
           ToPort: 3306
           SourceSecurityGroupId:
             Ref: PrivateSecurityGroup
-    MysqlDatabaseCluster:
+###############################################################################
+# Postgresql
+###############################################################################
+    PostgresqlDatabaseCluster:
       Type: AWS::RDS::DBCluster
       DeletionPolicy: Delete
       Properties:
+        DBSubnetGroupName:
+          Ref: PostgresqlDatabaseSubnet
         VpcSecurityGroupIds:
           - Ref: PrivateSecurityGroup
         MasterUsername: ${self:custom.db_username}
         MasterUserPassword: ${self:custom.db_password}
-        Engine: aurora-mysql
+        Engine: aurora-postgresql
+        EngineVersion: 10.5
         DatabaseName: ${self:custom.name}
-        DBClusterIdentifier: ${self:custom.name}-mysql-master
-    MysqlDatabaseInstance:
+        DBClusterIdentifier: ${self:custom.name}-postgresql-master
+    PostgresqlDatabaseInstance:
       Type: AWS::RDS::DBInstance
       DeletionPolicy: Delete
       Properties:
         DBSubnetGroupName:
-          Ref: MysqlDatabaseSubnet
-        DBClusterIdentifier: ${self:custom.name}-mysql-master
+          Ref: PostgresqlDatabaseSubnet
+        DBClusterIdentifier: ${self:custom.name}-postgresql-master
         DBInstanceClass: db.t3.small
         #Engine: MySQL
-        Engine: aurora-mysql
         #EngineMode: serverless
-    MysqlDatabaseSubnet:
+        Engine: aurora-postgresql
+        EngineVersion: 10.5
+        AutoMinorVersionUpgrade: true
+        PubliclyAccessible: false
+        EnablePerformanceInsights: true
+    PostgresqlDatabaseSubnet:
       Type: AWS::RDS::DBSubnetGroup
       Properties: 
-        DBSubnetGroupName: ${self:custom.name}-mysql-subnet-group
-        DBSubnetGroupDescription: ${self:custom.name}-mysql-subnet-group
+        DBSubnetGroupName: ${self:custom.name}-postgresql-subnet-group
+        DBSubnetGroupDescription: ${self:custom.name}-postgresql-subnet-group
         SubnetIds: 
           - Ref: PrivateSubnet1a
           - Ref: PrivateSubnet1b
+###############################################################################
+# REDIS
+###############################################################################
     Redis:
       Type: AWS::ElastiCache::CacheCluster
       Properties:
@@ -324,7 +339,7 @@ resources:
           - Ref: PrivateSubnet1b
 
 out-of-service:
-    MysqlDatabase:
+    PostgresqlDatabase:
       #Type: AWS::RDS::DBInstance
       Type: AWS::RDS::DBCluster
       DeletionPolicy: Delete
@@ -334,11 +349,11 @@ out-of-service:
         VpcSecurityGroupIds:
           - Ref: PrivateSecurityGroup
         DBSubnetGroupName:
-          Ref: MysqlDatabaseSubnet
+          Ref: PostgresqlDatabaseSubnet
         #AllocatedStorage: '5'
         #DBInstanceClass: db.t2.micro
         #DBName: ${self:custom.name}
-        #DBInstanceIdentifier: ${self:custom.name}-mysql-master
+        #DBInstanceIdentifier: ${self:custom.name}-postgresql-master
         #Engine: MySQL
         Engine: aurora
         EngineMode: serverless
