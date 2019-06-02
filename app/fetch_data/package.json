@@ -1,0 +1,9 @@
+{
+  "name": "fetch_data",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "gtfs-realtime-bindings": "^0.0.5"
+  }
+}

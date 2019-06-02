@@ -46,6 +46,12 @@ custom_extra:
     createRoute53Record: false
 
 functions:
+  fetch_data:
+    name: ${self:custom.name}-fetch_data
+    handler: app/fetch_data/index.handler
+    runtime: nodejs10.x
+    timeout: 900
+    memorySize: 3008
   download_gtfs:
     name: ${self:custom.name}-download_gtfs
     handler: app/download_gtfs/index.handler
