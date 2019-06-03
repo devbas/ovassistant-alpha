@@ -20,7 +20,8 @@
   "workspaces": [
     "app/scoring",
     "app/frontend",
-    "app/download_gtfs",
-    "app/import_gtfs"
+    "app/download_to_s3",
+    "app/import_gtfs",
+    "app/import_pb"
   ]
 }

@@ -17,7 +17,7 @@ function formatBytes(bytes, decimals = 2) {
 
 exports.handler = (event, ctx, callback) => {
   console.log('event_data', event)
-  console.log('upload_to', process.env.gtfs_bucket)
+  console.log('upload_to', process.env.bucket)
   const options = {
     uri: event.url,
     encoding: null
@@ -28,7 +28,7 @@ exports.handler = (event, ctx, callback) => {
     console.log('Uploading started')
 
     var params = {
-      Bucket: process.env.gtfs_bucket,
+      Bucket: process.env.bucket,
       Key   : 'uploads/'+event.name,
       Body  : body,   
     }
