@@ -1,4 +1,4 @@
-service: ovassistant-alpha
+service: steven-test
 
 provider:
   name: aws
@@ -28,11 +28,13 @@ plugins:
 custom:
   pythonRequirements:
     dockerizePip: true
-  name: ovassistant-alpha-${self:provider.stage}
+  name: steven-test-${self:provider.stage}
   db_username: test
   db_password: testtest
   db_name: test
+  db_host_name: steventest
   gtfs_bucket: ${self:custom.name}-gtfs
+  protobuf_bucket: ${self:custom.name}-pb
 
 custom_extra:
   domains:
@@ -59,7 +61,7 @@ functions:
     timeout: 900
     memorySize: 3008
     environment:
-      gtfs_bucket: ${self:custom.gtfs_bucket}
+      bucket: ${self:custom.gtfs_bucket}
   import_gtfs:
     name: ${self:custom.name}-import_gtfs
     handler: app/import_gtfs/index.handler
@@ -68,7 +70,7 @@ functions:
     memorySize: 3008
     environment:
       MYSQL_HOST: 
-        'Fn::GetAtt': PostgresqlDatabaseCluster.Endpoint.Address
+        'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
       MYSQL_USERNAME: ${self:custom.db_username}
       MYSQL_PASSWORD: ${self:custom.db_password}
       MYSQL_DB: ${self:custom.db_name}
@@ -89,7 +91,7 @@ functions:
       REDIS_URL: 
         'Fn::GetAtt': Redis.RedisEndpoint.Address
       MYSQL_HOST: 
-        'Fn::GetAtt': PostgresqlDatabaseCluster.Endpoint.Address
+        'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
      # MYSQL_USER: ${self:custom.db_username}
      # MYSQL_PASSWORD: ${self:custom.db_password}
     events:
@@ -278,35 +280,43 @@ resources:
 ###############################################################################
 # Postgresql
 ###############################################################################
-    PostgresqlDatabaseCluster:
-      Type: AWS::RDS::DBCluster
-      DeletionPolicy: Delete
-      Properties:
-        DBSubnetGroupName:
-          Ref: PostgresqlDatabaseSubnet
-        VpcSecurityGroupIds:
-          - Ref: PrivateSecurityGroup
-        MasterUsername: ${self:custom.db_username}
-        MasterUserPassword: ${self:custom.db_password}
-        Engine: aurora-postgresql
-        EngineVersion: 10.5
-        DatabaseName: ${self:custom.name}
-        DBClusterIdentifier: ${self:custom.name}-postgresql-master
+#    PostgresqlDatabaseCluster:
+#      Type: AWS::RDS::DBCluster
+#      DeletionPolicy: Delete
+#      Properties:
+#        DBSubnetGroupName:
+#          Ref: PostgresqlDatabaseSubnet
+#        #VpcSecurityGroupIds:
+#        #  - Ref: PrivateSecurityGroup
+#        MasterUsername: ${self:custom.db_username}
+#        MasterUserPassword: ${self:custom.db_password}
+#        Engine: aurora-postgresql
+#        EngineVersion: 11.2
+#        DatabaseName: ${self:custom.db_host_name}
+#        DBClusterIdentifier: ${self:custom.name}-postgresql-master
+#        DBClusterParameterGroupName:
+#          Ref: PostgresqlClusterParamGroup
     PostgresqlDatabaseInstance:
       Type: AWS::RDS::DBInstance
       DeletionPolicy: Delete
       Properties:
         DBSubnetGroupName:
           Ref: PostgresqlDatabaseSubnet
-        DBClusterIdentifier: ${self:custom.name}-postgresql-master
+#        DBClusterIdentifier:
+#          Ref: PostgresqlDatabaseInstance
         DBInstanceClass: db.t3.small
         #Engine: MySQL
         #EngineMode: serverless
-        Engine: aurora-postgresql
-        EngineVersion: 10.5
+        Engine: postgresql
+        AllocatedStorage: '5'
+        MasterUsername: ${self:custom.db_username}
+        MasterUserPassword: ${self:custom.db_password}
+        EngineVersion: 11.2
         AutoMinorVersionUpgrade: true
         PubliclyAccessible: false
         EnablePerformanceInsights: true
+        DBParameterGroupName:
+          Ref: PostgresqlDatabaseParamGroup
     PostgresqlDatabaseSubnet:
       Type: AWS::RDS::DBSubnetGroup
       Properties: 
@@ -315,6 +325,20 @@ resources:
         SubnetIds: 
           - Ref: PrivateSubnet1a
           - Ref: PrivateSubnet1b
+    PostgresqlDatabaseParamGroup:
+      Type: AWS::RDS::DBParameterGroup
+      Properties:
+        Description: The parameter group for the postgres database
+        Family: postgres11
+        Parameters:
+          log_connections: 0
+#    PostgresqlClusterParamGroup:
+#      Type: AWS::RDS::DBClusterParameterGroup
+#      Properties:
+#        Description: The parameter group for the postgres cluster
+#        Family: postgres11
+#        Parameters:
+#          rds.force_ssl: 1
 ###############################################################################
 # REDIS
 ###############################################################################
