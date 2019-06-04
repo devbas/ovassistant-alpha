@@ -5,7 +5,7 @@ provider:
   runtime: nodejs10.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'eu-central-1'}
-  memorySize: 3008  
+  memorySize: 128  
   environment:
     SERVICE_NAME: ${self:service}
   vpc:
@@ -48,18 +48,32 @@ custom_extra:
     createRoute53Record: false
 
 functions:
+  radius:
+    name: ${self:custom.name}-radius
+    handler: app/radius/index.handler
+    runtime: nodejs10.x
+    timeout: 20
+    memorySize: 128
+    environment:
+      REDIS_URL: 
+        'Fn::GetAtt': Redis.RedisEndpoint.Address
+    events:
+      - http:
+          path: /radius
+          method: GET
   import_pb:
     name: ${self:custom.name}-import_pb
     handler: app/import_pb/index.handler
     runtime: nodejs10.x
     timeout: 20
-    memorySize: 3008
+    memorySize: 128
     environment:
-      MYSQL_HOST: 
+      DB_HOST: 
         'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
-      MYSQL_USERNAME: ${self:custom.db_username}
-      MYSQL_PASSWORD: ${self:custom.db_password}
-      MYSQL_DB: ${self:custom.db_name}
+      DB_USERNAME: ${self:custom.db_username}
+      DB_PASSWORD: ${self:custom.db_password}
+      DB_DB: ${self:custom.db_name}
+      INGESTION_PERSIST: false
       REDIS_URL: 
         'Fn::GetAtt': Redis.RedisEndpoint.Address
     events:
@@ -74,46 +88,46 @@ functions:
     handler: app/download_to_s3/index.handler
     runtime: nodejs10.x
     timeout: 900
-    memorySize: 3008
+    memorySize: 128
     environment:
       bucket: ${self:custom.gtfs_bucket}
-    events:
+    events1:
       - schedule:
-          name: download gtfs nl
+          name: download_gtfs_nl
           description: download gtfs from ovapi
-          rate: rate(10 minutes)
+          rate: rate(1 minute)
           enabled: false
           input:
             url: http://gtfs.ovapi.nl/nl/gtfs-nl.zip
             name: uploads_gtfs/nl/gtfs-nl.zip
       - schedule:
-          name: download /nl/vehiclePositions.pb
+          name: download_nl_vehiclePositions.pb
           description: download gtfs from ovapi
-          rate: rate(10 minutes)
+          rate: rate(1 minute)
           enabled: false
           input:
             url: http://gtfs.ovapi.nl/nl/vehiclePositions.pb
             name: uploads_gtfs/nl/vehiclePositions.pb
       - schedule:
-          name: download protobufs
+          name: download_protobufs
           description: download gtfs from ovapi
-          rate: rate(10 minutes)
+          rate: rate(1 minute)
           enabled: false
           input:
             url: http://gtfs.ovapi.nl/nl/alerts.pb
             name: uploads_gtfs/nl/alerts.pb
       - schedule:
-          name: download nl/tripUpdates.pb
+          name: download_nl_tripUpdates.pb
           description: download gtfs from ovapi
-          rate: rate(10 minutes)
+          rate: rate(1 minute)
           enabled: false
           input:
             url: http://gtfs.ovapi.nl/nl/tripUpdates.pb
             name: uploads_gtfs/nl/tripUpdates.pb
       - schedule:
-          name: download nl/trainUpdates.pb
+          name: download_nl_trainUpdates.pb
           description: download gtfs from ovapi
-          rate: rate(10 minutes)
+          rate: rate(1 minute)
           enabled: false
           input:
             url: http://gtfs.ovapi.nl/nl/trainUpdates.pb
@@ -123,13 +137,13 @@ functions:
     handler: app/import_gtfs/index.handler
     runtime: nodejs10.x
     timeout: 20
-    memorySize: 3008
+    memorySize: 128
     environment:
-      MYSQL_HOST: 
+      DB_HOST: 
         'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
-      MYSQL_USERNAME: ${self:custom.db_username}
-      MYSQL_PASSWORD: ${self:custom.db_password}
-      MYSQL_DB: ${self:custom.db_name}
+      DB_USERNAME: ${self:custom.db_username}
+      DB_PASSWORD: ${self:custom.db_password}
+      DB_DB: ${self:custom.db_name}
     events:
       - s3:
           bucket: ${self:custom.gtfs_bucket}
@@ -142,14 +156,14 @@ functions:
     handler: app/scoring/lambda.handler
     runtime: nodejs10.x
     timeout: 30
-    memorySize: 3008
+    memorySize: 128
     environment:
       REDIS_URL: 
         'Fn::GetAtt': Redis.RedisEndpoint.Address
-      MYSQL_HOST: 
+      DB_HOST: 
         'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
-     # MYSQL_USER: ${self:custom.db_username}
-     # MYSQL_PASSWORD: ${self:custom.db_password}
+     # DB_USER: ${self:custom.db_username}
+     # DB_PASSWORD: ${self:custom.db_password}
     events:
       - http:
           path: /scoring
@@ -162,7 +176,7 @@ functions:
     handler: app/frontend/lambda.handler
     runtime: nodejs10.x
     timeout: 30
-    memorySize: 3008
+    memorySize: 128
     events:
       - http:
           path: /frontend
@@ -175,7 +189,7 @@ functions:
     handler: app/nearest/calculate2
     runtime: python3.7
     timeout: 30
-    memorySize: 3008
+    memorySize: 128
     events:
       - http:
           path: /nearest
@@ -352,15 +366,16 @@ resources:
 #        DBClusterIdentifier: ${self:custom.name}-postgresql-master
 #        DBClusterParameterGroupName:
 #          Ref: PostgresqlClusterParamGroup
-    PostgresqlDatabaseInstance:
+    DBInstance1:
       Type: AWS::RDS::DBInstance
       DeletionPolicy: Delete
       Properties:
         DBSubnetGroupName:
-          Ref: PostgresqlDatabaseSubnet
+          Ref: DBSubnetGroup
 #        DBClusterIdentifier:
-#          Ref: PostgresqlDatabaseInstance
-        DBInstanceClass: db.t3.small
+#          Ref: DBInstance
+        DBInstanceClass: db.t3.micro
+        DBInstanceIdentifier: ${self:custom.name}-db-master
         #Engine: MySQL
         #EngineMode: serverless
         Engine: postgres
@@ -372,8 +387,8 @@ resources:
         PubliclyAccessible: false
         EnablePerformanceInsights: true
         DBParameterGroupName:
-          Ref: PostgresqlDatabaseParamGroup
-    PostgresqlDatabaseSubnet:
+          Ref: DBParamGroup
+    DBSubnetGroup:
       Type: AWS::RDS::DBSubnetGroup
       Properties: 
         DBSubnetGroupName: ${self:custom.name}-postgresql-subnet-group
@@ -381,7 +396,7 @@ resources:
         SubnetIds: 
           - Ref: PrivateSubnet1a
           - Ref: PrivateSubnet1b
-    PostgresqlDatabaseParamGroup:
+    DBParamGroup:
       Type: AWS::RDS::DBParameterGroup
       Properties:
         Description: The parameter group for the postgres database
@@ -418,7 +433,7 @@ resources:
           - Ref: PrivateSubnet1a
           - Ref: PrivateSubnet1b
 
-out-of-service:
+out-of-service-serverless:
     PostgresqlDatabase:
       #Type: AWS::RDS::DBInstance
       Type: AWS::RDS::DBCluster
