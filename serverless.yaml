@@ -67,7 +67,7 @@ functions:
           bucket: ${self:custom.protobuf_bucket}
           event: s3:ObjectCreated:*
           rules:
-            - prefix: uploads/
+            - prefix: uploads_pb/
             - suffix: .pb
   download_to_s3:
     name: ${self:custom.name}-download_to_s3
@@ -77,6 +77,47 @@ functions:
     memorySize: 3008
     environment:
       bucket: ${self:custom.gtfs_bucket}
+    events:
+      - schedule:
+          name: download gtfs nl
+          description: download gtfs from ovapi
+          rate: rate(10 minutes)
+          enabled: false
+          input:
+            url: http://gtfs.ovapi.nl/nl/gtfs-nl.zip
+            name: uploads_gtfs/nl/gtfs-nl.zip
+      - schedule:
+          name: download /nl/vehiclePositions.pb
+          description: download gtfs from ovapi
+          rate: rate(10 minutes)
+          enabled: false
+          input:
+            url: http://gtfs.ovapi.nl/nl/vehiclePositions.pb
+            name: uploads_gtfs/nl/vehiclePositions.pb
+      - schedule:
+          name: download protobufs
+          description: download gtfs from ovapi
+          rate: rate(10 minutes)
+          enabled: false
+          input:
+            url: http://gtfs.ovapi.nl/nl/alerts.pb
+            name: uploads_gtfs/nl/alerts.pb
+      - schedule:
+          name: download nl/tripUpdates.pb
+          description: download gtfs from ovapi
+          rate: rate(10 minutes)
+          enabled: false
+          input:
+            url: http://gtfs.ovapi.nl/nl/tripUpdates.pb
+            name: uploads_gtfs/nl/tripUpdates.pb
+      - schedule:
+          name: download nl/trainUpdates.pb
+          description: download gtfs from ovapi
+          rate: rate(10 minutes)
+          enabled: false
+          input:
+            url: http://gtfs.ovapi.nl/nl/trainUpdates.pb
+            name: uploads_gtfs/nl/trainUpdates.pb
   import_gtfs:
     name: ${self:custom.name}-import_gtfs
     handler: app/import_gtfs/index.handler
@@ -94,7 +135,7 @@ functions:
           bucket: ${self:custom.gtfs_bucket}
           event: s3:ObjectCreated:*
           rules:
-            - prefix: uploads/
+            - prefix: uploads_gtfs/
             - suffix: .zip
   scoring:
     name: ${self:custom.name}-scoring
@@ -322,7 +363,7 @@ resources:
         DBInstanceClass: db.t3.small
         #Engine: MySQL
         #EngineMode: serverless
-        Engine: postgresql
+        Engine: postgres
         AllocatedStorage: '5'
         MasterUsername: ${self:custom.db_username}
         MasterUserPassword: ${self:custom.db_password}

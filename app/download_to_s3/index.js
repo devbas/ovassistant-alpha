@@ -27,13 +27,13 @@ exports.handler = (event, ctx, callback) => {
   progress(request(options, (err, response, body) => {
     console.log('Uploading started')
 
-    var params = {
+    const params = {
       Bucket: process.env.bucket,
-      Key   : 'uploads/'+event.name,
-      Body  : body,   
+      Key: `uploads/${event.name}`,
+      Body: body,   
     }
 
-    var req = s3.makeRequest('putObject', params);
+    const req = s3.makeRequest('putObject', params);
     req.on('httpUploadProgress', function(progress) {
       console.log('Uploading...', progress)
     });

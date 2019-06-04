@@ -4,9 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.467.0",
     "gtfs-realtime-bindings": "^0.0.5",
     "redis": "^2.8.0",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.7"
+    "serverless-mysql": "^1.4.0"
   }
 }

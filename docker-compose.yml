@@ -50,7 +50,7 @@ services:
       - ./app/db/cron-scripts:/home
     build: ./app/db/
     environment: 
-      - MYSQL_DATABASE=ovassistant
+      - MYSQL_DATABASE=gtfs
       - MYSQL_ROOT_PASSWORD=root
     networks: 
       - app
