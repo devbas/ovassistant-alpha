@@ -1,0 +1,2 @@
+-- INSERT INTO trajectories (trajectory_id, content)
+-- VALUES (1, 'hello')
