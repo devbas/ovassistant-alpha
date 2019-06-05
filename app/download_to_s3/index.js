@@ -28,8 +28,8 @@ exports.handler = (event, ctx, callback) => {
     console.log('Uploading started')
 
     const params = {
-      Bucket: process.env.bucket,
-      Key: `uploads/${event.name}`,
+      Bucket: event.bucket,
+      Key: event.name,
       Body: body,   
     }
 

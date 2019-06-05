@@ -2,7 +2,7 @@ const redis = require('redis');
 const { promisify } = require('util');
 
 const redisClient = redis.createClient({
-  url: process.env.REDIS_URL || 'redis://localhost/0'
+  url: `redis://${process.env.REDIS_HOST}/0`
 });
 
 module.exports = {

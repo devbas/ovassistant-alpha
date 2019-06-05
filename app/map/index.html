@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-hash/0.2.1/leaflet-hash.min.js"></script>
+  <style> 
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body, #mapid {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+   <div id="mapid"></div>
+   <script> 
+
+     $(document).ready(function() {
+        var map = window.map = L.map('mapid').setView([52.3489,5.5644], 12);
+        var hash = new L.Hash(map);
+        
+        L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox.streets',
+            accessToken: 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw'
+        }).addTo(map);
+
+        var itemMarkers = L.layerGroup().addTo(map);
+
+        function fetchItems(lat, lng) {
+          $.getJSON( "/dev/radius?lat="+lat+'&long='+lng + '&limit=50', function(items) {
+            itemMarkers.clearLayers()
+            items.forEach(function(item) {
+
+                L.marker(L.latLng(item.latitude, item.longitude)).bindPopup(`Vehicle ID: ${item.id}`).addTo(itemMarkers)
+
+            })  
+          });
+        }
+
+        var bounds = map.getBounds();
+        var center = bounds.getCenter();
+
+        fetchItems(center.lat, center.lng)
+        map.on('moveend', function() { 
+          var bounds = map.getBounds();
+          var center = bounds.getCenter();
+
+          fetchItems(center.lat, center.lng)
+
+
+        });
+
+      });
+   </script>
+</body>
+</html>

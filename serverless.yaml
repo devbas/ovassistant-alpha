@@ -3,18 +3,20 @@ service: steven-test
 provider:
   name: aws
   runtime: nodejs10.x
-  stage: ${opt:stage, 'dev'}
+  stage: ${opt:stage, 'local'}
   region: ${opt:region, 'eu-central-1'}
   memorySize: 128  
+  logRetentionInDays: 1
   environment:
     SERVICE_NAME: ${self:service}
-  vpc:
-    securityGroupIds:
-      - Ref: PrivateSecurityGroup
-    subnetIds:
-      - Ref: PrivateSubnet1a
-      - Ref: PrivateSubnet1b
-
+  iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "s3:*"
+        Resource:
+          - { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ]]}
+          - "arn:aws:s3:::${self:custom.name}-gtfs/*"
+          - "arn:aws:s3:::${self:custom.name}-pb/*"
 package:
   exclude:
     - .gitignore
@@ -35,11 +37,16 @@ custom:
   db_host_name: steventest
   gtfs_bucket: ${self:custom.name}-gtfs
   protobuf_bucket: ${self:custom.name}-pb
-
+  env:
+    REDIS_HOST:
+      local: 'localhost'
+      dev:
+        'Fn::GetAtt': Redis.RedisEndpoint.Address 
+      prod:
+        'Fn::GetAtt': Redis.RedisEndpoint.Address 
 custom_extra:
   domains:
     prod: api.ovassistent.stevenprins.com
-    staging: staging-api.ovassistent.stevenprins.com
     dev: dev-api.ovassistent.stevenprins.com
   customDomain:
     basePath: ""
@@ -48,6 +55,16 @@ custom_extra:
     createRoute53Record: false
 
 functions:
+  map:
+    name: ${self:custom.name}-map
+    handler: app/map/index.handler
+    runtime: nodejs10.x
+    timeout: 20
+    memorySize: 128
+    events:
+      - http:
+          path: /map
+          method: GET
   radius:
     name: ${self:custom.name}-radius
     handler: app/radius/index.handler
@@ -55,27 +72,35 @@ functions:
     timeout: 20
     memorySize: 128
     environment:
-      REDIS_URL: 
-        'Fn::GetAtt': Redis.RedisEndpoint.Address
+      REDIS_HOST: ${self:custom.env.REDIS_HOST.${self:provider.stage}}
     events:
       - http:
           path: /radius
           method: GET
+    vpc:
+      securityGroupIds:
+        - Ref: PrivateSecurityGroup
+      subnetIds:
+        - Ref: PrivateSubnet1a
   import_pb:
     name: ${self:custom.name}-import_pb
     handler: app/import_pb/index.handler
     runtime: nodejs10.x
-    timeout: 20
-    memorySize: 128
+    timeout: 60
+    memorySize: 640
+    vpc:
+      securityGroupIds:
+        - Ref: PrivateSecurityGroup
+      subnetIds:
+        - Ref: PrivateSubnet1a
     environment:
-      DB_HOST: 
-        'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
-      DB_USERNAME: ${self:custom.db_username}
-      DB_PASSWORD: ${self:custom.db_password}
-      DB_DB: ${self:custom.db_name}
+#      DB_HOST: 
+#        'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
+#      DB_USERNAME: ${self:custom.db_username}
+#      DB_PASSWORD: ${self:custom.db_password}
+#      DB_DB: ${self:custom.db_name}
       INGESTION_PERSIST: false
-      REDIS_URL: 
-        'Fn::GetAtt': Redis.RedisEndpoint.Address
+      REDIS_HOST: ${self:custom.env.REDIS_HOST.${self:provider.stage}}
     events:
       - s3:
           bucket: ${self:custom.protobuf_bucket}
@@ -88,62 +113,66 @@ functions:
     handler: app/download_to_s3/index.handler
     runtime: nodejs10.x
     timeout: 900
-    memorySize: 128
-    environment:
-      bucket: ${self:custom.gtfs_bucket}
-    events1:
-      - schedule:
-          name: download_gtfs_nl
-          description: download gtfs from ovapi
-          rate: rate(1 minute)
-          enabled: false
-          input:
-            url: http://gtfs.ovapi.nl/nl/gtfs-nl.zip
-            name: uploads_gtfs/nl/gtfs-nl.zip
+    memorySize: 640
+    events:
+#      - schedule:
+#          name: download_gtfs_nl
+#          description: download gtfs from ovapi
+#          rate: rate(1 minute)
+#          enabled: false
+#          input:
+#            url: http://gtfs.ovapi.nl/nl/gtfs-nl.zip
+#            name: uploads_gtfs/nl/gtfs-nl.zip
       - schedule:
           name: download_nl_vehiclePositions.pb
           description: download gtfs from ovapi
           rate: rate(1 minute)
-          enabled: false
+          enabled: true
           input:
             url: http://gtfs.ovapi.nl/nl/vehiclePositions.pb
-            name: uploads_gtfs/nl/vehiclePositions.pb
-      - schedule:
-          name: download_protobufs
-          description: download gtfs from ovapi
-          rate: rate(1 minute)
-          enabled: false
-          input:
-            url: http://gtfs.ovapi.nl/nl/alerts.pb
-            name: uploads_gtfs/nl/alerts.pb
-      - schedule:
-          name: download_nl_tripUpdates.pb
-          description: download gtfs from ovapi
-          rate: rate(1 minute)
-          enabled: false
-          input:
-            url: http://gtfs.ovapi.nl/nl/tripUpdates.pb
-            name: uploads_gtfs/nl/tripUpdates.pb
-      - schedule:
-          name: download_nl_trainUpdates.pb
-          description: download gtfs from ovapi
-          rate: rate(1 minute)
-          enabled: false
-          input:
-            url: http://gtfs.ovapi.nl/nl/trainUpdates.pb
-            name: uploads_gtfs/nl/trainUpdates.pb
+            name: uploads_pb/nl/vehiclePositions.pb
+            bucket: ${self:custom.protobuf_bucket}
+#      - schedule:
+#          name: download_protobufs
+#          description: download gtfs from ovapi
+#          rate: rate(1 minute)
+#          enabled: false
+#          input:
+#            url: http://gtfs.ovapi.nl/nl/alerts.pb
+#            name: uploads_gtfs/nl/alerts.pb
+#      - schedule:
+#          name: download_nl_tripUpdates.pb
+#          description: download gtfs from ovapi
+#          rate: rate(1 minute)
+#          enabled: false
+#          input:
+#            url: http://gtfs.ovapi.nl/nl/tripUpdates.pb
+#            name: uploads_gtfs/nl/tripUpdates.pb
+#      - schedule:
+#          name: download_nl_trainUpdates.pb
+#          description: download gtfs from ovapi
+#          rate: rate(1 minute)
+#          enabled: false
+#          input:
+#            url: http://gtfs.ovapi.nl/nl/trainUpdates.pb
+#            name: uploads_gtfs/nl/trainUpdates.pb
   import_gtfs:
     name: ${self:custom.name}-import_gtfs
     handler: app/import_gtfs/index.handler
     runtime: nodejs10.x
     timeout: 20
     memorySize: 128
+    vpc:
+      securityGroupIds:
+        - Ref: PrivateSecurityGroup
+      subnetIds:
+        - Ref: PrivateSubnet1a
     environment:
-      DB_HOST: 
-        'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
-      DB_USERNAME: ${self:custom.db_username}
-      DB_PASSWORD: ${self:custom.db_password}
-      DB_DB: ${self:custom.db_name}
+#      DB_HOST: 
+#        'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
+#      DB_USERNAME: ${self:custom.db_username}
+#      DB_PASSWORD: ${self:custom.db_password}
+#      DB_DB: ${self:custom.db_name}
     events:
       - s3:
           bucket: ${self:custom.gtfs_bucket}
@@ -157,11 +186,16 @@ functions:
     runtime: nodejs10.x
     timeout: 30
     memorySize: 128
+    vpc:
+      securityGroupIds:
+        - Ref: PrivateSecurityGroup
+      subnetIds:
+        - Ref: PrivateSubnet1a
     environment:
-      REDIS_URL: 
+      REDIS_HOST: 
         'Fn::GetAtt': Redis.RedisEndpoint.Address
-      DB_HOST: 
-        'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
+#      DB_HOST: 
+#        'Fn::GetAtt': PostgresqlDatabaseInstance.Endpoint.Address
      # DB_USER: ${self:custom.db_username}
      # DB_PASSWORD: ${self:custom.db_password}
     events:
@@ -337,7 +371,7 @@ resources:
             Value: ${self:custom.name}-private-security-group
         VpcId:
           Ref: VPC
-    PrivateSecurityGroupIngress:
+    PrivateSecurityGroupIngressMysql:
       Type: 'AWS::EC2::SecurityGroupIngress'
       Properties:
           GroupId:
@@ -347,6 +381,80 @@ resources:
           ToPort: 3306
           SourceSecurityGroupId:
             Ref: PrivateSecurityGroup
+    PrivateSecurityGroupIngressRedis:
+      Type: 'AWS::EC2::SecurityGroupIngress'
+      Properties:
+          GroupId:
+            Ref: PrivateSecurityGroup
+          IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId:
+            Ref: PrivateSecurityGroup
+    VPCS3Endpoint:
+      Type: AWS::EC2::VPCEndpoint
+      Properties:
+        VpcEndpointType: Gateway
+        RouteTableIds: 
+          - Ref: RouteTable
+        ServiceName: com.amazonaws.eu-central-1.s3
+        VpcId:
+          Ref: VPC
+
+
+###############################################################################
+# REDIS
+###############################################################################
+    Redis:
+      Type: AWS::ElastiCache::CacheCluster
+      Properties:
+        ClusterName: ovas-${self:provider.stage}-redis
+        CacheNodeType: cache.t2.micro
+        NumCacheNodes: 1
+        Engine: redis
+        VpcSecurityGroupIds:
+          - Ref: PrivateSecurityGroup
+        CacheSubnetGroupName:
+          Ref: RedisSubnet
+    RedisSubnet:
+      Type: AWS::ElastiCache::SubnetGroup
+      Properties: 
+        CacheSubnetGroupName: ${self:custom.name}-redis-subnet-group
+        Description: ${self:custom.name}-redis-subnet-group
+        SubnetIds: 
+          - Ref: PrivateSubnet1a
+#          - Ref: PrivateSubnet1b
+
+out-of-service-serverless:
+    PostgresqlDatabase:
+      #Type: AWS::RDS::DBInstance
+      Type: AWS::RDS::DBCluster
+      DeletionPolicy: Delete
+      Properties:
+        #VPCSecurityGroups: (for DBInstance)
+        #  - Ref: PrivateSecurityGroup
+        VpcSecurityGroupIds:
+          - Ref: PrivateSecurityGroup
+        DBSubnetGroupName:
+          Ref: PostgresqlDatabaseSubnet
+        #AllocatedStorage: '5'
+        #DBInstanceClass: db.t2.micro
+        #DBName: ${self:custom.name}
+        #DBInstanceIdentifier: ${self:custom.name}-postgresql-master
+        #Engine: MySQL
+        Engine: aurora
+        EngineMode: serverless
+        ScalingConfiguration:
+          AutoPause: true
+          MaxCapacity: 1
+          MinCapacity: 1
+          SecondsUntilAutoPause: 300
+        MasterUsername: ${self:custom.db_username}
+        MasterUserPassword: ${self:custom.db_password}
+        AvailabilityZones: 
+          - 'eu-central-1a'
+
+out-of-service-postgres-working:
 ###############################################################################
 # Postgresql
 ###############################################################################
@@ -410,54 +518,4 @@ resources:
 #        Family: postgres11
 #        Parameters:
 #          rds.force_ssl: 1
-###############################################################################
-# REDIS
-###############################################################################
-    Redis:
-      Type: AWS::ElastiCache::CacheCluster
-      Properties:
-        ClusterName: ovas-${self:provider.stage}-redis
-        CacheNodeType: cache.t2.micro
-        NumCacheNodes: 1
-        Engine: redis
-        VpcSecurityGroupIds:
-          - Ref: PrivateSecurityGroup
-        CacheSubnetGroupName:
-          Ref: RedisSubnet
-    RedisSubnet:
-      Type: AWS::ElastiCache::SubnetGroup
-      Properties: 
-        CacheSubnetGroupName: ${self:custom.name}-redis-subnet-group
-        Description: ${self:custom.name}-redis-subnet-group
-        SubnetIds: 
-          - Ref: PrivateSubnet1a
-          - Ref: PrivateSubnet1b
 
-out-of-service-serverless:
-    PostgresqlDatabase:
-      #Type: AWS::RDS::DBInstance
-      Type: AWS::RDS::DBCluster
-      DeletionPolicy: Delete
-      Properties:
-        #VPCSecurityGroups: (for DBInstance)
-        #  - Ref: PrivateSecurityGroup
-        VpcSecurityGroupIds:
-          - Ref: PrivateSecurityGroup
-        DBSubnetGroupName:
-          Ref: PostgresqlDatabaseSubnet
-        #AllocatedStorage: '5'
-        #DBInstanceClass: db.t2.micro
-        #DBName: ${self:custom.name}
-        #DBInstanceIdentifier: ${self:custom.name}-postgresql-master
-        #Engine: MySQL
-        Engine: aurora
-        EngineMode: serverless
-        ScalingConfiguration:
-          AutoPause: true
-          MaxCapacity: 1
-          MinCapacity: 1
-          SecondsUntilAutoPause: 300
-        MasterUsername: ${self:custom.db_username}
-        MasterUserPassword: ${self:custom.db_password}
-        AvailabilityZones: 
-          - 'eu-central-1a'

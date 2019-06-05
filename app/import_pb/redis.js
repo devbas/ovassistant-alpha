@@ -2,13 +2,14 @@ const redis = require('redis');
 const { promisify } = require('util');
 
 const redisClient = redis.createClient({
-  url: process.env.REDIS_URL || 'redis://localhost/0'
+  url: `redis://${process.env.REDIS_HOST}/0`
 });
 
 module.exports = {
   del: promisify(redisClient.del).bind(redisClient),
   get: promisify(redisClient.get).bind(redisClient), 
   set: promisify(redisClient.set).bind(redisClient), 
+  zrange: promisify(redisClient.zrange).bind(redisClient), 
   geopos: promisify(redisClient.geopos).bind(redisClient), 
   geoadd: promisify(redisClient.geoadd).bind(redisClient), 
   zscan: promisify(redisClient.zscan).bind(redisClient), 
