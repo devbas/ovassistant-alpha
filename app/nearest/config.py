@@ -14,3 +14,10 @@ redis = {
   'layer_db': 1, 
   'decode_responses': True 
 }
+
+psql = {
+  'host': 'postgis', 
+  'db': 'gis', 
+  'user': 'docker', 
+  'password': 'docker'
+}

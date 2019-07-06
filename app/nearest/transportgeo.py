@@ -3,7 +3,6 @@ import numpy as np
 import locationcache
 import shapestore
 import config as cfg 
-import nvector as nv
 import json
 from sentry_sdk import capture_exception
 import time

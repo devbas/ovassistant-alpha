@@ -8,6 +8,14 @@ import json
 from sentry_sdk import capture_exception
 import config as cfg 
 
+def get_vehicle_matches(lon, lat, user_datetime, user_id): 
+  user_id = int(user_id) 
+
+  try: 
+    prev_user_location = {} 
+
+    observations = locationcache.get_vehicle_location_state_by_time(lon, lat, user_datetime)
+
 def get_vehicle_candidates(lon, lat, user_datetime, user_id): 
   user_id = int(user_id)
 

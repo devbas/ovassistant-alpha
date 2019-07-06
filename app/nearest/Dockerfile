@@ -17,7 +17,6 @@ COPY ./requirements.txt .
 RUN pip install pandas
 RUN pip install mysql-connector
 RUN pip install numpy 
-RUN pip install nvector
 RUN pip install -r requirements.txt
 
 ENV PYTHONUNBUFFERED 1

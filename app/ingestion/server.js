@@ -70,6 +70,7 @@ sock.on('message', async (topic, message) => {
 
     if(_.has(result, 'ArrayOfTreinLocation')) {
       result = _.get(result, 'ArrayOfTreinLocation.TreinLocation')
+      console.log('result: ', result)
       result.forEach((train) => {
         const speed = _.get(train, 'TreinMaterieelDelen.0.Snelheid.0')
         const id = 'train:' + _.get(train, 'TreinNummer.0')
@@ -146,7 +147,7 @@ sock1.on('message', async (topic, message) => {
           const positionMessages = messages[positionType]
           _.forEach(positionMessages, (positionMessage, i) => {
             const id = `vehicle:${positionMessage.dataownercode[0]}:${positionMessage.lineplanningnumber[0]}:${positionMessage.journeynumber[0]}`
-            
+            // console.log('vehicle: ', positionMessage)
             if (positionType === 'END') {
               redisClient.del(id)
               redisImportController.locationSanitaryCheck(id)

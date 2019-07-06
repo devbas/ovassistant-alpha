@@ -9,9 +9,14 @@ import math
 import time
 from sentry_sdk import capture_exception
 import json
+import psycopg2
 
 redis_client = redis.StrictRedis(host=cfg.redis['host'], port=cfg.redis['port'], db=cfg.redis['db'], decode_responses=cfg.redis['decode_responses'])
 redis_layer_store = redis.StrictRedis(host=cfg.redis['host'], port=cfg.redis['port'], db=cfg.redis['layer_db'], decode_responses=cfg.redis['decode_responses'])
+postgres_conn = "host="+ cfg.psql['host'] +" port="+ "5432" +" dbname="+ cfg.psql['db'] +" user=" + cfg.psql['user'] +" password="+ cfg.psql['password']
+conn = psycopg2.connect(postgres_conn)
+
+cursor = conn.cursor()
 
 def georadius(lon, lat, radius): 
   return redis_client.georadius('items', lon, lat, radius, 'm', 'WITHDIST', 'WITHCOORD', 'COUNT', 50)
@@ -20,6 +25,32 @@ def georadius(lon, lat, radius):
 def get(itemKey): 
   return redis_client.get(itemKey) 
 
+def get_vehicle_location_state_by_time(lon, lat, user_datetime): 
+
+  query = "SELECT trip_id, trajectory_id, ST_Distance_Sphere('SRID=4326;POINT({} {})', ST_LocateAlong(geom, {})) AS user_vehicle_distance \
+            FROM trajectories \
+            WHERE start_planned <= {} \
+            AND end_planned >= {} \
+            AND ST_DWithin(ST_LocateAlong(geom, {}), 'SRID=4326;POINT({} {})', 0.002690) \
+            ORDER BY distance ASC".format(lon, lat, user_datetime, user_datetime, user_datetime, user_datetime, lon, lat)
+  
+  print('query: ', query)
+
+  data = pd.read_sql(query, conn) 
+
+  print('shape: ', str(data.shape))
+
+  return data 
+
+
+  # query = "SELECT *, ST_Distance_Sphere('SRID=4326;POINT(4.90036 52.37916)', ST_LocateAlong(geom, 1562080620)) AS distance \
+  #           FROM trajectories \
+  #           WHERE start_planned <= 1562080620 \
+  #           AND end_planned >= 1562080620 \
+  #           AND ST_DWithin(ST_LocateAlong(geom, 1562080620), 'SRID=4326;POINT(4.90036 52.37916)', 0.002690) \
+  #           ORDER BY distance ASC"
+
+  return False 
 
 def get_vehicles_by_radius(lon, lat, radius, user_datetime): 
   datapoints = georadius(lon, lat, radius) 

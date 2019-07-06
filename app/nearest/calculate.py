@@ -8,6 +8,7 @@ import calculate2
 import sentry_sdk
 import logging
 import time 
+import locationcache
 sentry_sdk.init("https://29436939613d4654864055395fa84a2d@sentry.io/1339196")
 
 HOST_NAME = '0.0.0.0'
@@ -32,8 +33,21 @@ class NearestVehicle(BaseHTTPRequestHandler):
       return 
 
     if str(o.path) == '/test': 
-      self.respond({'status': 200})
-      return 
+      print('here we go')
+      variables = parse_qs(o.query)
+      datetime = int(variables['datetime'][0])
+      lon = float(variables['lon'][0])
+      lat = float(variables['lat'][0])
+
+      data = locationcache.get_vehicle_location_state_by_time(lon, lat, datetime)
+      df = { 'observations': data.to_json(orient='records') }
+      # self.respond({'status': 200})
+      self.send_response(200)  
+      self.send_header('Content-type','text-html')  
+      self.send_header('Access-Control-Allow-Origin','*')  
+      self.end_headers()  
+      self.wfile.write(str.encode(json.dumps(df)))
+      return
     
     if not o.query: 
       print('not all info avaialbe 3')

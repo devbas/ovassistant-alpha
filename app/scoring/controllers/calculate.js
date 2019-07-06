@@ -7,49 +7,49 @@ const _ = require('lodash')
 const redisClient = require('../redis-client')
 const redisLayerStore = require('../redis-layer-store')
 
-const getVehicleItemInfo = async (vehicle) => {
-  try {
+// const getVehicleItemInfo = async (vehicle) => {
+//   try {
 
-    // First, we check if the vehicle is present in Redis cache. 
-    const cacheRaw = await redisClient.get(vehicle.vehicle_type + ':' + vehicle.vehicle_id)
-    if(!cacheRaw && vehicle.vehicle_type === 'vehicle') {
-      const trip = await pool.query('SELECT trip_headsign, route_id, trip_id FROM trips WHERE realtime_trip_id = ? LIMIT 0,1', [vehicle.vehicle_id])
-      if(trip[0] && trip[0].trip_headsign) {
-        vehicle.destination = trip[0].trip_headsign
-        vehicle.trip_id = trip[0].trip_id
-        const tripRouteName = await pool.query('SELECT route_short_name FROM routes WHERE route_id = ? LIMIT 0,1', [trip[0].route_id])
-        vehicle.title_prefix = tripRouteName[0].route_short_name
-      } else {
-        vehicle.destination = false 
-        vehicle.title_prefix = false 
-      }
+//     // First, we check if the vehicle is present in Redis cache. 
+//     const cacheRaw = await redisClient.get(vehicle.vehicle_type + ':' + vehicle.vehicle_id)
+//     if(!cacheRaw && vehicle.vehicle_type === 'vehicle') {
+//       const trip = await pool.query('SELECT trip_headsign, route_id, trip_id FROM trips WHERE realtime_trip_id = ? LIMIT 0,1', [vehicle.vehicle_id])
+//       if(trip[0] && trip[0].trip_headsign) {
+//         vehicle.destination = trip[0].trip_headsign
+//         vehicle.trip_id = trip[0].trip_id
+//         const tripRouteName = await pool.query('SELECT route_short_name FROM routes WHERE route_id = ? LIMIT 0,1', [trip[0].route_id])
+//         vehicle.title_prefix = tripRouteName[0].route_short_name
+//       } else {
+//         vehicle.destination = false 
+//         vehicle.title_prefix = false 
+//       }
      
-    } else if(!cacheRaw && vehicle.vehicle_type === 'train') { 
-      const trip = await pool.query('SELECT trip_headsign, route_id, trip_id FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = ? AND CD.date = ?', [vehicle.vehicle_id, moment().format('YYYYMMDD')])
-      if(trip[0] && trip[0].trip_headsign) {
-        vehicle.destination = trip[0].trip_headsign
-        vehicle.trip_id = trip[0].trip_id 
-        const tripRouteName = await pool.query('SELECT route_short_name FROM routes WHERE route_id = ? LIMIT 0,1', [trip[0].route_id])
-        vehicle.title_prefix = tripRouteName[0].route_short_name
-      } else {
-        vehicle.destination = false 
-        vehicle.title_prefix = false 
-      }
+//     } else if(!cacheRaw && vehicle.vehicle_type === 'train') { 
+//       const trip = await pool.query('SELECT trip_headsign, route_id, trip_id FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = ? AND CD.date = ?', [vehicle.vehicle_id, moment().format('YYYYMMDD')])
+//       if(trip[0] && trip[0].trip_headsign) {
+//         vehicle.destination = trip[0].trip_headsign
+//         vehicle.trip_id = trip[0].trip_id 
+//         const tripRouteName = await pool.query('SELECT route_short_name FROM routes WHERE route_id = ? LIMIT 0,1', [trip[0].route_id])
+//         vehicle.title_prefix = tripRouteName[0].route_short_name
+//       } else {
+//         vehicle.destination = false 
+//         vehicle.title_prefix = false 
+//       }
 
-    } else {
-      const cache = JSON.parse(cacheRaw)
-      vehicle.destination = cache.destination 
-      vehicle.title_prefix = vehicle.vehicle_type === 'train' ? cache.subType : cache.linenumber
-    }
+//     } else {
+//       const cache = JSON.parse(cacheRaw)
+//       vehicle.destination = cache.destination 
+//       vehicle.title_prefix = vehicle.vehicle_type === 'train' ? cache.subType : cache.linenumber
+//     }
 
-    return vehicle 
-  }
-  catch(err) {
-    Sentry.captureException(err)
-    throw(err)
-  }
-  // return new Promise(resolve => resolve(vehicle))
-}
+//     return vehicle 
+//   }
+//   catch(err) {
+//     Sentry.captureException(err)
+//     throw(err)
+//   }
+//   // return new Promise(resolve => resolve(vehicle))
+// }
 
 const getVehicleCandidates = async (data) => { 
 

@@ -1,3 +1,4 @@
 redis
 nvector
 sentry-sdk==0.6.2
+psycopg2

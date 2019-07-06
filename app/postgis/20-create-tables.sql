@@ -16,9 +16,10 @@ CREATE TABLE "public"."temp_shapes" (
 
 CREATE TABLE "public"."trajectories" (
 	"trajectory_id" SERIAL PRIMARY KEY,
-  "shape_id" int8 NOT NULL,
-  "content" text COLLATE "default", 
-  "geom" geography(LINESTRING,4326)
+  "geom" geometry(LINESTRINGM,4326), 
+	"trip_id" int4 NOT NULL, 
+	"start_planned" int4 NULL, 
+	"end_planned" int4 NULL
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."trajectories" OWNER TO "docker";
@@ -39,6 +40,12 @@ CREATE TABLE "public"."stop_times" (
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."stop_times" OWNER TO "docker";
 
+CREATE INDEX idx_stoptimes_trip_id
+ON stop_times(trip_id);
+
+CREATE INDEX idx_stoptimes_stop_id
+ON stop_times(stop_id); 
+
 CREATE TABLE "public"."trips" (
 	"route_id" int8,
 	"service_id" int8,
@@ -47,7 +54,7 @@ CREATE TABLE "public"."trips" (
 	"trip_headsign" varchar(255) COLLATE "default",
 	"trip_short_name" int8,
 	"trip_long_name" varchar(255) COLLATE "default",
-	"direction" int4,
+	"direction_id" int4,
 	"block_id" varchar(255) COLLATE "default",
 	"shape_id" int8,
 	"wheelchair_accessible" int2,
@@ -55,6 +62,9 @@ CREATE TABLE "public"."trips" (
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."trips" OWNER TO "docker";
+
+CREATE INDEX idx_trips_trip_id
+ON trips(trip_id);
 
 CREATE TABLE "public"."stops" (
 	"stop_id" varchar(255) COLLATE "default",
@@ -71,6 +81,9 @@ CREATE TABLE "public"."stops" (
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."stops" OWNER TO "docker";
+
+CREATE INDEX idx_stops_stop_id
+ON stops(stop_id);
 
 CREATE TABLE "public"."calendar_dates" (
 	"service_id" int2 NOT NULL,
