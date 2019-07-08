@@ -27,9 +27,9 @@ services:
   #     - app
   nearest: 
     build: ./app/nearest/
-    depends_on: 
-      - redis
-      - db
+    # depends_on: 
+      # - redis
+      # - db
     ports: 
       - 127.0.0.1:9002:9002
     command: python calculate.py 
@@ -92,7 +92,7 @@ services:
   postgis:
     image: mdillon/postgis
     volumes:
-      # - postgis-data:/var/lib/postgresql
+      - postgis-data:/var/lib/postgresql
       - ./app/postgis/:/docker-entrypoint-initdb.d
       # - dbbackups:/backups
     environment:
@@ -113,6 +113,6 @@ services:
 volumes:
   redis-data:
   node_modules:
-  # postgis-data:
+  postgis-data:
 networks: 
   app:

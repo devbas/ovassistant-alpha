@@ -249,7 +249,7 @@ const ingestLatestGTFS = async () => {
                   if(trajectoryUnique.length > 0) {
                     client.query({ text: query, values: values }, (err, response) => {
                       if(err) innerCallback({ err: err, query: query }) 
-
+                      
                       if(response) innerCallback()
                     })
                   }
@@ -257,26 +257,6 @@ const ingestLatestGTFS = async () => {
                   innerCallback()
                   console.log('e1: ', e)
                 }
-              }, 
-              (innerCallback) => {
-                try {
-                  client.query({ text: `UPDATE trajectories 
-                                        SET start_planned = subquery.start_planned,
-                                            end_planned = subquery.end_planned 
-                                        FROM (
-                                          SELECT ST_M(ST_StartPoint(geom)) AS start_planned, ST_M(ST_EndPoint(geom)) AS end_planned, trajectory_id
-                                          FROM trajectories	
-                                        ) AS subquery
-                                        WHERE trajectories.trajectory_id = subquery.trajectory_id` },
-                    (err, response) => {
-                      if(err) innerCallback({ err: err, query: query })
-
-                      if(response) innerCallback() 
-                    })
-                } catch(e) {
-                  innerCallback()
-                  console.log('e5', e)
-                } 
               }
             ], (err, result) => {
               if(err) {
@@ -297,6 +277,26 @@ const ingestLatestGTFS = async () => {
 
       })
     },
+    (callback) => {
+      try {
+        client.query({ text: `UPDATE trajectories 
+                              SET start_planned = subquery.start_planned,
+                                  end_planned = subquery.end_planned 
+                              FROM (
+                                SELECT ST_M(ST_StartPoint(geom)) AS start_planned, ST_M(ST_EndPoint(geom)) AS end_planned, trajectory_id
+                                FROM trajectories	
+                              ) AS subquery
+                              WHERE trajectories.trajectory_id = subquery.trajectory_id` },
+          (err, response) => {
+            if(err) callback({ err: err })
+
+            if(response) callback() 
+          })
+      } catch(e) {
+        callback()
+        console.log('e5', e)
+      } 
+    }
   ], (err, result) => {
     if(err) {
       console.log('err: ', err, ' for the following trip: ', trip)

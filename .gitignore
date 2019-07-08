@@ -1,3 +1,4 @@
 /.vscode
 /app/nearest/__pycache__
 /app/frontend/tmp
+/app/ingestion/core
