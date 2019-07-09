@@ -13,7 +13,7 @@ const utils = require('../utils')
 
 const config = require('../config/config')
 
-const ingestLatestGTFS = async () => {
+const ingestLatestGTFS =  async ({ force }) => {
 
   const zipFile = 'gtfs-openov-nl.zip'
   const extractEntryTo = ''
@@ -21,6 +21,12 @@ const ingestLatestGTFS = async () => {
 
   const client = new Client(config.pg)
   await client.connect()
+
+  const trajectoryCount = await client.query('SELECT COUNT(*) FROM trajectories')
+
+  if(trajectoryCount.rows[0].count > 0 && !force) {
+    return false; 
+  } 
 
   await client.query('TRUNCATE temp_shapes')
   console.log(new Date(), ' Temp Shapes table truncated')
@@ -304,13 +310,13 @@ const ingestLatestGTFS = async () => {
       console.log('result: ', result)
     }
   })
-}  
-
-ingestLatestGTFS() 
+}
 
 const task = cron.schedule('0 0 3 * * *', () => {
-  ingestLatestGTFS()
+  ingestLatestGTFS({ force: true })
 }, {
   scheduled: false, 
   timezone: "Europe/Amsterdam"
 })
+
+module.exports({ ingestLatestGTFS: ingestLatestGTFS })

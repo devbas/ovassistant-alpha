@@ -16,6 +16,7 @@ const redisClient = require('./redis-client.js');
 const redisClientPersist = require('./redis-client-persist');
 const util = require('util')
 const fs = require('fs')
+const ingestLatestGTFS = require('./cron/index')
 
 const redis = require('redis');
 const redisClient2 = redis.createClient({
@@ -251,4 +252,8 @@ app.use('/api', router);
 app.set('view engine', 'jade'); 
 
 app.listen(port);
-console.log('servert listening on: ', port);
+
+app.on('listening', () => {
+  console.log('servert listening on: ', port)
+  ingestLatestGTFS({ force: false })
+})
