@@ -107,7 +107,7 @@ RUN set -ex; \
 # build .deb files from upstream's source packages (which are verified by apt-get)
 			apt-get update; \
 			apt-get build-dep -y \
-				postgresql-common pgdg-keyring \
+				postgresql-common pgdg-keyring postgis postgresql-11-postgis \
 				"postgresql-$PG_MAJOR=$PG_VERSION" \
 			; \
 			DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" \
