@@ -90,7 +90,9 @@ services:
     depends_on: 
       - "db"
   postgis:
-    image: mdillon/postgis
+    build: 
+      context: ./app/postgis/docker/
+      dockerfile: Dockerfile
     volumes:
       - postgis-data:/var/lib/postgresql
       - ./app/postgis/:/docker-entrypoint-initdb.d
