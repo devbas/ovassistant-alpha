@@ -71,7 +71,6 @@ sock.on('message', async (topic, message) => {
 
     if(_.has(result, 'ArrayOfTreinLocation')) {
       result = _.get(result, 'ArrayOfTreinLocation.TreinLocation')
-      console.log('result: ', result)
       result.forEach((train) => {
         const speed = _.get(train, 'TreinMaterieelDelen.0.Snelheid.0')
         const id = 'train:' + _.get(train, 'TreinNummer.0')
