@@ -319,4 +319,4 @@ const task = cron.schedule('0 0 3 * * *', () => {
   timezone: "Europe/Amsterdam"
 })
 
-module.exports({ ingestLatestGTFS: ingestLatestGTFS })
+module.exports = { ingestLatestGTFS: ingestLatestGTFS }
