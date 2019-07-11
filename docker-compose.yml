@@ -92,12 +92,13 @@ services:
     depends_on: 
       - "db"
   postgis:
-    build: 
-      context: ./app/postgis/docker/
-      dockerfile: Dockerfile
+    # build: 
+    #   context: ./app/postgis/docker/
+    #   dockerfile: Dockerfile
+    image: mdillon/postgis
     volumes:
       - postgis-data:/var/lib/postgresql
-      - ./app/postgis/:/docker-entrypoint-initdb.d
+      - ./app/postgis/initdb/:/docker-entrypoint-initdb.d
       # - dbbackups:/backups
     environment:
       # If you need to create multiple database you can add coma separated databases eg gis,data
