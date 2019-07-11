@@ -27,6 +27,48 @@ Sentry.init({ dsn: 'https://39c9c5b61e1d41eb93ba664950bd3416@sentry.io/1339156' 
 const parseString = require('xml2js').parseString;
 const stripPrefix = require('xml2js').processors.stripPrefix;
 
+app.use(Sentry.Handlers.requestHandler());
+app.use(cors())
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json()); 
+
+var port = process.env.PORT || 8000;
+
+var router = express.Router();
+
+router.use((req, res, next) => {
+  // do logging
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  console.log('Something is happening.');
+  next(); // make sure we go to the next routes and don't stop here
+});
+
+router.get('/*', (req, res) => {
+  res.json({ message: '200' });   
+});
+
+app.use(Sentry.Handlers.errorHandler());
+// Optional fallthrough error handler
+app.use(function onError(err, req, res, next) {
+  // The error id is attached to `res.sentry` to be returned
+  // and optionally displayed to the user for support.
+  res.statusCode = 500;
+  res.end(res.sentry + '\n');
+});
+
+// REGISTER OUR ROUTES -------------------------------
+// all of our routes will be prefixed with /api
+app.use('/api', router);
+app.set('view engine', 'jade'); 
+
+app.listen(port);
+
+app.on('listening', () => {
+  console.log('servert listening on: ', port)
+  ingestLatestGTFS({ force: false })
+})
+
 const zlibWrapper = {
   unzip: promisify(zlib.unzip).bind(zlib) 
 }
@@ -211,48 +253,4 @@ sock1.on('message', async (topic, message) => {
   } catch(err) {
     Sentry.captureException(err)
   }
-})
-
-app.use(Sentry.Handlers.requestHandler());
-app.use(cors())
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json()); 
-
-var port = process.env.PORT || 8000;
-
-var router = express.Router();
-
-router.use((req, res, next) => {
-  // do logging
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  console.log('Something is happening.');
-  next(); // make sure we go to the next routes and don't stop here
-});
-
-router.get('/*', (req, res) => {
-  res.json({ message: '200' });   
-});
-
-
-
-app.use(Sentry.Handlers.errorHandler());
-// Optional fallthrough error handler
-app.use(function onError(err, req, res, next) {
-  // The error id is attached to `res.sentry` to be returned
-  // and optionally displayed to the user for support.
-  res.statusCode = 500;
-  res.end(res.sentry + '\n');
-});
-
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
-app.use('/api', router);
-app.set('view engine', 'jade'); 
-
-app.listen(port);
-
-app.on('listening', () => {
-  console.log('servert listening on: ', port)
-  ingestLatestGTFS({ force: false })
 })
