@@ -93,7 +93,7 @@ const redisFlush = function() {
   console.log('flush all: ', flushStatus)  
 }
 
-// redisFlush()
+redisFlush()
 
 
 sock.connect('tcp://pubsub.besteffort.ndovloket.nl:7664');
