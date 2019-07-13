@@ -73,6 +73,14 @@ module.exports = (passport) => {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken('JWT'),
     secretOrKey: config.jwtSecret
   }
+
+  passport.serializeUser(function(user, done) {
+    done(null, user);
+  });
+  
+  passport.deserializeUser(function(user, done) {
+    done(null, user);
+  });
     
   passport.use('jwt-login', new JwtStrategy(opts, 
     (jwt_payload, done) => {
