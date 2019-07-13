@@ -64,7 +64,7 @@ app.set('view engine', 'jade');
 
 app.listen(port, '127.0.0.1', () => {
   console.log('servert listening on: ', port)
-  ingestLatestGTFS({ force: true })
+  ingestLatestGTFS({ force: false })
 });
 
 const zlibWrapper = {

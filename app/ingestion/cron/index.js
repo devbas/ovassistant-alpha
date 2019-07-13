@@ -242,12 +242,7 @@ const ingestLatestGTFS =  async ({ force }) => {
                   }
                 }, 
                 (trajectories, innerCallback) => {
-                  var t0 = performance.now()
                   trajectories = _.orderBy(trajectories, ['shape_dist_traveled'], ['asc'])
-
-                  var t1 = performance.now()
-                  console.log('Ordering: ', (t1 - t0).toFixed(2), ' millis')
-                  // const trajectoryUnique = _.uniqWith(trajectories, _.isEqual)
                   innerCallback(false, trajectories)
                 }, 
                 (trajectoryUnique, innerCallback) => {
@@ -323,10 +318,71 @@ const ingestLatestGTFS =  async ({ force }) => {
           callback()
           console.log('e5', e)
         } 
+      }, 
+      async callback => {
+
+        await client.query(`CREATE TABLE tmp_stop_times 
+        (
+          trip_id int8,
+          stop_sequence int4,
+          stop_id varchar(255),
+          stop_headsign varchar(255),
+          arrival_time varchar(255),
+          departure_time varchar(255),
+          pickup_type int4,
+          drop_off_type int4,
+          timepoint int8,
+          shape_dist_traveled int4,
+          fare_units_traveled int8, 
+          geom geometry(POINT,4326)
+        )`)
+
+        await client.query(`INSERT INTO tmp_stop_times(
+          trip_id, 
+          stop_sequence, 
+          stop_id, 
+          stop_headsign, 
+          arrival_time, 
+          departure_time, 
+          pickup_type, 
+          drop_off_type, 
+          timepoint, 
+          shape_dist_traveled, 
+          fare_units_traveled, 
+          geom
+        )
+        (SELECT 
+          trip_id, 
+          stop_sequence, 
+          ST.stop_id, 
+          stop_headsign, 
+          arrival_time, 
+          departure_time, 
+          pickup_type, 
+          drop_off_type, 
+          timepoint, 
+          shape_dist_traveled, 
+          fare_units_traveled, 
+          ST_SetSRID(ST_MakePoint(S.stop_lon, S.stop_lat), 4326)
+        FROM stop_times ST 
+        JOIN stops S 
+        ON ST.stop_id = S.stop_id
+        )`)
+
+        
+        await client.query('DROP TABLE stop_times')
+
+        await client.query('ALTER TABLE tmp_stop_times RENAME TO stop_times')
+
+        await client.query('CREATE INDEX idx_stoptimes_stop_id ON stop_times(stop_id)')
+        await client.query('CREATE INDEX idx_stoptimes_trip_id ON stop_times(trip_id)')
+
+        callback(false, 'done')
+        
       }
     ], (err, result) => {
       if(err) {
-        console.log('err: ', err, ' for the following trip: ', trip)
+        console.log('err: ', err)
       } else {
         console.log('result: ', result)
       }
@@ -336,7 +392,7 @@ const ingestLatestGTFS =  async ({ force }) => {
   }
 }
 
-const task = cron.schedule('0 0 3 * * *', () => {
+cron.schedule('0 0 3 * * *', () => {
   ingestLatestGTFS({ force: true })
 }, {
   scheduled: false, 

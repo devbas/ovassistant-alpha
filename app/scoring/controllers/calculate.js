@@ -63,11 +63,12 @@ const getVehicleCandidates = async (data) => {
     pool.query('INSERT INTO user_location SET `user_id` = ?, `lon` = ?, `lat` = ?, `datetime` = ?', 
                       [parseInt(data.userId), data.lon, data.lat, data.datetime])
 
-    const prevUserLocation = await pool.query('SELECT * FROM user_location WHERE `user_id` = ? AND `datetime` > (? - 60) ORDER BY datetime DESC LIMIT 0,1',
-                            [parseInt(data.userId), data.datetime])
-    console.log('hit send', prevUserLocation)
+    // const prevUserLocation = await pool.query('SELECT * FROM user_location WHERE `user_id` = ? AND `datetime` > (? - 60) ORDER BY datetime DESC LIMIT 0,1',
+                            // [parseInt(data.userId), data.datetime])
+    // console.log('hit send', prevUserLocation)
     // Get vehicle candidates from Nearest   
-    const vehicleCandidatesRaw = await axios.get(`http://nearest:9002/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}&prev_user_location=${prevUserLocation[0] ? JSON.stringify(prevUserLocation[0]) : ''}`)
+    // const vehicleCandidatesRaw = await axios.get(`http://nearest:9002/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}&prev_user_location=${prevUserLocation[0] ? JSON.stringify(prevUserLocation[0]) : ''}`)
+    const vehicleCandidatesRaw = await axios.get(`http://nearest:9002/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}`)
                                               .catch(err => {
                                                 Sentry.captureException(err)
                                                 throw { 'message': 'Something went wrong on our end. Please try again later.', 'status': 500 }
@@ -77,7 +78,7 @@ const getVehicleCandidates = async (data) => {
     const matches = vehicleCandidatesRaw.data.matches
 
     if(!_.isEmpty(vehicleCandidates)) {
-      vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo))
+      // vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo))
       // item per layer, layer expires after 120 seconds. How to name keys? userId:latest, userId:sequenceNumber
       const userLayersRaw = await redisLayerStore.get(data.userId)
 

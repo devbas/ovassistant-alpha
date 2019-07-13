@@ -4,7 +4,7 @@ const utils = require('../utils')
 const pool = require('../database')
 const moment = require('moment-timezone')
 const _ = require('lodash')
-const redisClient = process.env.INGESTION_PERSIST ? require('../redis-client-persist') : require('../redis-client')
+const redisClient = process.env.INGESTION_PERSIST === 'yes' ? require('../redis-client-persist') : require('../redis-client')
 
 const importData = async data => {
   var row = {
@@ -26,7 +26,7 @@ const importData = async data => {
       const vehiclePointPrev = await redisClient.geopos('items', data.id + ':latest')
       const prevIdentifier = data.id + ':' + vehiclePrev['datetimeUnix']
 
-      if (isPersist) {
+      if (isPersist === 'yes') {
         redisClient.set(prevIdentifier, JSON.stringify(vehiclePrev))
       } else { 
         redisClient.set(prevIdentifier, JSON.stringify(vehiclePrev), 'EX', 40)
@@ -34,7 +34,7 @@ const importData = async data => {
 
       if(vehiclePointPrev[0]) {
 
-        if (isPersist) {
+        if (isPersist === 'yes') {
           redisClient.geoadd('items', vehiclePointPrev[0][0], vehiclePointPrev[0][1], prevIdentifier)
         } else {
           redisClient.geoadd('items', vehiclePointPrev[0][0], vehiclePointPrev[0][1], prevIdentifier)
@@ -55,7 +55,7 @@ const importData = async data => {
       row.speedPerSecond = 0 
     }
 
-    if (isPersist) {
+    if (isPersist === 'yes') {
       redisClient.set(data.id + ':latest', JSON.stringify(row))
       redisClient.geoadd('items', data.longitude, data.latitude, data.id + ':latest')
     } else {
@@ -113,7 +113,7 @@ const updateData = async (identifier, data) => {
         }                                       
       }                               
       
-      if (isPersist) {
+      if (isPersist === 'yes') {
         redisClient.set(identifier, JSON.stringify(data))
       } else {
         redisClient.set(identifier, JSON.stringify(data), 'EX', 40)
@@ -169,7 +169,7 @@ const updateData = async (identifier, data) => {
         // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
       }
 
-      if (isPersist) {
+      if (isPersist === 'yes') {
         redisClient.set(identifier, JSON.stringify(data))
       } else {
         redisClient.set(identifier, JSON.stringify(data), 'EX', 40)

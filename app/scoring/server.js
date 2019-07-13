@@ -5,7 +5,7 @@ const _ = require('lodash');
 const cors = require('cors');             
 const bodyParser = require('body-parser');
 const matchCalculationController = require('./controllers/calculate'); 
-const scoringController = require('./controllers/scoring');
+// const scoringController = require('./controllers/scoring');
 const redisClientPersist = require('./redis-client-persist');
 const fs = require('fs');
 const APIRouter = require('./api');
@@ -36,104 +36,102 @@ router.use((req, res, next) => {
 app.use('/api/v1', APIRouter); 
 
 // In progress: 
-router.get('/scoring', async (req, res) => {
-  console.log('he')
-  const data = req.query 
+// router.get('/scoring', async (req, res) => {
+//   console.log('he')
+//   const data = req.query 
 
-  if(data.userId) {
-    data.userId = parseInt(data.userId) 
-  }
+//   if(data.userId) {
+//     data.userId = parseInt(data.userId) 
+//   }
 
-  if(data.datetime) {
-    data.datetime = parseInt(data.datetime) 
-  }
+//   if(data.datetime) {
+//     data.datetime = parseInt(data.datetime) 
+//   }
 
-  if(data.lat) {
-    data.lat = parseFloat(data.lat) 
-  }
+//   if(data.lat) {
+//     data.lat = parseFloat(data.lat) 
+//   }
 
-  if(data.lon) {
-    data.lon = parseFloat(data.lon) 
-  }
+//   if(data.lon) {
+//     data.lon = parseFloat(data.lon) 
+//   }
 
-  try {
-    await scoringController.scoreDataPoint(data)
-  } catch(err) {
-    console.log('err: ', err)
-  }
-})
+//   try {
+//     await scoringController.scoreDataPoint(data)
+//   } catch(err) {
+//     console.log('err: ', err)
+//   }
+// })
 
 router.get('/feedback', async (req, res) => {
   res.status(200).send({ message: 'OK' })
 })
 
-router.get('/shapes-to-redis', (req, res) => {
-  const { once } = require('events');
-  const { createReadStream } = require('fs');
-  const { createInterface } = require('readline');
-  const redisShapeStore = require('./redis-shape-store');
+// router.get('/shapes-to-redis', (req, res) => {
+//   const { once } = require('events');
+//   const { createReadStream } = require('fs');
+//   const { createInterface } = require('readline');
+//   const redisShapeStore = require('./redis-shape-store');
 
-  async function processLineByLine() {
-    try {
-      const rl = createInterface({
-        input: createReadStream('./shapes.txt'),
-        crlfDelay: Infinity
-      });
+//   async function processLineByLine() {
+//     try {
+//       const rl = createInterface({
+//         input: createReadStream('./shapes.txt'),
+//         crlfDelay: Infinity
+//       });
 
-      rl.on('line', (line) => {
-        // Process the line.
-        const shape = line.split(',')
-        if(!line.includes('shape_id')) { // Hacky way of skipping the first line
-          redisShapeStore.geoadd(shape[0], shape[3], shape[2], `${shape[0]}:${shape[1]}:${shape[4]}`)
-        }
-      });
+//       rl.on('line', (line) => {
+//         // Process the line.
+//         const shape = line.split(',')
+//         if(!line.includes('shape_id')) { // Hacky way of skipping the first line
+//           redisShapeStore.geoadd(shape[0], shape[3], shape[2], `${shape[0]}:${shape[1]}:${shape[4]}`)
+//         }
+//       });
 
-      await once(rl, 'close');
+//       await once(rl, 'close');
 
-      console.log('File processed.');
-    } catch (err) {
-      console.error(err);
-    }
-  }
+//       console.log('File processed.');
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   }
 
-  processLineByLine()
-})
+//   processLineByLine()
+// })
 
+// router.get('/generate-sample', async (req, res) => {
 
+//   const response = await redisClientPersist.zrange('items', 1000, 2000)
+//   const file = fs.createWriteStream('sample.csv');
 
-router.get('/generate-sample', async (req, res) => {
+//   file.on('error', function(err) { console.log('error writing to file: ', err) });
+//   console.log('total length: ', response[0])
+//   // let i = 0; 
 
-  const response = await redisClientPersist.zrange('items', 1000, 2000)
-  const file = fs.createWriteStream('sample.csv');
-
-  file.on('error', function(err) { console.log('error writing to file: ', err) });
-  console.log('total length: ', response[0])
-  // let i = 0; 
-
-  for(let i = 0; i < response.length; i++) {
+//   for(let i = 0; i < response.length; i++) {
     
-    try {
-      const coordinates = await redisClientPersist.geopos('items', response[i])
-      console.log('coordinates: ', coordinates)
-      const datetime = response[i].substring(response[i].lastIndexOf(':') + 1, response[i].length);
+//     try {
+//       const coordinates = await redisClientPersist.geopos('items', response[i])
+//       console.log('coordinates: ', coordinates)
+//       const datetime = response[i].substring(response[i].lastIndexOf(':') + 1, response[i].length);
       
-      let vehicle = response[i].substring(0, response[i].lastIndexOf(":") + 1);
-      vehicle = vehicle.substring(0, vehicle.length-1)
+//       let vehicle = response[i].substring(0, response[i].lastIndexOf(":") + 1);
+//       vehicle = vehicle.substring(0, vehicle.length-1)
 
-      if(datetime !== 'latest') {
-        const csvRow = [...coordinates[0], datetime, vehicle]
-        file.write(csvRow.join(',') + '\n');
-      }
-    } catch(e) {
-      console.log('erroer: ', e, typeof(response[i]))
-    }
-  }
+//       if(datetime !== 'latest') {
+//         const csvRow = [...coordinates[0], datetime, vehicle]
+//         file.write(csvRow.join(',') + '\n');
+//       }
+//     } catch(e) {
+//       console.log('erroer: ', e, typeof(response[i]))
+//     }
+//   }
 
-  file.end();
+//   file.end();
 
-  res.send('OK')
+//   res.send('OK')
 
-})
+// })
  
 router.get('/*', (req, res) => {
   res.json({ message: '200' });   

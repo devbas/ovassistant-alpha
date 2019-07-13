@@ -14,6 +14,9 @@ CREATE TABLE "public"."temp_shapes" (
   "geom" geography(POINT,4326)
 );
 
+CREATE INDEX idx_temp_shapes_shape_id
+ON temp_shapes(shape_id);
+
 CREATE TABLE "public"."trajectories" (
 	"trajectory_id" SERIAL PRIMARY KEY,
   "geom" geometry(LINESTRINGM,4326), 
