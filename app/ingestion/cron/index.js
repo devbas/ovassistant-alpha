@@ -10,6 +10,7 @@ const async = require('async')
 const _ = require('lodash')
 const moment = require('moment')
 const utils = require('../utils')
+const { performance } = require('perf_hooks')
 
 const config = require('../config/config')
 
@@ -30,125 +31,125 @@ const ingestLatestGTFS =  async ({ force }) => {
       return false; 
     } 
 
-    await client.query('TRUNCATE temp_shapes')
-    console.log(new Date(), ' Temp Shapes table truncated')
+    // await client.query('TRUNCATE temp_shapes')
+    // console.log(new Date(), ' Temp Shapes table truncated')
 
     console.log(new Date(), ' Truncate trajectories table')
     await client.query('TRUNCATE trajectories')
 
-    console.log(new Date(), ' Truncate trips table')
-    await client.query('TRUNCATE trips')
+    // console.log(new Date(), ' Truncate trips table')
+    // await client.query('TRUNCATE trips')
 
-    console.log(new Date(), ' Truncate stop_times table')
-    await client.query('TRUNCATE stop_times')
+    // console.log(new Date(), ' Truncate stop_times table')
+    // await client.query('TRUNCATE stop_times')
 
-    console.log(new Date(), ' Truncate stops table')
-    await client.query('TRUNCATE stops')
+    // console.log(new Date(), ' Truncate stops table')
+    // await client.query('TRUNCATE stops')
 
-    console.log(new Date(), ' Truncate stops table')
-    await client.query('TRUNCATE stops')
+    // console.log(new Date(), ' Truncate stops table')
+    // await client.query('TRUNCATE stops')
 
-    console.log(new Date(), ' Truncate calendar dates table')
-    await client.query('TRUNCATE calendar_dates')
+    // console.log(new Date(), ' Truncate calendar dates table')
+    // await client.query('TRUNCATE calendar_dates')
 
     async.waterfall([
-      callback => {
-        request('http://gtfs.openov.nl/gtfs-rt/gtfs-openov-nl.zip')
-          .on('error', function(err) {
-            callback(err)
-          })
-          .on('end', () => {
-            console.log('Finished downloading GTFS NL')
-            callback(false)
-          })
-          .pipe(fs.createWriteStream(zipFile))
-      }, 
-      callback => {
-        decompress(zipFile, 'tmp').then(files => {
-          fs.unlink(zipFile)
-          console.log('unlinked!')
-          callback(false)
-        }).catch(err => callback(err))
-      }, 
-      callback => {
-        console.log(new Date(), ' Inserting shapes')
-        let stream = client.query(copyFrom('COPY temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/shapes.txt')
-        fileStream.on('error', err => {
-          callback(err)
-        })
-        stream.on('error', err => {
-          callback(err)
-        })
-        stream.on('end', () => {
-          callback()
-        })
-        fileStream.pipe(stream)
-      }, 
-      callback => {
-        console.log(new Date(), ' Inserting stop_times')
-        let stream = client.query(copyFrom('COPY stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/stop_times.txt')
+      // callback => {
+      //   request('http://gtfs.openov.nl/gtfs-rt/gtfs-openov-nl.zip')
+      //     .on('error', function(err) {
+      //       callback(err)
+      //     })
+      //     .on('end', () => {
+      //       console.log('Finished downloading GTFS NL')
+      //       callback(false)
+      //     })
+      //     .pipe(fs.createWriteStream(zipFile))
+      // }, 
+      // callback => {
+      //   decompress(zipFile, 'tmp').then(files => {
+      //     fs.unlink(zipFile)
+      //     console.log('unlinked!')
+      //     callback(false)
+      //   }).catch(err => callback(err))
+      // }, 
+      // callback => {
+      //   console.log(new Date(), ' Inserting shapes')
+      //   let stream = client.query(copyFrom('COPY temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
+      //   let fileStream = fs.createReadStream('./tmp/shapes.txt')
+      //   fileStream.on('error', err => {
+      //     callback(err)
+      //   })
+      //   stream.on('error', err => {
+      //     callback(err)
+      //   })
+      //   stream.on('end', () => {
+      //     callback()
+      //   })
+      //   fileStream.pipe(stream)
+      // }, 
+      // callback => {
+      //   console.log(new Date(), ' Inserting stop_times')
+      //   let stream = client.query(copyFrom('COPY stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
+      //   let fileStream = fs.createReadStream('./tmp/stop_times.txt')
 
-        fileStream.on('error', err => {
-          callback(err)
-        })
-        stream.on('error', err => {
-          callback(err)
-        })
-        stream.on('end', () => {
-          callback()
-        })
-        fileStream.pipe(stream) 
-      },
-      callback => {
-        console.log(new Date(), ' Inserting trips')
-        let stream = client.query(copyFrom('COPY trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/trips.txt')
+      //   fileStream.on('error', err => {
+      //     callback(err)
+      //   })
+      //   stream.on('error', err => {
+      //     callback(err)
+      //   })
+      //   stream.on('end', () => {
+      //     callback()
+      //   })
+      //   fileStream.pipe(stream) 
+      // },
+      // callback => {
+      //   console.log(new Date(), ' Inserting trips')
+      //   let stream = client.query(copyFrom('COPY trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
+      //   let fileStream = fs.createReadStream('./tmp/trips.txt')
 
-        fileStream.on('error', err => {
-          callback(err)
-        })
-        stream.on('error', err => {
-          callback(err)
-        })
-        stream.on('end', () => {
-          callback()
-        })
-        fileStream.pipe(stream) 
-      },
-      callback => {
-        console.log(new Date(), ' Inserting stops')
-        let stream = client.query(copyFrom('COPY stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/stops.txt')
+      //   fileStream.on('error', err => {
+      //     callback(err)
+      //   })
+      //   stream.on('error', err => {
+      //     callback(err)
+      //   })
+      //   stream.on('end', () => {
+      //     callback()
+      //   })
+      //   fileStream.pipe(stream) 
+      // },
+      // callback => {
+      //   console.log(new Date(), ' Inserting stops')
+      //   let stream = client.query(copyFrom('COPY stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
+      //   let fileStream = fs.createReadStream('./tmp/stops.txt')
 
-        fileStream.on('error', err => {
-          callback(err)
-        })
-        stream.on('error', err => {
-          callback(err)
-        })
-        stream.on('end', () => {
-          callback()
-        })
-        fileStream.pipe(stream) 
-      },
-      callback => {
-        console.log(new Date(), ' Inserting calendar_dates')
-        let stream = client.query(copyFrom('COPY calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
+      //   fileStream.on('error', err => {
+      //     callback(err)
+      //   })
+      //   stream.on('error', err => {
+      //     callback(err)
+      //   })
+      //   stream.on('end', () => {
+      //     callback()
+      //   })
+      //   fileStream.pipe(stream) 
+      // },
+      // callback => {
+      //   console.log(new Date(), ' Inserting calendar_dates')
+      //   let stream = client.query(copyFrom('COPY calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
+      //   let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
 
-        fileStream.on('error', err => {
-          callback(err)
-        })
-        stream.on('error', err => {
-          callback(err)
-        })
-        stream.on('end', () => {
-          callback()
-        })
-        fileStream.pipe(stream) 
-      },
+      //   fileStream.on('error', err => {
+      //     callback(err)
+      //   })
+      //   stream.on('error', err => {
+      //     callback(err)
+      //   })
+      //   stream.on('end', () => {
+      //     callback()
+      //   })
+      //   fileStream.pipe(stream) 
+      // },
       callback => {
         const today = moment().format('YYYYMMDD')
         const tomorrow = moment().add(1, 'day').format('YYYYMMDD')
@@ -162,17 +163,26 @@ const ingestLatestGTFS =  async ({ force }) => {
           
           for(const index in trips.rows) {
             const trip = trips.rows[index]
-            
+            var i0 = performance.now()
             tripsProcessed = tripsProcessed + 1 
             try {
+
+              var t0 = performance.now()
               const shapes = await client.query({ text: 'SELECT * FROM temp_shapes WHERE shape_id = $1 ORDER BY shape_dist_traveled ASC', values: [trip['shape_id']] })
+              var t1 = performance.now()
+              console.log('Shapes query: ', (t1 - t0).toFixed(2), ' millis')
+
+              var t0 = performance.now()
               const stoptimes = await client.query({ text: 'SELECT arrival_time, shape_dist_traveled, stop_lat, stop_lon FROM stop_times ST INNER JOIN stops S ON (S.stop_id = ST.stop_id) WHERE ST.trip_id = $1 ORDER BY stop_sequence ASC', values: [trip['trip_id']] })
-            
+              var t1 = performance.now()
+              console.log('Stoptimes query: ', (t1 - t0).toFixed(2), ' millis')
+
               // Point to point matching with two vertices (v1, v2) and a stop (s1), as proposed by Brosi (2014)
 
               let trajectories = []
               async.waterfall([
                 innerCallback => {
+                  var t0 = performance.now()
                   for(let i = 0; i < (stoptimes.rows.length - 1); i++) {
 
                     try {
@@ -221,6 +231,8 @@ const ingestLatestGTFS =  async ({ force }) => {
 
                       if(i === (stoptimes.rows.length - 2)) {
                         // innerCallback(false, trajectoryBins)
+                        var t1 = performance.now()
+                        console.log('Time interpolation: ', (t1 - t0).toFixed(2), ' millis')
                         innerCallback(false, trajectories)
                       }
                     } catch(e) {
@@ -230,14 +242,18 @@ const ingestLatestGTFS =  async ({ force }) => {
                   }
                 }, 
                 (trajectories, innerCallback) => {
+                  var t0 = performance.now()
                   trajectories = _.orderBy(trajectories, ['shape_dist_traveled'], ['asc'])
 
+                  var t1 = performance.now()
+                  console.log('Ordering: ', (t1 - t0).toFixed(2), ' millis')
                   // const trajectoryUnique = _.uniqWith(trajectories, _.isEqual)
                   innerCallback(false, trajectories)
                 }, 
                 (trajectoryUnique, innerCallback) => {
+                  var t0 = performance.now()
                   // let query = "INSERT INTO trajectories (trip_id, content, geom6) VALUES($1, $2, ST_Force_3D(ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
-                  let query = "INSERT INTO trajectories (trip_id, geom) VALUES($1, ST_GeomFromText('SRID=4326;LINESTRINGM("
+                  let query = "INSERT INTO trajectories (trip_id, geom) VALUES($1, ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
                   let textLinestring = 'LINESTRING('
                   let values = [trip.trip_id] 
 
@@ -257,7 +273,8 @@ const ingestLatestGTFS =  async ({ force }) => {
                     if(trajectoryUnique.length > 0) {
                       client.query({ text: query, values: values }, (err, response) => {
                         if(err) innerCallback({ err: err, query: query }) 
-                        
+                        var t1 = performance.now()
+                        console.log('Postgis exec time: ', (t1 - t0).toFixed(2), ' millis')
                         if(response) innerCallback()
                       })
                     }
@@ -270,7 +287,7 @@ const ingestLatestGTFS =  async ({ force }) => {
                 if(err) {
                   console.log('err 2: ', err.err, ' for trip: ', trip, ' with query: ', err.query) 
                   process.exit()
-                }
+                } 
               })
 
               // console.log(util.inspect(trajectoryBins, false, null, true /* enable colors */))
@@ -279,6 +296,8 @@ const ingestLatestGTFS =  async ({ force }) => {
               process.exit()
             }
 
+            var i1 = performance.now()
+            console.log('Total exec time: ', (i1 - i0).toFixed(2), ' millis')
           }
 
           callback()
