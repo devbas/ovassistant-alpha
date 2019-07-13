@@ -166,7 +166,7 @@ const updateData = async (identifier, data) => {
           console.log('no stops found')
         }
       }  else {
-        console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
+        // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
       }
 
       if (isPersist) {
