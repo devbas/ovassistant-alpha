@@ -16,7 +16,7 @@ const redisClient = require('./redis-client.js');
 const redisClientPersist = require('./redis-client-persist');
 const util = require('util')
 const fs = require('fs')
-const ingestLatestGTFS = require('./cron/index')
+const { ingestLatestGTFS } = require('./cron/index')
 
 const redis = require('redis');
 const redisClient2 = redis.createClient({
@@ -62,12 +62,10 @@ app.use(function onError(err, req, res, next) {
 app.use('/api', router);
 app.set('view engine', 'jade'); 
 
-app.listen(port);
-
-app.on('listening', () => {
+app.listen(port, '127.0.0.1', () => {
   console.log('servert listening on: ', port)
   ingestLatestGTFS({ force: false })
-})
+});
 
 const zlibWrapper = {
   unzip: promisify(zlib.unzip).bind(zlib) 

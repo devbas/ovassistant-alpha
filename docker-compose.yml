@@ -107,7 +107,7 @@ services:
       - POSTGRES_PASS=docker
       # - ALLOW_IP_RANGE=0.0.0.0/0
     ports:
-      - 5434:5432
+      - 127.0.0.1:5434:5432
     restart: always
     # healthcheck:
       # test: "exit 0"
