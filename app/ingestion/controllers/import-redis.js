@@ -5,6 +5,8 @@ const pool = require('../database')
 const moment = require('moment-timezone')
 const _ = require('lodash')
 const redisClient = process.env.INGESTION_PERSIST === 'yes' ? require('../redis-client-persist') : require('../redis-client')
+const fs = require('fs')
+// var stream = fs.createWriteStream("realtime.csv", {flags:'a'});
 
 const importData = async data => {
   var row = {
@@ -19,6 +21,8 @@ const importData = async data => {
   var isPersist = process.env.INGESTION_PERSIST
 
   try {
+
+    // stream.write(`${data.id},${row.datetimeUnix},${row.latitude},${row.longitude}\n`)
     const vehiclePrevRaw = await redisClient.get(data.id + ':latest')
 
     if(vehiclePrevRaw) {

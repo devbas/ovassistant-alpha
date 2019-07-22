@@ -248,9 +248,9 @@ const ingestLatestGTFS =  async ({ force }) => {
                 (trajectoryUnique, innerCallback) => {
                   var t0 = performance.now()
                   // let query = "INSERT INTO trajectories (trip_id, content, geom6) VALUES($1, $2, ST_Force_3D(ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
-                  let query = "INSERT INTO trajectories (trip_id, geom) VALUES($1, ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
+                  let query = "INSERT INTO trajectories (trip_id, vehicle_id, geom) VALUES($1, ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
                   let textLinestring = 'LINESTRING('
-                  let values = [trip.trip_id] 
+                  let values = [trip.trip_id, trip.realtime_trip_id] 
 
                   let counter = 0 
                   trajectoryUnique.forEach(point => {

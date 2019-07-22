@@ -86,6 +86,7 @@ const getVehicleCandidates = async (data) => {
         await redisLayerStore.set(data.userId, JSON.stringify([vehicleCandidates]))
       } else {
         let userLayers = JSON.parse(userLayersRaw)
+        userLayers = userLayers.slice(-1 * 5)
         
         await redisLayerStore.set(data.userId, JSON.stringify([...userLayers, vehicleCandidates]))
       }

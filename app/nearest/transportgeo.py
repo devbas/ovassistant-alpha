@@ -153,8 +153,8 @@ def vehicle_stop_great_circle_distance(vehicle):
     shape_point_info = closest_shape_point[0][0].split(':')
     shape_point_dist_traveled = shape_point_info[len(shape_point_info)-1]
 
-    print('distance to shape point: ' + str(distance_to_shape_point))
-    print('distance to next stop: ' + str(int(next_stop_dist_traveled) - int(shape_point_dist_traveled) + int(distance_to_shape_point)) )
+    # print('distance to shape point: ' + str(distance_to_shape_point))
+    # print('distance to next stop: ' + str(int(next_stop_dist_traveled) - int(shape_point_dist_traveled) + int(distance_to_shape_point)) )
 
     # 724696:24:38367 --> shape_id, sequence, distance_traveled 
     distance_to_next_stop = int(next_stop_dist_traveled) - int(shape_point_dist_traveled) + int(distance_to_shape_point)
@@ -177,9 +177,13 @@ def vehicle_stop_great_circle_distance(vehicle):
     return fallback_response
 
 def transition(candidate, vehicle): 
-  non_direct_tolerance = 1000 # Tuning parameter
+  # non_direct_tolerance = 1000 # Tuning parameter
+  std_gps_measurement = 4.07
+  non_direct_tolerance = 6.2831 * std_gps_measurement
+
   # Calculate 3D distance 
-  great_circle_distance = candidate['closest_stop']['stop_distance'] + vehicle['closest_stop']['stop_distance']
+  # print('stuff: ', str(candidate['nearest_stop_distance']), ' aand: ', str(vehicle['nearest_stop_distance']))
+  great_circle_distance = candidate['nearest_stop_distance'] + vehicle['nearest_stop_distance']
   transition_prob = (1 / non_direct_tolerance) * np.exp((-great_circle_distance / non_direct_tolerance))
   return transition_prob
   # Transition formula: [(1 / non_direct_tolerance) * np.exp((- row['distance_difference'] / non_direct_tolerance)) for index, row in vehicle_candidates_df.iterrows()]
@@ -194,7 +198,7 @@ def transition_matrix(candidate, fleet):
   for index, vehicle in fleet.iterrows(): 
     if candidate['vehicle_id'] == vehicle['vehicle_id']: 
       transition_item_prob[vehicle['vehicle_id']] = 1
-    elif candidate['closest_stop']['closest_stop_id'] == vehicle['closest_stop']['closest_stop_id']: 
+    elif candidate['nearest_stop_id'] == vehicle['nearest_stop_id']: 
       transition_item_prob[vehicle['vehicle_id']] = transition(candidate, vehicle)
 
   transition_candidate_prob = {}
@@ -230,8 +234,8 @@ def viterbi(obs, states, start_p, trans_p, emit_p):
       max_prob = max_tr_prob * emit_p[st][obs[t]]
       V[t][st] = { "prob": max_prob, "prev": prev_st_selected }
   
-  for line in dptable(V):
-    print(line)
+  # for line in dptable(V):
+    # print(line)
 
   opt = []
   max_prob = max(value["prob"] for value in V[-1].values())

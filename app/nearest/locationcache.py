@@ -27,30 +27,49 @@ def get(itemKey):
 
 def get_vehicle_location_state_by_time(lon, lat, user_datetime): 
 
-  query = "SELECT trip_id, trajectory_id, ST_Distance_Sphere('SRID=4326;POINT({} {})', ST_LocateAlong(geom, {})) AS user_vehicle_distance \
-            FROM trajectories \
-            WHERE start_planned <= {} \
-            AND end_planned >= {} \
-            AND ST_DWithin(ST_LocateAlong(geom, {}), 'SRID=4326;POINT({} {})', 0.002690) \
-            ORDER BY distance ASC".format(lon, lat, user_datetime, user_datetime, user_datetime, user_datetime, lon, lat)
+  	          # ( \
+		        #   SELECT MIN(ST_Distance_Sphere('SRID=4326;POINT({} {})', geom)) \
+		        #   FROM stop_times \
+		        #   WHERE stop_times.trip_id = tmp_trajectories.trip_id \
+	          # ) AS nearest_stop \
+
+  # 0.002690
+  query = "SELECT trip_id, vehicle_id, \
+	          ST_Distance_Sphere('SRID=4326;POINT({} {})', ST_LocateAlong(geom, {})) AS user_vehicle_distance \
+          FROM tmp_trajectories \
+          WHERE start_planned <= {} \
+          AND end_planned >= {} \
+          AND ST_DWithin(ST_LocateAlong(geom, {}), 'SRID=4326;POINT({} {})', 0.002690) \
+          ORDER BY user_vehicle_distance ASC ".format(lon, lat, user_datetime, user_datetime, user_datetime, user_datetime, lon, lat)
   
-  print('query: ', query)
+  # print('query: ', query)
 
   data = pd.read_sql(query, conn) 
+  
+  if not data.empty: 
+    # print('result: ', str([get_vehicle_nearest_stop(trip_id, lat, lon) for trip_id in data['trip_id']]))
+    data['nearest_stop_distance'], data['nearest_stop_id'] = zip(*[get_vehicle_nearest_stop(trip_id, lat, lon) for trip_id in data['trip_id']])
 
-  print('shape: ', str(data.shape))
+  data['device_datetime'] = user_datetime
+  data['device_lat'] = lat 
+  data['device_lon'] = lon
+
+  # print('shape: ', str(data.shape))
 
   return data 
 
+def get_vehicle_nearest_stop(trip_id, lat, lon): 
 
-  # query = "SELECT *, ST_Distance_Sphere('SRID=4326;POINT(4.90036 52.37916)', ST_LocateAlong(geom, 1562080620)) AS distance \
-  #           FROM trajectories \
-  #           WHERE start_planned <= 1562080620 \
-  #           AND end_planned >= 1562080620 \
-  #           AND ST_DWithin(ST_LocateAlong(geom, 1562080620), 'SRID=4326;POINT(4.90036 52.37916)', 0.002690) \
-  #           ORDER BY distance ASC"
+  query = "SELECT MIN(ST_Distance_Sphere('SRID=4326;POINT({} {})', geom)) as nearest_stop_distance, stop_id as nearest_stop_id \
+            FROM stop_times \
+            WHERE trip_id = {} \
+            GROUP BY stop_id \
+            ORDER BY nearest_stop_distance ASC \
+            LIMIT 1".format(lon, lat, trip_id)
+  
+  result = pd.read_sql(query, conn) 
 
-  return False 
+  return (result['nearest_stop_distance'][0], result['nearest_stop_id'][0])
 
 def get_vehicles_by_radius(lon, lat, radius, user_datetime): 
   datapoints = georadius(lon, lat, radius) 
@@ -155,12 +174,11 @@ def get_vehicles_by_radius(lon, lat, radius, user_datetime):
 
 def get_observations(user_id, datetime): 
 
-  # Get observations from Redis
+  # Get recent observations from Redis
   df = pd.DataFrame() 
   observations = False 
 
   try:
-
     observations = redis_layer_store.get(user_id)
 
     if observations: 

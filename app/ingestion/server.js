@@ -120,6 +120,7 @@ sock.on('message', async (topic, message) => {
         const datetimeRaw = moment(train['TreinMaterieelDelen'][0]['GpsDatumTijd'][0])
         const datetime = moment(datetimeRaw, 'YYYY-MM-DDTHH:mm:ss')
         const datetimeUnix = moment(datetime).unix()
+        console.log('raw: ', train['TreinMaterieelDelen'][0]['GpsDatumTijd'], '   original: ', moment(datetime).format('YYYY-MM-DDTHH:mm:ss'), '  and unix: ', moment.unix(datetimeUnix).format('YYYY-MM-DDTHH:mm:ss'))
         const type = 'train'
         if (latitude && longitude) { 
           redisImportController.importData({

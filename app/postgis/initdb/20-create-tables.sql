@@ -22,7 +22,8 @@ CREATE TABLE "public"."trajectories" (
   "geom" geometry(LINESTRINGM,4326), 
 	"trip_id" int4 NOT NULL, 
 	"start_planned" int4 NULL, 
-	"end_planned" int4 NULL
+	"end_planned" int4 NULL, 
+	"vehicle_id" varchar(64) COLLATE "default"
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."trajectories" OWNER TO "docker";

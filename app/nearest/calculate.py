@@ -67,7 +67,8 @@ class NearestVehicle(BaseHTTPRequestHandler):
       return 
 
     start_millis = int(round(time.time() * 1000))
-    vehicles = calculate2.get_vehicle_candidates(lon, lat, int(datetime), user_id)
+    # vehicles = calculate2.get_vehicle_candidates(lon, lat, int(datetime), user_id)
+    vehicles = calculate2.get_vehicle_matches(lon, lat, int(datetime), user_id)
     end_millis = int(round(time.time() * 1000))
 
     print('exec time: ' + str(end_millis - start_millis))
