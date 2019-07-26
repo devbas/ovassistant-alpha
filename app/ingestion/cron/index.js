@@ -155,7 +155,7 @@ const ingestLatestGTFS =  async ({ force }) => {
         const today = moment().format('YYYYMMDD')
         const tomorrow = moment().add(1, 'day').format('YYYYMMDD')
 
-        client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE CD.date = $1 OR CD.date = $2', [today, tomorrow], async (err, trips) => {
+        client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE CD.date = $1 OR CD.date = $2 LIMIT 10', [today, tomorrow], async (err, trips) => {
           if(err) {
             callback(err)
           }
@@ -380,6 +380,44 @@ const ingestLatestGTFS =  async ({ force }) => {
 
         callback(false, 'done')
         
+      }, 
+      async callback => {
+        await client.query(`CREATE TABLE tmp_trajectories (
+          trajectory_id SERIAL PRIMARY KEY,
+          geom geometry(LINESTRINGM,4326), 
+          trip_id int4 NOT NULL, 
+          start_planned int4 NULL, 
+          end_planned int4 NULL, 
+          vehicle_id varchar(64) COLLATE default
+        )`)
+
+        await client.query(`INSERT INTO tmp_trajectories(
+          trajectory_id, 
+          geom, 
+          trip_id, 
+          start_planned, 
+          end_planned, 
+          vehicle_id
+        )
+        (SELECT 
+          trajectory_id, 
+          geom, 
+          T.trip_id, 
+          start_planned, 
+          end_planned, 
+          realtime_trip_id
+        FROM trajectories T
+        JOIN trips TR 
+        ON T.trip_id = TR.trip_id 
+        )`)
+        
+        await client.query('ALTER TABLE trajectories RENAME TO tmp2_trajectories')
+
+        await client.query('ALTER TABLE tmp_trajectories RENAME TO trajectories')
+
+        await client.query('DROP TABLE tmp2_trajectories')
+
+        callback(false, 'done')
       }
     ], (err, result) => {
       if(err) {
