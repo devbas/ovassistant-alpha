@@ -129,7 +129,6 @@ sock.on('message', async (topic, message) => {
         const datetimeRaw = moment(train['TreinMaterieelDelen'][0]['GpsDatumTijd'][0])
         const datetime = moment(datetimeRaw, 'YYYY-MM-DDTHH:mm:ss')
         const datetimeUnix = moment(datetime).unix()
-        console.log('raw: ', train['TreinMaterieelDelen'][0]['GpsDatumTijd'], '   original: ', moment(datetime).format('YYYY-MM-DDTHH:mm:ss'), '  and unix: ', moment.unix(datetimeUnix).format('YYYY-MM-DDTHH:mm:ss'))
         const type = 'train'
         if (latitude && longitude) { 
           redisImportController.importData({
@@ -251,11 +250,11 @@ sock1.on('message', async (topic, message) => {
     } else {
       // console.log('maybe interesting: ', result)
       if(_.has(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtStation.0')) {
-        console.log('in other stuff: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtStation.0'))
+        // console.log('in other stuff: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtStation.0'))
       } else if(_.has(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtTrein.0')) {
-        console.log('in other stuff trein: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtTrein.0'))
+        // console.log('in other stuff trein: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtTrein.0'))
       } else if(_.has(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtLandelijk.0')) {
-        console.log('in other stuff landelijk: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtLandelijk.0'))
+        // console.log('in other stuff landelijk: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtLandelijk.0'))
       }
     }
   } catch(err) {
