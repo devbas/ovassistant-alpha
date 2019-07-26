@@ -16,7 +16,8 @@ const redisClient = require('./redis-client.js');
 const redisClientPersist = require('./redis-client-persist');
 const util = require('util')
 const fs = require('fs')
-const { ingestLatestGTFS } = require('./cron/index')
+const { ingestLatestGTFS, testCron } = require('./cron/index')
+const cron = require('node-cron')
 
 const redis = require('redis');
 const redisClient2 = redis.createClient({
@@ -35,6 +36,14 @@ app.use(bodyParser.json());
 var port = process.env.PORT || 8000;
 
 var router = express.Router();
+
+cron.schedule('0 0 3 * * *', () => {
+  ingestLatestGTFS({ force: true })
+  console.log('GTFS Ingestion Scheduled!')
+}, {
+  scheduled: true, 
+  timezone: "Europe/Amsterdam"
+})
 
 router.use((req, res, next) => {
   // do logging

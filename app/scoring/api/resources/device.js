@@ -10,7 +10,7 @@ require('../../modules/passport.js')(passport)
 var router = express.Router()
 
 router.post('/create', (req, res, next) => {
-
+  console.log('hit it!')
   req.body.username = utils.makeid(10)
   req.body.password = utils.makeid(15)
 
@@ -24,6 +24,7 @@ router.post('/create', (req, res, next) => {
     } else if(user) {
       req.login(user, (err) => {
         if(err) {
+          console.log('err: ', err, user)
           res.status(500).send({ 'message': 'Something went wrong on our end, try again later.', 'status': 500 })
         } else {
           const token = jwt.sign({ user_id: user.user_id, organisation_id: user.organisation_id, name: user.name }, config.jwtSecret)
