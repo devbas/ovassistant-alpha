@@ -261,7 +261,7 @@ const ingestLatestGTFS =  async ({ force }) => {
                     textLinestring = textLinestring + `${point.shape_pt_lon} ${point.shape_pt_lat}`
 
                     // counter !== trajectoryUnique.length ? query = query + ', ' : query = query + ")')))"
-                    counter !== trajectoryUnique.length ? query = query + ', ' : query = query + ")'))"
+                    counter !== trajectoryUnique.length ? query = query + ', ' : query = query + ")')))"
                     counter !== trajectoryUnique.length ? textLinestring = textLinestring + ', ' : textLinestring = textLinestring + ")"
                   })
 
