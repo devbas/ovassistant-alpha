@@ -248,8 +248,8 @@ const ingestLatestGTFS =  async ({ force }) => {
                 }, 
                 (trajectoryUnique, innerCallback) => {
                   var t0 = performance.now()
-                  // let query = "INSERT INTO trajectories (trip_id, content, geom6) VALUES($1, $2, ST_Force_3D(ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
-                  let query = "INSERT INTO trajectories (trip_id, vehicle_id, geom) VALUES($1, ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
+                  let query = "INSERT INTO trajectories (trip_id, content, geom6) VALUES($1, $2, ST_Force_3D(ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
+                  // let query = "INSERT INTO trajectories (trip_id, vehicle_id, geom) VALUES($1, ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
                   let textLinestring = 'LINESTRING('
                   let values = [trip.trip_id, trip.realtime_trip_id] 
 
@@ -267,7 +267,7 @@ const ingestLatestGTFS =  async ({ force }) => {
 
                   try {
                     if(trajectoryUnique.length > 0) {
-                      client.query({ text: query, values: values }, (err, response) => {
+                      client.query({ text: query, values: [...values, textLinestring] }, (err, response) => {
                         if(err) innerCallback({ err: err, query: query }) 
                         var t1 = performance.now()
                         console.log('Postgis exec time: ', (t1 - t0).toFixed(2), ' millis')
@@ -380,45 +380,45 @@ const ingestLatestGTFS =  async ({ force }) => {
 
         callback(false, 'done')
         
-      }, 
-      async callback => {
-        await client.query(`CREATE TABLE tmp_trajectories (
-          trajectory_id SERIAL PRIMARY KEY,
-          geom geometry(LINESTRINGM,4326), 
-          trip_id int4 NOT NULL, 
-          start_planned int4 NULL, 
-          end_planned int4 NULL, 
-          vehicle_id varchar(64) COLLATE default
-        )`)
+      } 
+      // async callback => {
+      //   await client.query(`CREATE TABLE tmp_trajectories (
+      //     trajectory_id SERIAL PRIMARY KEY,
+      //     geom geometry(LINESTRINGM,4326), 
+      //     trip_id int4 NOT NULL, 
+      //     start_planned int4 NULL, 
+      //     end_planned int4 NULL, 
+      //     vehicle_id varchar(64) COLLATE default
+      //   )`)
 
-        await client.query(`INSERT INTO tmp_trajectories(
-          trajectory_id, 
-          geom, 
-          trip_id, 
-          start_planned, 
-          end_planned, 
-          vehicle_id
-        )
-        (SELECT 
-          trajectory_id, 
-          geom, 
-          T.trip_id, 
-          start_planned, 
-          end_planned, 
-          realtime_trip_id
-        FROM trajectories T
-        JOIN trips TR 
-        ON T.trip_id = TR.trip_id 
-        )`)
+      //   await client.query(`INSERT INTO tmp_trajectories(
+      //     trajectory_id, 
+      //     geom, 
+      //     trip_id, 
+      //     start_planned, 
+      //     end_planned, 
+      //     vehicle_id
+      //   )
+      //   (SELECT 
+      //     trajectory_id, 
+      //     geom, 
+      //     T.trip_id, 
+      //     start_planned, 
+      //     end_planned, 
+      //     realtime_trip_id
+      //   FROM trajectories T
+      //   JOIN trips TR 
+      //   ON T.trip_id = TR.trip_id 
+      //   )`)
         
-        await client.query('ALTER TABLE trajectories RENAME TO tmp2_trajectories')
+      //   await client.query('ALTER TABLE trajectories RENAME TO tmp2_trajectories')
 
-        await client.query('ALTER TABLE tmp_trajectories RENAME TO trajectories')
+      //   await client.query('ALTER TABLE tmp_trajectories RENAME TO trajectories')
 
-        await client.query('DROP TABLE tmp2_trajectories')
+      //   await client.query('DROP TABLE tmp2_trajectories')
 
-        callback(false, 'done')
-      }
+      //   callback(false, 'done')
+      // }
     ], (err, result) => {
       if(err) {
         Sentry.captureException(e);
