@@ -251,7 +251,7 @@ const ingestLatestGTFS =  async ({ force }) => {
                   let query = "INSERT INTO trajectories (trip_id, vehicle_id, geom) VALUES($1, $2, ST_Force_3D(ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
                   // let query = "INSERT INTO trajectories (trip_id, vehicle_id, geom) VALUES($1, ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
                   let textLinestring = 'LINESTRING('
-                  let values = [trip.trip_id, trip.realtime_trip_id] 
+                  // let values = [trip.trip_id, trip.realtime_trip_id] 
 
                   let counter = 0 
                   trajectoryUnique.forEach(point => {
@@ -267,7 +267,7 @@ const ingestLatestGTFS =  async ({ force }) => {
 
                   try {
                     if(trajectoryUnique.length > 0) {
-                      client.query({ text: query, values: [...values, textLinestring] }, (err, response) => {
+                      client.query({ text: query, values: [trip.trip_id, trip.realtime_trip_id, textLinestring] }, (err, response) => {
                         if(err) innerCallback({ err: err, query: query }) 
                         var t1 = performance.now()
                         console.log('Postgis exec time: ', (t1 - t0).toFixed(2), ' millis')
