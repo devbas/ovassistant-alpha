@@ -381,7 +381,7 @@ const ingestLatestGTFS =  async ({ force }) => {
       } 
     ], (err, result) => {
       if(err) {
-        Sentry.captureException(e);
+        Sentry.captureException(err);
         console.log('err: ', err)
       } else {
         let endTime = moment() 
