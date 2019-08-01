@@ -76,7 +76,9 @@ services:
     volumes: 
       - ./app/scoring/:/var/www/ovassistant/app/scoring
     depends_on:
-      - "redis"
+      - redis
+      - postgis
+      - nearest
     ports: 
       - 127.0.0.1:8001:8001
     networks: 

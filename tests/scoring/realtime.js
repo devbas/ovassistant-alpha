@@ -58,6 +58,8 @@ const realtimeTest = () => {
             url: 'http://localhost:8001/api/v1/device/score', 
             headers: { 'Authorization': `Bearer ${token}`}
           })
+
+          console.log('resonse: ', pointResponse.data)
           
           if(pointResponse.data.matches && pointResponse.data.matches.vehicle_id) {
             let responseVehicleId = false 
