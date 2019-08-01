@@ -179,7 +179,7 @@ const ingestLatestGTFS =  async ({ force }) => {
               console.log('Stoptimes query: ', (t1 - t0).toFixed(2), ' millis')
 
               // Point to point matching with two vertices (v1, v2) and a stop (s1), as proposed by Brosi (2014)
-
+ 
               let trajectories = []
               async.waterfall([
                 innerCallback => {
