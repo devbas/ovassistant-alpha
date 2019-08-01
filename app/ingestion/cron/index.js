@@ -155,7 +155,7 @@ const ingestLatestGTFS =  async ({ force }) => {
         const today = moment().format('YYYYMMDD')
         const tomorrow = moment().add(1, 'day').format('YYYYMMDD')
 
-        client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE CD.date = $1 OR CD.date = $2', [today, tomorrow], async (err, trips) => {
+        client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE CD.date = $1 OR CD.date = $2 LIMIT 10', [today, tomorrow], async (err, trips) => {
           if(err) {
             callback(err)
           }
