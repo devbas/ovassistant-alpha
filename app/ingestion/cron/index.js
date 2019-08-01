@@ -32,130 +32,130 @@ const ingestLatestGTFS =  async ({ force }) => {
       return false; 
     } 
 
-    // await client.query('TRUNCATE temp_shapes')
-    // console.log(new Date(), ' Temp Shapes table truncated')
+    await client.query('TRUNCATE temp_shapes')
+    console.log(new Date(), ' Temp Shapes table truncated')
 
     console.log(new Date(), ' Truncate trajectories table') 
     await client.query('TRUNCATE trajectories')
 
-    // console.log(new Date(), ' Truncate trips table')
-    // await client.query('TRUNCATE trips')
+    console.log(new Date(), ' Truncate trips table')
+    await client.query('TRUNCATE trips')
 
-    // console.log(new Date(), ' Truncate stop_times table')
-    // await client.query('TRUNCATE stop_times')
+    console.log(new Date(), ' Truncate stop_times table')
+    await client.query('TRUNCATE stop_times')
 
-    // console.log(new Date(), ' Truncate stops table')
-    // await client.query('TRUNCATE stops')
+    console.log(new Date(), ' Truncate stops table')
+    await client.query('TRUNCATE stops')
 
-    // console.log(new Date(), ' Truncate stops table')
-    // await client.query('TRUNCATE stops')
+    console.log(new Date(), ' Truncate stops table')
+    await client.query('TRUNCATE stops')
 
-    // console.log(new Date(), ' Truncate calendar dates table')
-    // await client.query('TRUNCATE calendar_dates')
+    console.log(new Date(), ' Truncate calendar dates table')
+    await client.query('TRUNCATE calendar_dates')
 
     async.waterfall([
-      // callback => {
-      //   request('http://gtfs.openov.nl/gtfs-rt/gtfs-openov-nl.zip')
-      //     .on('error', function(err) {
-      //       callback(err)
-      //     })
-      //     .on('end', () => {
-      //       console.log('Finished downloading GTFS NL')
-      //       callback(false)
-      //     })
-      //     .pipe(fs.createWriteStream(zipFile))
-      // }, 
-      // callback => {
-      //   decompress(zipFile, 'tmp').then(files => {
-      //     fs.unlink(zipFile)
-      //     console.log('unlinked!')
-      //     callback(false)
-      //   }).catch(err => callback(err))
-      // }, 
-      // callback => {
-      //   console.log(new Date(), ' Inserting shapes')
-      //   let stream = client.query(copyFrom('COPY temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
-      //   let fileStream = fs.createReadStream('./tmp/shapes.txt')
-      //   fileStream.on('error', err => {
-      //     callback(err)
-      //   })
-      //   stream.on('error', err => {
-      //     callback(err)
-      //   })
-      //   stream.on('end', () => {
-      //     callback()
-      //   })
-      //   fileStream.pipe(stream)
-      // }, 
-      // callback => {
-      //   console.log(new Date(), ' Inserting stop_times')
-      //   let stream = client.query(copyFrom('COPY stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
-      //   let fileStream = fs.createReadStream('./tmp/stop_times.txt')
+      callback => {
+        request('http://gtfs.openov.nl/gtfs-rt/gtfs-openov-nl.zip')
+          .on('error', function(err) {
+            callback(err)
+          })
+          .on('end', () => {
+            console.log('Finished downloading GTFS NL')
+            callback(false)
+          })
+          .pipe(fs.createWriteStream(zipFile))
+      }, 
+      callback => {
+        decompress(zipFile, 'tmp').then(files => {
+          fs.unlink(zipFile)
+          console.log('unlinked!')
+          callback(false)
+        }).catch(err => callback(err))
+      }, 
+      callback => {
+        console.log(new Date(), ' Inserting shapes')
+        let stream = client.query(copyFrom('COPY temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./tmp/shapes.txt')
+        fileStream.on('error', err => {
+          callback(err)
+        })
+        stream.on('error', err => {
+          callback(err)
+        })
+        stream.on('end', () => {
+          callback()
+        })
+        fileStream.pipe(stream)
+      }, 
+      callback => {
+        console.log(new Date(), ' Inserting stop_times')
+        let stream = client.query(copyFrom('COPY stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./tmp/stop_times.txt')
 
-      //   fileStream.on('error', err => {
-      //     callback(err)
-      //   })
-      //   stream.on('error', err => {
-      //     callback(err)
-      //   })
-      //   stream.on('end', () => {
-      //     callback()
-      //   })
-      //   fileStream.pipe(stream) 
-      // },
-      // callback => {
-      //   console.log(new Date(), ' Inserting trips')
-      //   let stream = client.query(copyFrom('COPY trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
-      //   let fileStream = fs.createReadStream('./tmp/trips.txt')
+        fileStream.on('error', err => {
+          callback(err)
+        })
+        stream.on('error', err => {
+          callback(err)
+        })
+        stream.on('end', () => {
+          callback()
+        })
+        fileStream.pipe(stream) 
+      },
+      callback => {
+        console.log(new Date(), ' Inserting trips')
+        let stream = client.query(copyFrom('COPY trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./tmp/trips.txt')
 
-      //   fileStream.on('error', err => {
-      //     callback(err)
-      //   })
-      //   stream.on('error', err => {
-      //     callback(err)
-      //   })
-      //   stream.on('end', () => {
-      //     callback()
-      //   })
-      //   fileStream.pipe(stream) 
-      // },
-      // callback => {
-      //   console.log(new Date(), ' Inserting stops')
-      //   let stream = client.query(copyFrom('COPY stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
-      //   let fileStream = fs.createReadStream('./tmp/stops.txt')
+        fileStream.on('error', err => {
+          callback(err)
+        })
+        stream.on('error', err => {
+          callback(err)
+        })
+        stream.on('end', () => {
+          callback()
+        })
+        fileStream.pipe(stream) 
+      },
+      callback => {
+        console.log(new Date(), ' Inserting stops')
+        let stream = client.query(copyFrom('COPY stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./tmp/stops.txt')
 
-      //   fileStream.on('error', err => {
-      //     callback(err)
-      //   })
-      //   stream.on('error', err => {
-      //     callback(err)
-      //   })
-      //   stream.on('end', () => {
-      //     callback()
-      //   })
-      //   fileStream.pipe(stream) 
-      // },
-      // callback => {
-      //   console.log(new Date(), ' Inserting calendar_dates')
-      //   let stream = client.query(copyFrom('COPY calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
-      //   let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
+        fileStream.on('error', err => {
+          callback(err)
+        })
+        stream.on('error', err => {
+          callback(err)
+        })
+        stream.on('end', () => {
+          callback()
+        })
+        fileStream.pipe(stream) 
+      },
+      callback => {
+        console.log(new Date(), ' Inserting calendar_dates')
+        let stream = client.query(copyFrom('COPY calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
 
-      //   fileStream.on('error', err => {
-      //     callback(err)
-      //   })
-      //   stream.on('error', err => {
-      //     callback(err)
-      //   })
-      //   stream.on('end', () => {
-      //     callback()
-      //   })
-      //   fileStream.pipe(stream) 
-      // },
+        fileStream.on('error', err => {
+          callback(err)
+        })
+        stream.on('error', err => {
+          callback(err)
+        })
+        stream.on('end', () => {
+          callback()
+        })
+        fileStream.pipe(stream) 
+      },
       callback => {
         const today = moment().format('YYYYMMDD')
         const tomorrow = moment().add(1, 'day').format('YYYYMMDD')
 
-        client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE CD.date = $1 OR CD.date = $2 LIMIT 10', [today, tomorrow], async (err, trips) => {
+        client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE CD.date = $1 OR CD.date = $2', [today, tomorrow], async (err, trips) => {
           if(err) {
             callback(err)
           }
