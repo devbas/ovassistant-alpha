@@ -35,7 +35,7 @@ const ingestLatestGTFS =  async ({ force }) => {
     // await client.query('TRUNCATE temp_shapes')
     // console.log(new Date(), ' Temp Shapes table truncated')
 
-    console.log(new Date(), ' Truncate trajectories table')
+    console.log(new Date(), ' Truncate trajectories table') 
     await client.query('TRUNCATE trajectories')
 
     // console.log(new Date(), ' Truncate trips table')
