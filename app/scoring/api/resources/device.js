@@ -49,12 +49,12 @@ router.post('/score', passport.authenticate('jwt-login', { session: false }), as
     data.datetime = parseInt(data.datetime)
   }
 
-  if(data.lat) {
-    data.lat = parseFloat(data.lat)
+  if(data.coords && data.coords.latitude) {
+    data.lat = parseFloat(data.coords.latitude)
   }
 
-  if(data.lon) {
-    data.lon = parseFloat(data.lon) 
+  if(data.coords && data.coords.longitude) {
+    data.lon = parseFloat(data.coords.longitude) 
   }
 
   try {
