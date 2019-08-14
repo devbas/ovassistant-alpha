@@ -36,7 +36,7 @@ def get_vehicle_location_state_by_time(lon, lat, user_datetime):
   # 0.002690
   query = "SELECT trip_id, vehicle_id, \
 	          ST_Distance_Sphere('SRID=4326;POINT({} {})', ST_LocateAlong(geom, {})) AS user_vehicle_distance \
-          FROM tmp_trajectories \
+          FROM trajectories \
           WHERE start_planned <= {} \
           AND end_planned >= {} \
           AND ST_DWithin(ST_LocateAlong(geom, {}), 'SRID=4326;POINT({} {})', 0.002690) \
