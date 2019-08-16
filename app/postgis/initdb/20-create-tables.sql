@@ -109,7 +109,7 @@ CREATE TABLE "public"."routes" (
 	"route_url" varchar(255) COLLATE "default"
 )
 WITH (OIDS=FALSE);
-ALTER TABLE "public"."route_id" OWNER TO "docker";
+ALTER TABLE "public"."routes" OWNER TO "docker";
 
 -- ----------------------------
 --  Primary key structure for table trajectories
