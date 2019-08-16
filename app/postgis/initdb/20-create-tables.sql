@@ -97,6 +97,20 @@ CREATE TABLE "public"."calendar_dates" (
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."calendar_dates" OWNER TO "docker";
 
+CREATE TABLE "public"."routes" (
+	"route_id" int4 NOT NULL, 
+	"agency_id" varchar(255) COLLATE "default", 
+	"route_short_name" varchar(255) COLLATE "default",
+	"route_long_name" varchar(255) COLLATE "default", 
+	"route_desc" varchar(255) COLLATE "default", 
+	"route_type" int4, 
+	"route_color" varchar(255) COLLATE "default", 
+	"route_text_color" varchar(255) COLLATE "default", 
+	"route_url" varchar(255) COLLATE "default"
+)
+WITH (OIDS=FALSE);
+ALTER TABLE "public"."route_id" OWNER TO "docker";
+
 -- ----------------------------
 --  Primary key structure for table trajectories
 -- ----------------------------
