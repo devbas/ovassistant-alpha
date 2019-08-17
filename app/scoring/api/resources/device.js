@@ -58,13 +58,9 @@ router.post('/score', passport.authenticate('jwt-login', { session: false }), as
   }
 
   try {
-    const { vehicleCandidates, matches } = await matchCalculationController.getVehicleCandidates(data)
-    // const response = await matchCalculationController.travelSituationRouter({ 
-    //   vehicleContext: vehicleCandidates, 
-    //   matches: matches, 
-    //   userData: data 
-    // })
-    res.status(200).send({ matches: matches, vehicleContext: vehicleCandidates })
+    const result = await matchCalculationController.getVehicleCandidates(data)
+
+    res.status(200).send(result)
   } catch(err) {
     res.status(500).send({ error: JSON.stringify(err) })
     Sentry.captureException(err)

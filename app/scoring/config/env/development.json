@@ -7,5 +7,12 @@
     "password": "root", 
     "database": "ovassistant"
   },
+  "pg": {
+    "host": "postgis", 
+    "port": 5432, 
+    "user": "docker", 
+    "password": "docker", 
+    "database": "gis"
+  },
   "jwtSecret": "ba1d42d1b958f18168f04e32e878ed04"
 }

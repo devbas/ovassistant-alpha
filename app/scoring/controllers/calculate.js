@@ -6,6 +6,41 @@ const moment = require('moment')
 const _ = require('lodash')
 const redisClient = require('../redis-client')
 const redisLayerStore = require('../redis-layer-store')
+const { Client } = require('pg')
+const config = require('../config/config')
+
+const getVehicleItemInfo = async (vehicle) => {
+  try {
+
+    const client = new Client(config.pg)
+    await client.connect()
+
+    vehicle.destination = false 
+    vehicle.title_prefix = false  
+
+    const trip = await client.query('SELECT trip_headsign, route_id, trip_id FROM trips WHERE realtime_trip_id = ? LIMIT 0,1', [vehicle.vehicle_id])
+
+    if(!trip[0] || !trip[0].trip_headsign) {
+      return vehicle 
+    }
+
+    vehicle.destination = trip[0].trip_headsign 
+    vehicle.trip_id = trip[0].trip_id 
+
+    const tripRouteName = await client.query('SELECT route_short_name FROM routes WHERE route_id = ? LIMIT 0,1', [trip[0].route_id])
+
+    if(!tripRouteName[0] || !tripRouteName[0].route_short_name) {
+      return vehicle 
+    }
+
+    vehicle.title_prefix = tripRouteName[0].route_short_name
+
+    return vehicle 
+  } catch(err) {
+    Sentry.captureException(err)
+    console.log('err: ', err)
+  }
+}
 
 // const getVehicleItemInfo = async (vehicle) => {
 //   try {
@@ -53,6 +88,8 @@ const redisLayerStore = require('../redis-layer-store')
 
 const getVehicleCandidates = async (data) => { 
 
+  let response = {}
+
   try {
     console.log('data', data)
     if(!data.userId || !data.lon || !data.lat || !data.datetime) {
@@ -63,23 +100,22 @@ const getVehicleCandidates = async (data) => {
     pool.query('INSERT INTO user_location SET `user_id` = ?, `lon` = ?, `lat` = ?, `datetime` = ?', 
                       [parseInt(data.userId), data.lon, data.lat, data.datetime])
 
-    // const prevUserLocation = await pool.query('SELECT * FROM user_location WHERE `user_id` = ? AND `datetime` > (? - 60) ORDER BY datetime DESC LIMIT 0,1',
-                            // [parseInt(data.userId), data.datetime])
-    // console.log('hit send', prevUserLocation)
     // Get vehicle candidates from Nearest   
-    // const vehicleCandidatesRaw = await axios.get(`http://nearest:9002/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}&prev_user_location=${prevUserLocation[0] ? JSON.stringify(prevUserLocation[0]) : ''}`)
     const vehicleCandidatesRaw = await axios.get(`http://nearest:9002/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}`)
                                               .catch(err => {
                                                 Sentry.captureException(err)
                                                 throw { 'message': 'Something went wrong on our end. Please try again later.', 'status': 500 }
                                               })
-    
-    let vehicleCandidates = JSON.parse(vehicleCandidatesRaw.data.observations)
+    // console.log('raw: ', vehicleCandidatesRaw.data.observations)
+    // const vehicleData = JSON.parse(vehicleCandidatesRaw.data)
+    let vehicleCandidates = vehicleCandidatesRaw.data.observations ? vehicleCandidatesRaw.data.observations : false 
+    // let vehicleCandidates = JSON.parse(vehicleCandidatesRaw.data.observations)
     const matches = vehicleCandidatesRaw.data.matches
 
     if(!_.isEmpty(vehicleCandidates)) {
-      // vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo))
-      // item per layer, layer expires after 120 seconds. How to name keys? userId:latest, userId:sequenceNumber
+      vehicleCandidates = JSON.parse(vehicleCandidates)
+      
+      vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo))
       const userLayersRaw = await redisLayerStore.get(data.userId)
 
       if(userLayersRaw === null) {
@@ -91,12 +127,29 @@ const getVehicleCandidates = async (data) => {
         await redisLayerStore.set(data.userId, JSON.stringify([...userLayers, vehicleCandidates]))
       }
 
+      // const response = { vehicleCandidates: vehicleCandidates, matches: matches }
+      response.responseType = 'vehicle'
+      response.response = {} 
+      response.response.vehicleCandidates = vehicleCandidates
+      response.response.matches = matches 
+
+    } else {
+      const situation = await travelSituationRouter({ 
+        vehicleCandidates: vehicleCandidates, 
+        matches: matches, 
+        userData: {
+          lat: data.lat, 
+          lon: data.lon 
+        }
+      })
+
+      response.responseType = situation.responseType
+      response.response = situation.response
     }
-    const response = { vehicleCandidates: vehicleCandidates, matches: matches }
+    
     return response
   } catch(err) {
-    // console.log('err: ', err)
-    throw(err)
+    console.log('err: ', err)
   }
 
 }
@@ -362,63 +415,66 @@ const parseVehicleItemInfo = async function(data) {
 
 }
 
-const getStationsWithinRadius = async function({ lat, lon, radius = 300 }) {
+const getStopsWithinRadius = async function({ lat, lon, radius = 300 }) {
   
 }
 
-const travelSituationRouter = async ({ vehicleContext, matches, userData }) => {
+const travelSituationRouter = async ({ vehicleCandidates, matches, userData }) => {
 
   // We need to have something that checks whether we should wait and classify again
+  const client = new Client(config.pg)
+  await client.connect()
 
-  if(vehicleContext.vehicleCandidates && matches.vehicle_id) {
-    // check if stop station is within 100 meter radius 
-    const matchedVehicle = _.find(vehicleContext.vehicleCandidates, { vehicle_id: matches.vehicle_id })
+  if(vehicleCandidates && matches.vehicle_id) {
+    // check if stop is within 200 meter radius 
+    const matchedVehicle = _.find(vehicleCandidates, { vehicle_id: matches.vehicle_id })
 
-    const currentTripStops = await pool.query(`SELECT *, 
-      (6371 * acos(cos(radians(?)) * cos( radians( stop_lat ) ) 
-      * cos( radians( stop_lon ) - radians(?) ) + sin( radians(?) ) * sin(radians(stop_lat)) ) ) AS distance 
-      FROM stops S 
+    const query = `SELECT *, ST_Distance(t.x, S.geom) AS distance 
+      FROM (SELECT ST_GeographyFromText('SRID=4326; POINT(${userData.lon} ${userData.lat})')) AS t(x), 
+        stops S
       JOIN stop_times ST 
       ON S.stop_id = ST.stop_id 
-      WHERE ST.trip_id = ?
-      HAVING distance < 0.2
-      ORDER BY distance 
-      LIMIT 0,1`, [userData.lat, userData.lon, userData.lat, matchedVehicle.trip_id])
+      WHERE ST_DWithin(t.x, S.geom, 200) 
+      AND ST.trip_id = ${matchedVehicle.trip_id}
+      ORDER BY distance`
 
-    if(currentTripStation.length > 0) {
+    const { rows: currentTripStops } = await client.query(query)
+
+    if(currentTripStops.length > 0) {
       const currentTripStop = currentTripStops[0]
       currentTripStop.transfers = await getStopTransfers(currentTripStop.stop_id, moment().format('YYYYMMDD'), moment().format('HH:mm:ss'))
-      return { responseType: 'station', station: currentTripStop }
+      return { responseType: 'stop', response: { stop: currentTripStop } }
     } else {
-      return { responseType: 'vehicle', vehicleCandidates: vehicleContext.vehicleCandidates, matches: matches }
+      return { responseType: 'vehicle', response: { vehicleCandidates: vehicleContext.vehicleCandidates, matches: matches } }
     }
       // if station: 
         // show station 
       
   } else {
-    // check if there is a station within 200m radius
-    const currentStops = await pool.query(`SELECT *, 
-      (6371 * acos(cos(radians(?)) * cos( radians( stop_lat ) ) 
-      * cos( radians( stop_lon ) - radians(?) ) + sin( radians(?) ) * sin(radians(stop_lat)) ) ) AS distance 
-      FROM stops
-      HAVING distance < 0.2
-      ORDER BY distance
-      LIMIT 0,1`, [userData.lat, userData.lon, userData.lat])
+    // check if there is a stop within 200m radius
+    const query = `SELECT *, ST_Distance(t.x, S.geom) AS distance
+    FROM stops S, 
+      (SELECT ST_GeographyFromText('SRID=4326; POINT(${userData.lon} ${userData.lat})')) AS t(x) 
+    WHERE ST_DWithin(t.x, S.geom, 200) 
+    ORDER BY distance
+    LIMIT 1
+  `
+    const { rows: currentStops } = await client.query(query)
     
     if(currentStops.length > 0) {
       const currentStop = currentStops[0]
       currentStop.transfers = await getStopTransfers(currentStop.stop_id, moment().format('YYYYMMDD'), moment().format('HH:mm:ss'))
-      return { responseType: 'station', station: currentStop }
+      return { responseType: 'stop', response: { stop: currentStop } }
     } else {
-      const nearbyStations = await pool.query(`SELECT *, 
-        (6371 * acos(cos(radians(?)) * cos( radians( stop_lat ) ) 
-        * cos( radians( stop_lon ) - radians(?) ) + sin( radians(?) ) * sin(radians(stop_lat)) ) ) AS distance 
-        FROM stops
-        HAVING distance < 5
-        ORDER BY distance
-        LIMIT 0,5`, [userData.lat, userData.lon, userData.lat])
-      
-      return { responseType: 'neary', stations: nearbyStations }
+      const query = `SELECT *, ST_Distance(t.x, S.geom) AS distance 
+        FROM stops S, 
+          (SELECT ST_GeographyFromText('SRID=4326; POINT(${userData.lon} ${userData.lat})')) AS t(x)  
+        WHERE ST_DWithin(t.x, S.geom, 2000) 
+        ORDER BY distance 
+        LIMIT 5`
+
+      const { rows: stops } = await client.query(query)
+      return { responseType: 'nearby', response: { stops: stops } }
     }   
   }
 }
