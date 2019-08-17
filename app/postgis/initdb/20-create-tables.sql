@@ -81,7 +81,8 @@ CREATE TABLE "public"."stops" (
 	"stop_timezone" varchar(255) COLLATE "default",
 	"wheelchair_boarding" varchar(255) COLLATE "default",
 	"platform_code" varchar(255) COLLATE "default",
-	"zone_id" varchar(255) COLLATE "default"
+	"zone_id" varchar(255) COLLATE "default", 
+	"geom" geography(POINT,4326)
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."stops" OWNER TO "docker";

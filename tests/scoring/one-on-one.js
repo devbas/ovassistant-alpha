@@ -20,7 +20,7 @@ const scoreOneOnOne = async () => {
     console.log('connected to Postgis!')
 
     const trajectories = await client.query(`SELECT ST_AsText(geom) as linestring, trip_id, vehicle_id
-                                            FROM tmp_trajectories
+                                            FROM trajectories
                                             LIMIT 10`)
 
     for(const index in trajectories.rows) {
@@ -49,6 +49,7 @@ const scoreOneOnOne = async () => {
           url: 'http://localhost:8001/api/v1/device/score', 
           headers: { 'Authorization': `Bearer ${token}`}
         })
+        console.log('pointResponse: ', pointResponse.data)
 
         if(pointResponse.data.matches) {
           if(pointResponse.data.matches.vehicle_id === trajectory.vehicle_id) {

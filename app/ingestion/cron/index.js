@@ -393,6 +393,12 @@ const ingestLatestGTFS =  async ({ force }) => {
   
           callback(false, 'done')
         })
+      }, 
+      (callback) => {
+        // Set Postgis geometry for stops 
+        client.query(`UPDATE stops SET geom = ST_MakePoint(stop_lon, stop_lat)`, (err, result) => {
+          callback(false, 'done')
+        })  
       } 
     ], (err, result) => {
       if(err) {
