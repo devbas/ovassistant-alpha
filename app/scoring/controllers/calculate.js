@@ -9,11 +9,8 @@ const redisLayerStore = require('../redis-layer-store')
 const { Client } = require('pg')
 const config = require('../config/config')
 
-const getVehicleItemInfo = async (vehicle) => {
+const getVehicleItemInfo = async (client, vehicle) => {
   try {
-
-    const client = new Client(config.pg)
-    await client.connect()
 
     vehicle.destination = false 
     vehicle.title_prefix = false  
@@ -90,6 +87,9 @@ const getVehicleCandidates = async (data) => {
 
   let response = {}
 
+  const client = new Client(config.pg)
+  await client.connect()
+
   try {
     console.log('data', data)
     if(!data.userId || !data.lon || !data.lat || !data.datetime) {
@@ -115,7 +115,7 @@ const getVehicleCandidates = async (data) => {
     if(!_.isEmpty(vehicleCandidates)) {
       vehicleCandidates = JSON.parse(vehicleCandidates)
       
-      vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo))
+      vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo.bind(null, client)))
       const userLayersRaw = await redisLayerStore.get(data.userId)
 
       if(userLayersRaw === null) {
@@ -140,7 +140,8 @@ const getVehicleCandidates = async (data) => {
         userData: {
           lat: data.lat, 
           lon: data.lon 
-        }
+        }, 
+        client: client 
       })
 
       response.responseType = situation.responseType
@@ -419,11 +420,7 @@ const getStopsWithinRadius = async function({ lat, lon, radius = 300 }) {
   
 }
 
-const travelSituationRouter = async ({ vehicleCandidates, matches, userData }) => {
-
-  // We need to have something that checks whether we should wait and classify again
-  const client = new Client(config.pg)
-  await client.connect()
+const travelSituationRouter = async ({ vehicleCandidates, matches, userData, client }) => {
 
   if(vehicleCandidates && matches.vehicle_id) {
     // check if stop is within 200 meter radius 
