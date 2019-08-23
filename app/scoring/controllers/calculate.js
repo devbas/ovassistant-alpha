@@ -6,7 +6,7 @@ const moment = require('moment')
 const _ = require('lodash')
 const redisClient = require('../redis-client')
 const redisLayerStore = require('../redis-layer-store')
-const { Client } = require('pg')
+const { Client, Pool } = require('pg')
 const config = require('../config/config')
 
 const getVehicleItemInfo = async (client, vehicle) => {
@@ -87,7 +87,8 @@ const getVehicleCandidates = async (data) => {
 
   let response = {}
 
-  const client = new Client(config.pg)
+  const client = new Pool(config.pg)
+  // const client = new Client(config.pg)
   await client.connect()
 
   try {
@@ -151,7 +152,9 @@ const getVehicleCandidates = async (data) => {
     return response
   } catch(err) {
     console.log('err: ', err)
-  }
+  } finally {
+    client.release()
+  } 
 
 }
 
