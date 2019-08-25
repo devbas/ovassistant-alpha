@@ -119,9 +119,9 @@ const getVehicleCandidates = async (data) => {
       vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo.bind(null, pgPool)))
       const userLayersRaw = await redisLayerStore.get(data.userId)
 
-      if(userLayersRaw === null) {
+      if(userLayersRaw === null && vehicleCandidates.length > 0) {
         await redisLayerStore.set(data.userId, JSON.stringify([vehicleCandidates]))
-      } else {
+      } else if(vehicleCandidates.length > 0) {
         let userLayers = JSON.parse(userLayersRaw)
         userLayers = userLayers.slice(-1 * 5)
         
