@@ -93,7 +93,7 @@ def get_observations(user_id, datetime):
 
     if observations: 
       json_data = json.loads(observations)
-
+      print('json data: ', str(json_data))
       for row in json_data: 
         df = df.append(row)
     
