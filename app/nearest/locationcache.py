@@ -91,11 +91,12 @@ def get_observations(user_id, datetime):
   try:
     observations = redis_user_location_history.get(user_id)
 
-    if observations: 
+    if observations is not None: 
       json_data = json.loads(observations)
       print('json data: ', str(json_data))
-      for row in json_data: 
-        df = df.append(row)
+      if json_data:
+        for row in json_data: 
+          df = df.append(row)
     
   except Exception as e:
     print('execption: ' + str(e))
