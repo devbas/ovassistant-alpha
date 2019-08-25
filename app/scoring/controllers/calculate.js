@@ -112,7 +112,7 @@ const getVehicleCandidates = async (data) => {
     let vehicleCandidates = vehicleCandidatesRaw.data.observations ? vehicleCandidatesRaw.data.observations : false 
     // let vehicleCandidates = JSON.parse(vehicleCandidatesRaw.data.observations)
     const matches = vehicleCandidatesRaw.data.matches
-
+    console.log('vehicleCandidates: ', vehicleCandidates)
     if(!_.isEmpty(vehicleCandidates)) {
       vehicleCandidates = JSON.parse(vehicleCandidates)
       
