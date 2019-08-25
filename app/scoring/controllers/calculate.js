@@ -15,7 +15,7 @@ const getVehicleItemInfo = async (pgPool, vehicle) => {
     vehicle.destination = false 
     vehicle.title_prefix = false  
 
-    const trip = await pgPool.query('SELECT trip_headsign, route_id, trip_id FROM trips WHERE realtime_trip_id = ? LIMIT 0,1', [vehicle.vehicle_id])
+    const trip = await pgPool.query('SELECT trip_headsign, route_id, trip_id FROM trips WHERE realtime_trip_id = $1 LIMIT 1', [vehicle.vehicle_id])
 
     if(!trip[0] || !trip[0].trip_headsign) {
       return vehicle 
@@ -24,7 +24,7 @@ const getVehicleItemInfo = async (pgPool, vehicle) => {
     vehicle.destination = trip[0].trip_headsign 
     vehicle.trip_id = trip[0].trip_id 
 
-    const tripRouteName = await pgPool.query('SELECT route_short_name FROM routes WHERE route_id = ? LIMIT 0,1', [trip[0].route_id])
+    const tripRouteName = await pgPool.query('SELECT route_short_name FROM routes WHERE route_id = $1 LIMIT 1', [trip[0].route_id])
 
     if(!tripRouteName[0] || !tripRouteName[0].route_short_name) {
       return vehicle 
@@ -142,7 +142,8 @@ const getVehicleCandidates = async (data) => {
           lat: data.lat, 
           lon: data.lon 
         }, 
-        pgPool: pgPool 
+        pgPool: pgPool, 
+        datetime: data.datetime
       })
 
       response.responseType = situation.responseType
@@ -156,17 +157,16 @@ const getVehicleCandidates = async (data) => {
 
 }
 
-const getStopTransfers = async (stopId, timetableDate, timetableTime) => {
+const getStopTransfers = async ({ stopId, date, time, pgPool }) => {
 
-  const timetableTimeLimit = moment(timetableTime, 'HH:mm:ss').add(1, 'hours').format('HH:mm:ss')
+  const timeLimit = moment(time, 'HH:mm:ss').add(1, 'hours').format('HH:mm:ss')
 
-  const testTime = moment('23:23:23', 'HH:mm:ss').add(1, 'hours').format('HH:mm:ss')
-
-  const parentStop = await pool.query('SELECT parent_station FROM stops WHERE stop_id = ? LIMIT 0,1', [stopId])
-
-  let transfersRaw = []
-  if(parentStop[0] && parentStop[0].parentStop) {
-    transfersRaw = await pool.query(`SELECT * 
+  // const testTime = moment('23:23:23', 'HH:mm:ss').add(1, 'hours').format('HH:mm:ss')
+   
+  const { rows: parentStop } = await pgPool.query('SELECT parent_station FROM stops WHERE stop_id = $1 LIMIT 1', [stopId])
+  
+  if(parentStop[0] && parentStop[0].parent_station) {
+    var { rows: transfersRaw } = await pgPool.query(`SELECT * 
       FROM stop_times ST 
       JOIN trips T 
       ON ST.trip_id = T.trip_id 
@@ -174,15 +174,15 @@ const getStopTransfers = async (stopId, timetableDate, timetableTime) => {
       ON T.service_id = CD.service_id 
       JOIN stops S 
       ON S.stop_id = ST.stop_id 
-      WHERE S.parent_station = ?
-      AND ST.departure_time > ?
-      AND ST.departure_time < ?
-      AND CD.date = ?
+      WHERE S.parent_station = $1
+      AND ST.departure_time > $2
+      AND ST.departure_time < $3
+      AND CD.date = $4
       AND pickup_type = 0
       ORDER BY departure_time ASC
-      LIMIT 0,10`, [parentStop[0].parentStop, timetableTime, timetableTimeLimit, timetableDate])
+      LIMIT 10`, [parentStop[0].parent_station, time, timeLimit, date])
   } else {
-    transfersRaw = await pool.query(`SELECT * 
+    var { rows: transfersRaw } = await pgPool.query(`SELECT * 
       FROM stop_times ST 
       JOIN trips T 
       ON ST.trip_id = T.trip_id 
@@ -190,19 +190,19 @@ const getStopTransfers = async (stopId, timetableDate, timetableTime) => {
       ON T.service_id = CD.service_id 
       JOIN stops S 
       ON S.stop_id = ST.stop_id 
-      WHERE ST.stop_id = ?
-      AND ST.departure_time > ?
-      AND ST.departure_time < ?
-      AND CD.date = ?
+      WHERE ST.stop_id = $1
+      AND ST.departure_time > $2
+      AND ST.departure_time < $3
+      AND CD.date = $4
       AND pickup_type = 0
       ORDER BY departure_time ASC
-      LIMIT 0,10`, [stopId, timetableTime, timetableTimeLimit, timetableDate])
+      LIMIT 10`, [stopId, time, timeLimit, date])
   }
-                                          
+                                         
   const transfers = _.map(transfersRaw, async (transfer) => {
     transfer.arrival_time = utils.fixTime(transfer.arrival_time)
     transfer.departure_time = utils.fixTime(transfer.departure_time)
-    const route = await pool.query('SELECT * FROM routes WHERE route_id = ?', [transfer.route_id])
+    const { rows: route } = await pgPool.query('SELECT * FROM routes WHERE route_id = $1', [transfer.route_id])
     transfer.route = route[0] ? route[0] : {}
     return transfer 
   })         
@@ -417,11 +417,7 @@ const parseVehicleItemInfo = async function(data) {
 
 }
 
-const getStopsWithinRadius = async function({ lat, lon, radius = 300 }) {
-  
-}
-
-const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgPool }) => {
+const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgPool, datetime }) => {
 
   if(vehicleCandidates && matches.vehicle_id) {
     // check if stop is within 200 meter radius 
@@ -440,7 +436,12 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
 
     if(currentTripStops.length > 0) {
       const currentTripStop = currentTripStops[0]
-      currentTripStop.transfers = await getStopTransfers(currentTripStop.stop_id, moment().format('YYYYMMDD'), moment().format('HH:mm:ss'))
+      currentTripStop.transfers = await getStopTransfers({
+        stopId: currentTripStop.stop_id, 
+        date: moment().format('YYYYMMDD'), 
+        time: moment().format('HH:mm:ss'), 
+        pgPool: pgPool
+      })
       return { responseType: 'stop', response: { stop: currentTripStop } }
     } else {
       return { responseType: 'vehicle', response: { vehicleCandidates: vehicleContext.vehicleCandidates, matches: matches } }
@@ -455,13 +456,18 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
       (SELECT ST_GeographyFromText('SRID=4326; POINT(${userData.lon} ${userData.lat})')) AS t(x) 
     WHERE ST_DWithin(t.x, S.geom, 200) 
     ORDER BY distance
-    LIMIT 1
-  `
+    LIMIT 1`
+
     const { rows: currentStops } = await pgPool.query(query)
     
     if(currentStops.length > 0) {
       const currentStop = currentStops[0]
-      currentStop.transfers = await getStopTransfers(currentStop.stop_id, moment().format('YYYYMMDD'), moment().format('HH:mm:ss'))
+      currentStop.transfers = await getStopTransfers({
+        stopId: currentStop.stop_id, 
+        date: moment().format('YYYYMMDD'), 
+        time: moment().format('HH:mm:ss'), 
+        pgPool: pgPool
+      })
       return { responseType: 'stop', response: { stop: currentStop } }
     } else {
       const query = `SELECT *, ST_Distance(t.x, S.geom) AS distance 
@@ -472,7 +478,22 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
         LIMIT 5`
 
       const { rows: stops } = await pgPool.query(query)
-      return { responseType: 'nearby', response: { stops: stops } }
+
+      // Get transfers for stop 
+
+      // Create date from datetime 
+      // Create time from datetime
+      const date = moment.unix(datetime).format('YYYYMMDD')
+      const time = moment.unix(datetime).format('HH:mm:ss')
+
+      const stopsTimetable = stops.map(stop => [...stop, timetable = getStopTransfers({ 
+        stopId: stop.stop_id, 
+        date: date, 
+        time: time,
+        pgPool: pgPool
+      })])
+
+      return { responseType: 'nearby', response: { stops: stopsTimetable } }
     }   
   }
 }
