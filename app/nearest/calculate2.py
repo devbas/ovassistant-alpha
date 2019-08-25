@@ -29,7 +29,7 @@ def get_vehicle_matches(lon, lat, user_datetime, user_id):
     vit_layers = locationcache.get_observations(user_id, user_datetime) 
 
     # Let Mr. Viterbi do his magic
-    if not vit_layers.empty: 
+    if vit_layers: 
       # Get all unique vehicles from observations
       states = vit_layers['vehicle_id'].unique()
       vit_layers = vit_layers.sort_values(by=['device_datetime'], ascending=False)
