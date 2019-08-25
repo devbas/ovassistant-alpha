@@ -96,7 +96,7 @@ def get_observations(user_id, datetime):
       print('json data: ', str(json_data))
       if json_data:
         for row in json_data: 
-          df = df.append(row)
+          df.append(row)
     
   except Exception as e:
     print('execption: ' + str(e))
