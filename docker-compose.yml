@@ -29,7 +29,7 @@ services:
     build: ./app/nearest/
     depends_on: 
       - postgis
-      # - redis
+      - redis
       # - db
     ports: 
       - 127.0.0.1:9002:9002

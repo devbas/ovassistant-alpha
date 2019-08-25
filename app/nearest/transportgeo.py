@@ -116,66 +116,6 @@ def great_circle_distance(a, b):
   
   return distance
 
-def vehicle_stop_great_circle_distance(vehicle): 
-
-  try:
-    '''
-      Returns a subset of shapes that include the previous and next stop for a given vehicle. 
-    '''
-    fallback_response = {
-      'closest_stop_id': 0, 
-      'stop_distance': -1
-    }
-
-    vehicle_info = locationcache.get(vehicle['vehicle_type'] + ':' + vehicle['vehicle_id']) 
-
-    if not vehicle_info: 
-      return fallback_response
-
-    vehicle_info = json.loads(vehicle_info)
-    
-    if not 'nextStop' in vehicle_info or not 'prevStop' in vehicle_info or not vehicle_info['prevStop'] or not vehicle_info['nextStop']: 
-      return {
-        'closest_stop_id': 0, 
-        'stop_distance': -1
-      }
-
-    shape_id = vehicle_info['shapeId']
-    next_stop_dist_traveled = vehicle_info['nextStop'][0]['shape_dist_traveled']
-    prev_stop_dist_traveled = vehicle_info['prevStop'][0]['shape_dist_traveled']
-
-    # Find closest point in redis ZSET with key = vehicle_id and value = current coordinates, ordered by distance (also return distance)
-    # print('shape id: ' + str(shape_id) + str(vehicle['current_user_coords'][0]) + '   and  ' + str(vehicle['current_user_coords'][1]))
-    closest_shape_point = shapestore.georadius(shape_id, vehicle['current_user_coords'][0], vehicle['current_user_coords'][1], 10000)
-    # print('closest point: ' + str(closest_shape_point))
- 
-    distance_to_shape_point = closest_shape_point[0][1]
-    shape_point_info = closest_shape_point[0][0].split(':')
-    shape_point_dist_traveled = shape_point_info[len(shape_point_info)-1]
-
-    # print('distance to shape point: ' + str(distance_to_shape_point))
-    # print('distance to next stop: ' + str(int(next_stop_dist_traveled) - int(shape_point_dist_traveled) + int(distance_to_shape_point)) )
-
-    # 724696:24:38367 --> shape_id, sequence, distance_traveled 
-    distance_to_next_stop = int(next_stop_dist_traveled) - int(shape_point_dist_traveled) + int(distance_to_shape_point)
-    distance_to_prev_stop = int(next_stop_dist_traveled) - int(distance_to_shape_point) - int(prev_stop_dist_traveled)
-
-    if distance_to_next_stop > distance_to_prev_stop: 
-      return {
-        'closest_stop_id': vehicle_info['prevStop'][0]['stop_id'],
-        'stop_distance': distance_to_prev_stop
-      }
-    else: 
-      return {
-        'closest_stop_id': vehicle_info['nextStop'][0]['stop_id'], 
-        'stop_distance': distance_to_next_stop
-      }
-  
-  except Exception as e:
-    capture_exception(e)
-    print('exception: ' + str(e))
-    return fallback_response
-
 def transition(candidate, vehicle): 
   # non_direct_tolerance = 1000 # Tuning parameter
   std_gps_measurement = 4.07
