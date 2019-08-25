@@ -85,7 +85,7 @@ def get_vehicle_nearest_stop(trip_id, lat, lon):
 def get_observations(user_id, datetime): 
 
   # Get recent observations from Redis
-  df = []
+  df = pd.DataFrame()
   observations = False 
 
   try:
@@ -96,7 +96,7 @@ def get_observations(user_id, datetime):
       print('json data: ', str(json_data))
       if json_data:
         for row in json_data: 
-          df.append(row)
+          df = df.append(row, ignore_index=True)
     
   except Exception as e:
     print('execption: ' + str(e))
