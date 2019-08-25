@@ -9,13 +9,13 @@ const redisLayerStore = require('../redis-layer-store')
 const { Client, Pool } = require('pg')
 const config = require('../config/config')
 
-const getVehicleItemInfo = async (client, vehicle) => {
+const getVehicleItemInfo = async (pgPool, vehicle) => {
   try {
 
     vehicle.destination = false 
     vehicle.title_prefix = false  
 
-    const trip = await client.query('SELECT trip_headsign, route_id, trip_id FROM trips WHERE realtime_trip_id = ? LIMIT 0,1', [vehicle.vehicle_id])
+    const trip = await pgPool.query('SELECT trip_headsign, route_id, trip_id FROM trips WHERE realtime_trip_id = ? LIMIT 0,1', [vehicle.vehicle_id])
 
     if(!trip[0] || !trip[0].trip_headsign) {
       return vehicle 
@@ -24,7 +24,7 @@ const getVehicleItemInfo = async (client, vehicle) => {
     vehicle.destination = trip[0].trip_headsign 
     vehicle.trip_id = trip[0].trip_id 
 
-    const tripRouteName = await client.query('SELECT route_short_name FROM routes WHERE route_id = ? LIMIT 0,1', [trip[0].route_id])
+    const tripRouteName = await pgPool.query('SELECT route_short_name FROM routes WHERE route_id = ? LIMIT 0,1', [trip[0].route_id])
 
     if(!tripRouteName[0] || !tripRouteName[0].route_short_name) {
       return vehicle 
@@ -87,9 +87,9 @@ const getVehicleCandidates = async (data) => {
 
   let response = {}
 
-  const client = new Pool(config.pg)
+  const pgPool = new Pool(config.pg)
   // const client = new Client(config.pg)
-  await client.connect()
+  // await client.connect()
 
   try {
     console.log('data', data)
@@ -116,7 +116,7 @@ const getVehicleCandidates = async (data) => {
     if(!_.isEmpty(vehicleCandidates)) {
       vehicleCandidates = JSON.parse(vehicleCandidates)
       
-      vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo.bind(null, client)))
+      vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo.bind(null, pgPool)))
       const userLayersRaw = await redisLayerStore.get(data.userId)
 
       if(userLayersRaw === null) {
@@ -142,7 +142,7 @@ const getVehicleCandidates = async (data) => {
           lat: data.lat, 
           lon: data.lon 
         }, 
-        client: client 
+        pgPool: pgPool 
       })
 
       response.responseType = situation.responseType
@@ -152,9 +152,7 @@ const getVehicleCandidates = async (data) => {
     return response
   } catch(err) {
     console.log('err: ', err)
-  } finally {
-    client.release()
-  } 
+  }
 
 }
 
@@ -423,7 +421,7 @@ const getStopsWithinRadius = async function({ lat, lon, radius = 300 }) {
   
 }
 
-const travelSituationRouter = async ({ vehicleCandidates, matches, userData, client }) => {
+const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgPool }) => {
 
   if(vehicleCandidates && matches.vehicle_id) {
     // check if stop is within 200 meter radius 
@@ -438,7 +436,7 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, cli
       AND ST.trip_id = ${matchedVehicle.trip_id}
       ORDER BY distance`
 
-    const { rows: currentTripStops } = await client.query(query)
+    const { rows: currentTripStops } = await pgPool.query(query)
 
     if(currentTripStops.length > 0) {
       const currentTripStop = currentTripStops[0]
@@ -459,7 +457,7 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, cli
     ORDER BY distance
     LIMIT 1
   `
-    const { rows: currentStops } = await client.query(query)
+    const { rows: currentStops } = await pgPool.query(query)
     
     if(currentStops.length > 0) {
       const currentStop = currentStops[0]
@@ -473,7 +471,7 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, cli
         ORDER BY distance 
         LIMIT 5`
 
-      const { rows: stops } = await client.query(query)
+      const { rows: stops } = await pgPool.query(query)
       return { responseType: 'nearby', response: { stops: stops } }
     }   
   }
