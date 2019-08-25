@@ -19,8 +19,6 @@ try:
 
   if(postgres_pool): 
     print('Postgres Connection pool created successfully')
-  
-  conn = postgres_pool.getconn()
 
 except (Exception, psycopg2.DatabaseError) as error :
   print ("Error while connecting to PostgreSQL", error)
@@ -44,8 +42,14 @@ def get_vehicle_location_state_by_time(lon, lat, user_datetime):
   
   # print('query: ', query)
 
-  data = pd.read_sql(query, conn) 
-  
+  try: 
+    conn = postgres_pool.getconn()
+    data = pd.read_sql(query, conn) 
+  except (Exception, psycopg2.DatabaseError) as error:
+    print ("Error while connecting to PostgreSQL", error)
+  finally: 
+    postgres_pool.putconn(conn)
+
   if not data.empty: 
     # print('result: ', str([get_vehicle_nearest_stop(trip_id, lat, lon) for trip_id in data['trip_id']]))
     data['nearest_stop_distance'], data['nearest_stop_id'] = zip(*[get_vehicle_nearest_stop(trip_id, lat, lon) for trip_id in data['trip_id']])
@@ -67,7 +71,13 @@ def get_vehicle_nearest_stop(trip_id, lat, lon):
             ORDER BY nearest_stop_distance ASC \
             LIMIT 1".format(lon, lat, trip_id)
   
-  result = pd.read_sql(query, conn) 
+  try: 
+    conn = postgres_pool.getconn()
+    result = pd.read_sql(query, conn) 
+  except (Exception, psycopg2.DatabaseError) as error:
+    print ("Error while connecting to PostgreSQL", error)
+  finally: 
+    postgres_pool.putconn(conn)
 
   return (result['nearest_stop_distance'][0], result['nearest_stop_id'][0])
 
