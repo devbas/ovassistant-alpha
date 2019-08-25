@@ -13,7 +13,7 @@ import psycopg2
 
 redis_client = redis.StrictRedis(host=cfg.redis['host'], port=cfg.redis['port'], db=cfg.redis['db'], decode_responses=cfg.redis['decode_responses'])
 redis_layer_store = redis.StrictRedis(host=cfg.redis['host'], port=cfg.redis['port'], db=cfg.redis['layer_db'], decode_responses=cfg.redis['decode_responses'])
-postgres_conn = "host="+ cfg.psql['host'] +" port="+ "5432" +" dbname="+ cfg.psql['db'] +" user=" + cfg.psql['user'] +" password="+ cfg.psql['password']
+# postgres_conn = "host="+ cfg.psql['host'] +" port="+ "5432" +" dbname="+ cfg.psql['db'] +" user=" + cfg.psql['user'] +" password="+ cfg.psql['password']
 
 try:
   postgres_pool = psycopg2.pool.SimpleConnectionPool(1,20, host=cfg.psql['host'], port=5432, database=cfg.psql['db'], user=cfg.psql['user'], password=cfg.psql['password'])
@@ -27,8 +27,8 @@ except (Exception, psycopg2.DatabaseError) as error :
   print ("Error while connecting to PostgreSQL", error)
 
 finally:
-  if (postgreSQL_pool):
-    postgreSQL_pool.closeall
+  if (postgres_pool):
+    postgres_pool.closeall
   
   print("PostgreSQL connection pool is closed")
 
