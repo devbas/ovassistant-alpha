@@ -454,7 +454,7 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
     const query = `SELECT *, ST_Distance(t.x, S.geom) AS distance
     FROM stops S, 
       (SELECT ST_GeographyFromText('SRID=4326; POINT(${userData.lon} ${userData.lat})')) AS t(x) 
-    WHERE ST_DWithin(t.x, S.geom, 200) 
+    WHERE ST_DWithin(t.x, S.geom, 2000) 
     ORDER BY distance
     LIMIT 1`
 
