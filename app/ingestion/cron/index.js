@@ -4,7 +4,7 @@ const decompress = require('decompress')
 const request = require('request')
 const fs = require('fs')
 const { Client } = require('pg')
-var copyFrom = require('pg-copy-streams').from;
+var copyFrom = require('pg-copy-streams').from
 const async = require('async')
 const _ = require('lodash')
 const moment = require('moment')
@@ -14,11 +14,13 @@ const Sentry = require('@sentry/node')
 
 const config = require('../config/config')
 
+Sentry.init({ dsn: 'https://db56d0c909134020b2d840cb2d86e01c@sentry.io/1728715' });
+
 const ingestLatestGTFS =  async ({ force }) => {
 
   let startTime = moment() 
   try {
-    console.log('Let start cracking')
+    Sentry.captureMessage('GTFS Ingestion started on: ' + new Date())
     const zipFile = 'gtfs-openov-nl.zip'
     const extractEntryTo = ''
     const outputDir = './tmp/'
@@ -33,24 +35,27 @@ const ingestLatestGTFS =  async ({ force }) => {
     } 
 
     await client.query('TRUNCATE temp_shapes')
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED temp_shapes')
     console.log(new Date(), ' Temp Shapes table truncated')
 
     console.log(new Date(), ' Truncate trajectories table') 
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED trajectories')
     await client.query('TRUNCATE trajectories')
 
     console.log(new Date(), ' Truncate trips table')
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED trips')
     await client.query('TRUNCATE trips')
 
     console.log(new Date(), ' Truncate stop_times table')
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED stop_times')
     await client.query('TRUNCATE stop_times')
 
     console.log(new Date(), ' Truncate stops table')
-    await client.query('TRUNCATE stops')
-
-    console.log(new Date(), ' Truncate stops table')
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED stops')
     await client.query('TRUNCATE stops')
 
     console.log(new Date(), ' Truncate calendar dates table')
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED calendar_dates')
     await client.query('TRUNCATE calendar_dates')
 
     async.waterfall([
@@ -60,6 +65,7 @@ const ingestLatestGTFS =  async ({ force }) => {
             callback(err)
           })
           .on('end', () => {
+            Sentry.captureMessage('GTFS Ingestion -- TRUNCATED temp_shapes')
             console.log('Finished downloading GTFS NL')
             callback(false)
           })
@@ -83,6 +89,7 @@ const ingestLatestGTFS =  async ({ force }) => {
           callback(err)
         })
         stream.on('end', () => {
+          Sentry.captureMessage('GTFS Ingestion -- INSERTED shapes')
           callback()
         })
         fileStream.pipe(stream)
@@ -99,6 +106,7 @@ const ingestLatestGTFS =  async ({ force }) => {
           callback(err)
         })
         stream.on('end', () => {
+          Sentry.captureMessage('GTFS Ingestion -- INSERTED stop_times')
           callback()
         })
         fileStream.pipe(stream) 
@@ -115,6 +123,7 @@ const ingestLatestGTFS =  async ({ force }) => {
           callback(err)
         })
         stream.on('end', () => {
+          Sentry.captureMessage('GTFS Ingestion -- INSERTED trips')
           callback()
         })
         fileStream.pipe(stream)
@@ -131,6 +140,7 @@ const ingestLatestGTFS =  async ({ force }) => {
           callback(err)
         })
         stream.on('end', () => {
+          Sentry.captureMessage('GTFS Ingestion -- INSERTED routes')
           callback()
         })
         fileStream.pipe(stream) 
@@ -147,6 +157,7 @@ const ingestLatestGTFS =  async ({ force }) => {
           callback(err)
         })
         stream.on('end', () => {
+          Sentry.captureMessage('GTFS Ingestion -- INSERTED stops')
           callback()
         })
         fileStream.pipe(stream) 
@@ -163,6 +174,7 @@ const ingestLatestGTFS =  async ({ force }) => {
           callback(err)
         })
         stream.on('end', () => {
+          Sentry.captureMessage('GTFS Ingestion -- INSERTED calendar_dates')
           callback()
         })
         fileStream.pipe(stream) 
