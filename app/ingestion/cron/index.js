@@ -418,7 +418,7 @@ const ingestLatestGTFS =  async ({ force }) => {
         console.log('err: ', err)
       } else {
         let endTime = moment() 
-        Sentry.captureMessage('GTFS Ingestion finished in ', moment.utc(moment(endTime).diff(startTime)).format('HH:mm:ss'))
+        Sentry.captureMessage('GTFS Ingestion finished in ' + moment.utc(moment(endTime).diff(startTime)).format('HH:mm:ss'))
         console.log('result: ', result)
       }
     })
