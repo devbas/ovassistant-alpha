@@ -92,7 +92,6 @@ const getVehicleCandidates = async (data) => {
   // await client.connect()
 
   try {
-    Sentry.captureMessage('Hello from the application2');
     console.log('data', data)
     if(!data.userId || !data.lon || !data.lat || !data.datetime) {
       throw { 'message': 'Make sure to send the longitude, latitude and datetime for an event.', 'status': 500 }
@@ -153,6 +152,7 @@ const getVehicleCandidates = async (data) => {
     
     return response
   } catch(err) {
+    Sentry.captureException(err)
     console.log('err: ', err)
   }
 
