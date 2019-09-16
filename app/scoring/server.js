@@ -11,7 +11,7 @@ const fs = require('fs');
 const APIRouter = require('./api');
 const passport = require('passport');
 
-Sentry.init({ dsn: 'https://39c9c5b61e1d41eb93ba664950bd3416@sentry.io/1339156' });
+Sentry.init({ dsn: 'https://3251eeefa7c644de8c5b46af97401d90@sentry.io/1728745' })
 
 app.use(Sentry.Handlers.requestHandler());
 app.use(cors())
@@ -30,6 +30,13 @@ router.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   console.log('Something is happening.');
+
+  if(req.header('X-Transaction-ID')) {
+    Sentry.configureScope(scope => {
+      scope.setTag("X-Transaction-ID", req.header('X-Transaction-ID'));
+    })
+  }
+
   next(); 
 });
 
