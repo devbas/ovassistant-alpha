@@ -24,7 +24,7 @@ const redisClient2 = redis.createClient({
   url: process.env.REDIS_URL || 'redis://redis/0'
 });
 
-Sentry.init({ dsn: 'https://39c9c5b61e1d41eb93ba664950bd3416@sentry.io/1339156' });
+Sentry.init({ dsn: 'https://db56d0c909134020b2d840cb2d86e01c@sentry.io/1728715' });
 const parseString = require('xml2js').parseString;
 const stripPrefix = require('xml2js').processors.stripPrefix;
 
