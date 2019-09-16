@@ -14,7 +14,7 @@ const getVehicleItemInfo = async (pgPool, vehicle) => {
 
     vehicle.destination = false 
     vehicle.title_prefix = false  
-    Sentry.captureMessage('Hello from the application');
+  
     const trip = await pgPool.query('SELECT trip_headsign, route_id, trip_id FROM trips WHERE realtime_trip_id = $1 LIMIT 1', [vehicle.vehicle_id])
 
     if(!trip[0] || !trip[0].trip_headsign) {
@@ -92,6 +92,7 @@ const getVehicleCandidates = async (data) => {
   // await client.connect()
 
   try {
+    Sentry.captureMessage('Hello from the application2');
     console.log('data', data)
     if(!data.userId || !data.lon || !data.lat || !data.datetime) {
       throw { 'message': 'Make sure to send the longitude, latitude and datetime for an event.', 'status': 500 }
