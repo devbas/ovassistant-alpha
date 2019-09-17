@@ -402,14 +402,15 @@ const ingestLatestGTFS =  async ({ force }) => {
   
           await client.query('CREATE INDEX idx_stoptimes_stop_id ON stop_times(stop_id)')
           await client.query('CREATE INDEX idx_stoptimes_trip_id ON stop_times(trip_id)')
-  
+          Sentry.captureMessage('GTFS Ingestion -- stop_times table updated')
           callback(false, 'done')
         })
       }, 
       (callback) => {
         // Set Postgis geometry for stops 
         client.query(`UPDATE stops SET geom = ST_MakePoint(stop_lon, stop_lat)`, (err, result) => {
-          callback(false, 'done')
+          Sentry.captureMessage('GTFS Ingestion -- stops table updated')
+          callback()
         })  
       } 
     ], (err, result) => {
