@@ -403,7 +403,7 @@ const ingestLatestGTFS =  async ({ force }) => {
           await client.query('CREATE INDEX idx_stoptimes_stop_id ON stop_times(stop_id)')
           await client.query('CREATE INDEX idx_stoptimes_trip_id ON stop_times(trip_id)')
           Sentry.captureMessage('GTFS Ingestion -- stop_times table updated')
-          callback(false, 'done')
+          callback(false)
         })
       }, 
       (callback) => {
