@@ -236,10 +236,8 @@ const getStoptimes = async ({ tripId, pgPool, timetableTime, timetableDate, nest
       })
 
       const { rows: stop } = await pgPool.query('SELECT * FROM stops WHERE stop_id = $1', [stoptime.stop_id])
-      console.log('not passed stoptime: ', stoptime)
       return _.merge(stoptime, stop[0])
     } else {
-      console.log('passed stoptime: ', stoptime)
       return stoptime
     }
   })
