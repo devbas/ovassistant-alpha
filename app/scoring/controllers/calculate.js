@@ -218,7 +218,7 @@ const getStopTransfers = async ({ stopId, date, time, pgPool, nested }) => {
 }
 
 const getStoptimes = async ({ tripId, pgPool, timetableTime, timetableDate, nested }) => {
-  const { rows: stoptimes } = await pgPool.query('SELECT * FROM stop_times WHERE trip_id = ? ORDER BY stop_sequence ASC', [tripId])
+  const { rows: stoptimes } = await pgPool.query('SELECT * FROM stop_times WHERE trip_id = $1 ORDER BY stop_sequence ASC', [tripId])
 
   const upcomingStoptimes = _.map(stoptimes, async (stoptime, key) => {
 
@@ -234,7 +234,7 @@ const getStoptimes = async ({ tripId, pgPool, timetableTime, timetableDate, nest
         nested: true
       })
 
-      const { rows: stop } = await pgPool.query('SELECT * FROM stops WHERE stop_id = ?', [stoptime.stop_id])
+      const { rows: stop } = await pgPool.query('SELECT * FROM stops WHERE stop_id = $1', [stoptime.stop_id])
 
       return _.merge(stoptime, stop[0])
     } else {
@@ -245,19 +245,19 @@ const getStoptimes = async ({ tripId, pgPool, timetableTime, timetableDate, nest
   return await Promise.all(upcomingStoptimes)
 }
 
-const getTrip = async (data, timetableDate) => {
-  if(data.type === 'vehicle') {
-    return await pool.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE T.realtime_trip_id = ? AND CD.date = ? LIMIT 0,1', [data.vehicleId, timetableDate])
-  } else if(data.type === 'train') {
-    if(isNaN(data.vehicleId)) {
-      const vehicleId = data.vehicleId.split(':')
-      data.vehicleId = vehicleId[2]
-    }
-    return await pool.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE T.trip_short_name = ? AND CD.date = ? LIMIT 0,1', [data.vehicleId, timetableDate])
-  } else {
-    throw "no supporting datatype available"
-  }
-}
+// const getTrip = async (data, timetableDate) => {
+//   if(data.type === 'vehicle') {
+//     return await pool.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE T.realtime_trip_id = ? AND CD.date = ? LIMIT 0,1', [data.vehicleId, timetableDate])
+//   } else if(data.type === 'train') {
+//     if(isNaN(data.vehicleId)) {
+//       const vehicleId = data.vehicleId.split(':')
+//       data.vehicleId = vehicleId[2]
+//     }
+//     return await pool.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE T.trip_short_name = ? AND CD.date = ? LIMIT 0,1', [data.vehicleId, timetableDate])
+//   } else {
+//     throw "no supporting datatype available"
+//   }
+// }
 
 // const transformStoptimes = async (vehicleCache, stoptimes, timetableTime, timetableDate) => {
 
