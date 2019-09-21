@@ -226,7 +226,7 @@ const getStoptimes = async ({ tripId, pgPool, timetableTime, timetableDate, nest
     stoptime.departure_time = utils.fixTime(stoptime.departure_time)
     stoptime.has_passed = false // TODO: implement contextual value based on current vehicle location. 
 
-    if(!stoptime.has_passed) { // TODO: find out whether and how getStopTransfers and getStoptimes can cause infinite loop. If yes, apply !nested 
+    if(!stoptime.has_passed && !nested) { // TODO: find out whether and how getStopTransfers and getStoptimes can cause infinite loop. If yes, apply !nested 
       stoptime.transfers = await getStopTransfers({
         stopId: stoptime.stop_id, 
         date: timetableDate, 
