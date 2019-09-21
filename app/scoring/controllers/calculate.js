@@ -231,6 +231,7 @@ const getStoptimes = async ({ tripId, pgPool, timetableTime, timetableDate, nest
         stopId: stoptime.stop_id, 
         date: timetableDate, 
         time: timetableTime, 
+        pgPool: pgPool,
         nested: true
       })
 
