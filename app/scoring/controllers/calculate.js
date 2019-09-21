@@ -534,6 +534,6 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
 module.exports = { 
   getVehicleCandidates: getVehicleCandidates, 
   parseVehicleItemInfo: parseVehicleItemInfo, 
-  getVehicleContext: getVehicleContext, 
+  // getVehicleContext: getVehicleContext, 
   travelSituationRouter: travelSituationRouter
 }
