@@ -516,13 +516,24 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
       const date = moment.unix(datetime).format('YYYYMMDD')
       const time = moment.unix(datetime).format('HH:mm:ss')
       console.log('stops: ', stops)
-      const stopsTimetable = stops.map(stop => [...stop, timetable = getStopTransfers({ 
-        stopId: stop.stop_id, 
-        date: date, 
-        time: time,
-        pgPool: pgPool, 
-        nested: false
-      })])
+      const stopsTimetable = stops.map(stop => Object.assign({ 
+        timetable: getStopTransfers({ 
+            stopId: stop.stop_id, 
+            date: date, 
+            time: time,
+            pgPool: pgPool, 
+            nested: false
+          }) 
+        }, stop
+      ))
+
+      // const stopsTimetable = stops.map(stop => [...stop, timetable = getStopTransfers({ 
+      //   stopId: stop.stop_id, 
+      //   date: date, 
+      //   time: time,
+      //   pgPool: pgPool, 
+      //   nested: false
+      // })])
 
       return { responseType: 'nearby', response: { stops: stopsTimetable } }
     }   
