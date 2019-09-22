@@ -1,10 +1,13 @@
 const mysql = require('mysql')
 const config = require('../config/config')
 const util = require('util')
+const Sentry = require('../sentry.js')
 
 const pool = mysql.createPool(config.mysql)
 pool.getConnection((err, connection) => {
   if (err) {
+    Sentry.captureException(err)
+    
     if (err.code === 'PROTOCOL_CONNECTION_LOST') {
       console.error('Database connection was closed.')
     }
