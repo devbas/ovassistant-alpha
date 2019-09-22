@@ -1,4 +1,4 @@
-const Sentry = require('@sentry/node');
+const Sentry = require('../sentry.js');
 const pool = require('../modules/database')
 const axios = require('axios')
 const utils = require('../utils')

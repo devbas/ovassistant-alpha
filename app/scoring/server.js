@@ -1,6 +1,6 @@
 const express = require('express');  
 const app = express();   
-const Sentry = require('@sentry/node');
+const Sentry = require('./sentry.js');
 const _ = require('lodash');
 const cors = require('cors');             
 const bodyParser = require('body-parser');
@@ -10,8 +10,6 @@ const redisClientPersist = require('./redis-client-persist');
 const fs = require('fs');
 const APIRouter = require('./api');
 const passport = require('passport');
-
-Sentry.init({ dsn: 'https://3251eeefa7c644de8c5b46af97401d90@sentry.io/1728745' })
 
 app.use(Sentry.Handlers.requestHandler());
 app.use(cors())

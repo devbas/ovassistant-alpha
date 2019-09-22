@@ -3,7 +3,7 @@ const passport = require('passport')
 const utils = require('../../modules/utils')
 const jwt = require('jsonwebtoken')
 const config = require('../../config/config')
-const Sentry = require('@sentry/node')
+const Sentry = require('../../sentry.js')
 const matchCalculationController = require('../../controllers/calculate')
 require('../../modules/passport.js')(passport)
 
