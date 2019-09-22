@@ -511,13 +511,11 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
 
       const { rows: stops } = await pgPool.query(query)
 
-      // Get transfers for stop 
-
       // Create date from datetime 
       // Create time from datetime
       const date = moment.unix(datetime).format('YYYYMMDD')
       const time = moment.unix(datetime).format('HH:mm:ss')
-
+      console.log('stops: ', stops)
       const stopsTimetable = stops.map(stop => [...stop, timetable = getStopTransfers({ 
         stopId: stop.stop_id, 
         date: date, 
