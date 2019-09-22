@@ -59,8 +59,8 @@ router.post('/score', passport.authenticate('jwt-login', { session: false }), as
 
   try {
     const result = await matchCalculationController.getVehicleCandidates(data)
-
-    res.status(200).send(JSON.stringify(result))
+    console.log({ result: result })
+    res.status(200).send(result)
   } catch(err) {
     res.status(500).send({ error: JSON.stringify(err) })
     Sentry.captureException(err)
