@@ -481,11 +481,11 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
         // show station 
       
   } else {
-    // check if there is a stop within 200m radius
+    // check if there is a stop within 150m radius
     const query = `SELECT *, ST_Distance(t.x, S.geom) AS distance
     FROM stops S, 
       (SELECT ST_GeographyFromText('SRID=4326; POINT(${userData.lon} ${userData.lat})')) AS t(x) 
-    WHERE ST_DWithin(t.x, S.geom, 2000) 
+    WHERE ST_DWithin(t.x, S.geom, 150) 
     ORDER BY distance
     LIMIT 1`
 
