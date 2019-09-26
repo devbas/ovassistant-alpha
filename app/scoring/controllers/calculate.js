@@ -515,7 +515,7 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
       // Create time from datetime
       const date = moment.unix(datetime).format('YYYYMMDD')
       const time = moment.unix(datetime).format('HH:mm:ss')
-      console.log('stops: ', stops)
+
       const stopsTimetable = stops.map(stop => Object.assign({ 
         timetable: getStopTransfers({ 
             stopId: stop.stop_id, 

@@ -9,6 +9,7 @@ const { Client } = require('pg')
 const axios = require('axios')
 // const async = require('async')
 const config = require('../../app/ingestion/config/config')
+const util = require('util')
 
 const testOrganisationId = 'c2dc095a-40f5-41d1-ad7b-55a552018a89'
 
@@ -49,7 +50,7 @@ const scoreOneOnOne = async () => {
           url: 'http://localhost:8001/api/v1/device/score', 
           headers: { 'Authorization': `Bearer ${token}`}
         })
-        console.log('pointResponse: ', pointResponse.data)
+        console.log('pointResponse: ', util.inspect(pointResponse.data, false, null, true))
 
         if(pointResponse.data.matches) {
           if(pointResponse.data.matches.vehicle_id === trajectory.vehicle_id) {

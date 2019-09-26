@@ -1,3 +1,0 @@
-const scoreDataPoint = async (data) => {
-  
-}
