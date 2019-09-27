@@ -41,6 +41,7 @@ router.post('/create', (req, res, next) => {
 })
 
 router.post('/score', passport.authenticate('jwt-login', { session: false }), async (req, res) => {
+  console.log('retrieved request: ', req.header('X-Transaction-ID'))
   const data = req.body
 
   data.userId = req.user.user_id
@@ -59,6 +60,7 @@ router.post('/score', passport.authenticate('jwt-login', { session: false }), as
 
   try {
     const result = await matchCalculationController.getVehicleCandidates(data)
+    console.log('sending result for: ', req.header('X-Transaction-ID'))
     res.status(200).json({ data: result })
   } catch(err) {
     res.status(500).send({ error: JSON.stringify(err) })
