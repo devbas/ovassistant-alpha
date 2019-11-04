@@ -15,7 +15,7 @@ RUN cd /zeromq-4.2.2 && ./configure && make install & ldconfig
 # RUN ./configure
 # RUN make install & ldconfig
 
-RUN npm install -g nodemon mongoose
+RUN npm install -g nodemon
 
 # RUN mkdir -p /var/www/ovassistant/app/ingestion
 

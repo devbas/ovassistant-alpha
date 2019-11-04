@@ -50,6 +50,15 @@ def get_vehicle_location_state_by_time(lon, lat, user_datetime):
   finally: 
     postgres_pool.putconn(conn)
 
+  '''
+  if not data.empty: 
+    for vehicle in data: 
+      rt_vehicle_info = redis.get(vehicle['vehicle_id'])
+
+      if rt_vehicle_info['has_delay']: 
+        
+  '''
+
   if not data.empty: 
     # print('result: ', str([get_vehicle_nearest_stop(trip_id, lat, lon) for trip_id in data['trip_id']]))
     data['nearest_stop_distance'], data['nearest_stop_id'] = zip(*[get_vehicle_nearest_stop(trip_id, lat, lon) for trip_id in data['trip_id']])

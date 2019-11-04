@@ -1,6 +1,6 @@
 FROM node:8.14
 
-RUN npm install -g nodemon mongoose
+RUN npm install -g nodemon
 
 RUN mkdir -p /var/www/ovassistant/app/scoring
 
