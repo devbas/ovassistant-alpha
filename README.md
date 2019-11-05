@@ -25,12 +25,12 @@ This project is designed with the following principles in mind:
 ### Raw device data requirements
 | Variable | Specification | 
 |----------|---------------|
-|Current Latitude|GPS latitude in radians|
-|Current Longitude|GPS longitude in radians|
+|Reference Latitude|GPS latitude in radians|
+|Reference Longitude|GPS longitude in radians|
 |Previous Latitude|GPS latitude in radians|
 |Previous Longitude|GPS longitude in radians|
 |Unique device identifier|Device identifier as obtained by *new-device*|
-|Current coordinates measurement timestamp| UNIX |
+|Reference coordinates measurement timestamp| UNIX |
 |Previous coordinates measurement timestamp| UNIX |
 
 
@@ -51,8 +51,8 @@ This project is designed with the following principles in mind:
 
 | Variable | Calculation | Dependent on |
 |----------|-------------|--------------|
-|Current vehicle latitude|||
-|Current vehicle longitude|||
+|Reference vehicle latitude|||
+|Reference vehicle longitude|||
 |Vehicle travel distance|||
 |Device vehicle distance|||
 |Device travel distance|             |              |
