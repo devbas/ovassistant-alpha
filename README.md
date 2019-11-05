@@ -20,7 +20,7 @@ This project is designed with the following principles in mind:
 |POST|Feedback|feedback|Return device feedback for a given classification|✓|
 |GET|Device|new-device|Obtain a new device ID|
 
-## ML Model specification
+## ML Model specification (Documentation in Progress)
 
 ### Raw device data requirements
 | Variable | Specification | 
