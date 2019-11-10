@@ -14,7 +14,7 @@ const Sentry = require('@sentry/node')
 
 const config = require('../config/config')
 
-Sentry.init({ dsn: 'https://db56d0c909134020b2d840cb2d86e01c@sentry.io/1728715' });
+Sentry.init({ dsn: env.SENTRY_TOKEN });
 
 const ingestLatestGTFS =  async ({ force }) => {
 
