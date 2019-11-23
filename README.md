@@ -1,6 +1,9 @@
 # ovassistant-alpha (in the process of being open-sourced)
 Alpha implementation of OV Assistant, a research project to identify public transport vehicles based on smartphone locations. This repository is made open source since our implementation of background-geolocation tracking on iOS/Android is not reliable enough to draw significant conclusions. 
 
+## Installation
+Make sure (Docker)[http://docker.com] is installed and run `docker-compose up` in the project root to build all images and run the environment. 
+
 ## Considerations
 This project is designed with the following principles in mind:
 
@@ -25,10 +28,10 @@ This project is designed with the following principles in mind:
 ### Raw device data requirements
 | Variable | Specification | 
 |----------|---------------|
-|Reference Latitude|GPS latitude in radians|
-|Reference Longitude|GPS longitude in radians|
-|Previous Latitude|GPS latitude in radians|
-|Previous Longitude|GPS longitude in radians|
+|Reference Latitude|GPS latitude in decimals|
+|Reference Longitude|GPS longitude in decimals|
+|Previous Latitude|GPS latitude in decimals|
+|Previous Longitude|GPS longitude in decimals|
 |Unique device identifier|Device identifier as obtained by *new-device*|
 |Reference coordinates measurement timestamp| UNIX |
 |Previous coordinates measurement timestamp| UNIX |
@@ -37,10 +40,10 @@ This project is designed with the following principles in mind:
 ### Raw vehicle data requirements
 | Variable | Specification | 
 |----------|---------------|
-|Current Latitude|GPS latitude in radians|
-|Current Longitude|GPS longitude in radians|
-|Previous Latitude|GPS latitude in radians|
-|Previous Longitude|GPS longitude in radians|
+|Current Latitude|GPS latitude in decimals|
+|Current Longitude|GPS longitude in decimals|
+|Previous Latitude|GPS latitude in decimals|
+|Previous Longitude|GPS longitude in decimals|
 |Unique vehicle identifier|Vehicle identifier in the following format:|
 |Current coordinates measurement timestamp| UNIX |
 |Previous coordinates measurement timestamp| UNIX |
@@ -77,3 +80,6 @@ We score device coordinates against all current vehicles with a convolutional ne
 
 ### Read more
 - (Hidden Markov Map Matching Through Noise and Sparseness)[http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.187.5145&rep=rep1&type=pdf]
+- (Real-Time Movement Visualization of Public Transport Data)[http://ad-publications.informatik.uni-freiburg.de/theses/Master_Patrick_Brosi_2014.pdf]
+- (Rethinking the Faster R-CNN Archictecture for Temporal Action Localization)[https://arxiv.org/pdf/1804.07667.pdf]
+- (Spatio-Temporal Data Mining: A Survey of Problems and Methods)[https://arxiv.org/pdf/1711.04710.pdf]
