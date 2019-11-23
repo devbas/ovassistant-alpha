@@ -2,7 +2,7 @@
 Alpha implementation of OV Assistant, a research project to identify public transport vehicles based on smartphone locations. This repository is made open source since our implementation of background-geolocation tracking on iOS/Android is not reliable enough to draw significant conclusions. 
 
 ## Installation
-Make sure (Docker)[http://docker.com] is installed and run `docker-compose up` in the project root to build all images and run the environment. 
+Make sure (Docker)[http://docker.com] is installed and run `docker-compose up` in the project root to build all images and run the environment. Please keep in mind that installation can take around 1 hour, especially because of the GTFS schedule import + ZMQ installation. 
 
 ## Considerations
 This project is designed with the following principles in mind:
