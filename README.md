@@ -1,4 +1,4 @@
-# ovassistant-alpha
+# ovassistant-alpha (in the process of being open-sourced)
 Alpha implementation of OV Assistant, a research project to identify public transport vehicles based on smartphone locations. This repository is made open source since our implementation of background-geolocation tracking on iOS/Android is not reliable enough to draw significant conclusions. 
 
 ## Considerations
