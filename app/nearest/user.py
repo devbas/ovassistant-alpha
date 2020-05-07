@@ -3,17 +3,8 @@ import config as cfg
 # import pymysql.cursors
 import mysql.connector
 
-# db = pymysql.connect(host=cfg.mysql['host'], port=cfg.mysql['port'], db=cfg.mysql['db'], user=cfg.mysql['user'], password=cfg.mysql['password'], cursorclass=pymysql.cursors.DictCursor)
-
 def get_user_location(db, user_id, user_datetime): 
   try: 
-
-    # db = mysql.connector.connect(
-    #   host=cfg.mysql['host'],
-    #   user=cfg.mysql['user'],
-    #   passwd=cfg.mysql['password'], 
-    #   database=cfg.mysql['db']
-    # )
 
     cursor = db.cursor(dictionary=True) 
     cursor.execute('SELECT * FROM user_location WHERE user_id = %s AND datetime > (%s - 60) ORDER BY datetime DESC LIMIT 0,1', (user_id, int(user_datetime)))
