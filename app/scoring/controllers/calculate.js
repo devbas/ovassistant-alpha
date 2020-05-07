@@ -114,50 +114,6 @@ const getVehicleItemInfo = async (pgPool, vehicle) => {
   }
 }
 
-// const getVehicleItemInfo = async (vehicle) => {
-//   try {
-
-//     // First, we check if the vehicle is present in Redis cache. 
-//     const cacheRaw = await redisClient.get(vehicle.vehicle_type + ':' + vehicle.vehicle_id)
-//     if(!cacheRaw && vehicle.vehicle_type === 'vehicle') {
-//       const trip = await pool.query('SELECT trip_headsign, route_id, trip_id FROM trips WHERE realtime_trip_id = ? LIMIT 0,1', [vehicle.vehicle_id])
-//       if(trip[0] && trip[0].trip_headsign) {
-//         vehicle.destination = trip[0].trip_headsign
-//         vehicle.trip_id = trip[0].trip_id
-//         const tripRouteName = await pool.query('SELECT route_short_name FROM routes WHERE route_id = ? LIMIT 0,1', [trip[0].route_id])
-//         vehicle.title_prefix = tripRouteName[0].route_short_name
-//       } else {
-//         vehicle.destination = false 
-//         vehicle.title_prefix = false 
-//       }
-     
-//     } else if(!cacheRaw && vehicle.vehicle_type === 'train') { 
-//       const trip = await pool.query('SELECT trip_headsign, route_id, trip_id FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = ? AND CD.date = ?', [vehicle.vehicle_id, moment().format('YYYYMMDD')])
-//       if(trip[0] && trip[0].trip_headsign) {
-//         vehicle.destination = trip[0].trip_headsign
-//         vehicle.trip_id = trip[0].trip_id 
-//         const tripRouteName = await pool.query('SELECT route_short_name FROM routes WHERE route_id = ? LIMIT 0,1', [trip[0].route_id])
-//         vehicle.title_prefix = tripRouteName[0].route_short_name
-//       } else {
-//         vehicle.destination = false 
-//         vehicle.title_prefix = false 
-//       }
-
-//     } else {
-//       const cache = JSON.parse(cacheRaw)
-//       vehicle.destination = cache.destination 
-//       vehicle.title_prefix = vehicle.vehicle_type === 'train' ? cache.subType : cache.linenumber
-//     }
-
-//     return vehicle 
-//   }
-//   catch(err) {
-//     Sentry.captureException(err)
-//     throw(err)
-//   }
-//   // return new Promise(resolve => resolve(vehicle))
-// }
-
 const getStopTransfers = async ({ stopId, date, time, pgPool, nested }) => {
 
   const timeLimit = moment(time, 'HH:mm:ss').add(1, 'hours').format('HH:mm:ss')
@@ -245,108 +201,6 @@ const getStoptimes = async ({ tripId, pgPool, timetableTime, timetableDate, nest
   return await Promise.all(upcomingStoptimes)
 }
 
-// const getTrip = async (data, timetableDate) => {
-//   if(data.type === 'vehicle') {
-//     return await pool.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE T.realtime_trip_id = ? AND CD.date = ? LIMIT 0,1', [data.vehicleId, timetableDate])
-//   } else if(data.type === 'train') {
-//     if(isNaN(data.vehicleId)) {
-//       const vehicleId = data.vehicleId.split(':')
-//       data.vehicleId = vehicleId[2]
-//     }
-//     return await pool.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE T.trip_short_name = ? AND CD.date = ? LIMIT 0,1', [data.vehicleId, timetableDate])
-//   } else {
-//     throw "no supporting datatype available"
-//   }
-// }
-
-// const transformStoptimes = async (vehicleCache, stoptimes, timetableTime, timetableDate) => {
-
-//   const stops = _.map(stoptimes, async (stoptime, key) => {
-
-//     stoptime.arrival_time = utils.fixTime(stoptime.arrival_time)
-//     stoptime.departure_time = utils.fixTime(stoptime.departure_time)
-//     if(vehicleCache && vehicleCache.nextStop.length > 0) {
-//       if(vehicleCache.nextStop[0]['stop_sequence'] > key) {
-//         stoptime.has_passed = true 
-//       } else {
-//         stoptime.has_passed = false 
-//       }
-//     } else if(vehicleCache && vehicleCache.prevStop.length > 0) {
-//       if((vehicleCache.prevStop[0]['stop_sequence'] + 1) > key) {
-//         stoptime.has_passed = true 
-//       } else {
-//         stoptime.has_passed = false 
-//       }
-//     } else {
-//       if(moment(stoptime.departure_time, 'HH:mm:ss').isAfter(moment(timetableTime, 'HH:mm:ss'))) {
-//         stoptime.has_passed = false 
-//       } else {
-//         stoptime.has_passed = true 
-//       }
-//     }
-
-//     if(!stoptime.has_passed) {
-//       stoptime.transfers = await getStopTransfers(stoptime.stop_id, timetableDate, stoptime.arrival_time)
-      
-//       const stop = await pool.query('SELECT * FROM stops WHERE stop_id = ?', [stoptime.stop_id])
-
-//       if(vehicleCache && vehicleCache.delay_seconds && parseInt(vehicleCache.delay_seconds) > 60) {
-//         stoptime.new_arrival_time = moment(stoptime.arrival_time, 'HH:mm:ss').add(vehicleCache.delay_seconds, 'seconds').format('HH:mm:ss') 
-//         stoptime.new_departure_time= moment(stoptime.departure_time, 'HH:mm:ss').add(vehicleCache.delay_seconds, 'seconds').format('HH:mm:ss')
-//       }
-
-//       return _.merge(stoptime, stop[0]) 
-//     } else {
-//       return stoptime
-//     }
-
-    
-//   })
-
-//   return await Promise.all(stops)
-// }
-
-// const getVehicleContext = async (data) => {
-
-//   try {
-//     console.log('data: ', data)
-//     if(!data || !data.type || !data.vehicleId || !data.datetime) {
-//       throw 'Please send all parameters in the proper format.'
-//     }
-
-//     const vehicleRaw = await redisClient.get(data.type + ':' + data.vehicleId)
-//     const vehicleCache = vehicleRaw ? JSON.parse(vehicleRaw) : false 
-//     const timetableDate = moment(data.datetime).format('YYYYMMDD')
-//     const timetableTime = moment(data.datetime).format('HH:mm:ss')
-    
-//     const trip = await getTrip(data, timetableDate)
-//     if(!trip[0]) {
-//       throw "No trip found"
-//     }
-  
-//     const stoptimesRaw = await pool.query('SELECT * FROM stop_times WHERE trip_id = ? ORDER BY stop_sequence ASC', [trip[0].trip_id])
-  
-//     const allStoptimes = await transformStoptimes(vehicleCache, stoptimesRaw, timetableTime, timetableDate)
-//     const upcomingStoptimes = _.filter(allStoptimes, { has_passed: false })
-
-//     if(vehicleCache && vehicleCache.delay_seconds && parseInt(vehicleCache.delay_seconds) > 60) {
-//       trip[0].has_delay = true 
-//       trip[0].delay_seconds = vehicleCache.delay_seconds
-//     } else {
-//       trip[0].has_delay = false 
-//     }
-
-//     trip[0].stoptimes = upcomingStoptimes
-//     trip[0].route = await getTripRoute(trip[0])
-//     return trip[0]
-
-//   } catch(err) {
-//     Sentry.captureException(err)
-//     throw err
-//   }
-
-// }
-
 const parseVehicleItemInfo = async function(data) {
 
   try {
@@ -355,7 +209,6 @@ const parseVehicleItemInfo = async function(data) {
       throw 'Please send all parameters in the proper format.'
     }
 
-    // const vehicle = await pool.query('SELECT * FROM vehicle WHERE identifier = ? LIMIT 0,1', [data.vehicleId])
     const vehicleRaw = await redisClient.get(data.type + ':' + data.vehicleId)
 
     if(!vehicleRaw) {
@@ -526,14 +379,6 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
           }) 
         }, stop
       ))
-
-      // const stopsTimetable = stops.map(stop => [...stop, timetable = getStopTransfers({ 
-      //   stopId: stop.stop_id, 
-      //   date: date, 
-      //   time: time,
-      //   pgPool: pgPool, 
-      //   nested: false
-      // })])
 
       return { responseType: 'nearby', response: { stops: stopsTimetable } }
     }   
