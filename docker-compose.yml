@@ -30,7 +30,6 @@ services:
     depends_on: 
       - postgis
       - redis
-      # - db
     ports: 
       - 127.0.0.1:9002:9002
     command: python calculate.py 
