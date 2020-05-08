@@ -12,19 +12,6 @@ services:
       - 127.0.0.1:6379:6379
     networks: 
       - app
-  # api:
-  #   build: ./app/api/
-  #   volumes: 
-  #     - .:/var/www/ovassistant
-  #     # - node_modules:/app/node_modules
-  #   depends_on:
-  #     - "redis"
-  #   ports: 
-  #     - 127.0.0.1:8000:8000
-  #   # restart: always
-  #   command: nodemon --exec node --max-old-space-size=8000 server.js
-  #   networks: 
-  #     - app
   nearest: 
     build: ./app/nearest/
     depends_on: 
@@ -35,23 +22,6 @@ services:
     command: python calculate.py 
     volumes: 
       - ./app/nearest/:/usr/src/app
-    networks: 
-      - app
-  db:  
-    command: [
-      '--disable-partition-engine-check',
-      '--innodb-buffer-pool-size=1G'
-    ] # Check more info about this command at: https://github.com/docker-library/mysql/issues/361
-    ports: 
-      - 127.0.0.1:3306:3306
-    volumes: 
-      - ./app/db/sql-scripts:/docker-entrypoint-initdb.d
-      - ./app/db/cron/root:/etc/crontabs/root
-      - ./app/db/cron-scripts:/home
-    build: ./app/db/
-    environment: 
-      - MYSQL_DATABASE=ovassistant
-      - MYSQL_ROOT_PASSWORD=root
     networks: 
       - app
   ingestion: 
