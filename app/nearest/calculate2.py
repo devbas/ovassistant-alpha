@@ -8,11 +8,10 @@ from sentry_sdk import capture_exception
 import config as cfg 
 
 def get_vehicle_matches(lon, lat, user_datetime, user_id): 
-  user_id = int(user_id) 
 
   try: 
     observations = locationcache.get_vehicle_location_state_by_time(lon, lat, user_datetime)
-    print('observations: ', str(observations))
+    # print('observations: ', str(observations))
     '''
       Calculate the emission probability as proposed by Newson et al. (2009)
     '''

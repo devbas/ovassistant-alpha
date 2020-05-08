@@ -31,7 +31,7 @@ const getVehicleCandidates = async (data, pgPool) => {
     // let vehicleCandidates = JSON.parse(vehicleCandidatesRaw.data.observations)
     const matches = vehicleCandidatesRaw.data.matches
 
-    if(!_.isEmpty(vehicleCandidates) && vehicleCandidates > 0) {
+    if(!_.isEmpty(vehicleCandidates) && vehicleCandidates.length > 0) {
       vehicleCandidates = JSON.parse(vehicleCandidates)
       
       vehicleCandidates = await Promise.all(vehicleCandidates.map(getVehicleItemInfo.bind(null, pgPool)))

@@ -67,13 +67,20 @@ const ingestLatestGTFS =  async ({ force }) => {
             console.log('Finished downloading GTFS NL')
             callback(false)
           })
-          .pipe(fs.createWriteStream(zipFile))
+          .pipe(
+            fs.createWriteStream(zipFile)
+          )
       }, 
       callback => {
+        console.log('decompress!')
         decompress(zipFile, 'tmp').then(files => {
-          fs.unlink(zipFile)
-          console.log('unlinked!')
-          callback(false)
+          try {
+            fs.unlink(zipFile)
+            console.log('unlinked!')
+            callback(false)
+          } catch(e) {
+            console.log('e: ', e)
+          }
         }).catch(err => callback(err))
       }, 
       callback => {
@@ -259,7 +266,7 @@ const ingestLatestGTFS =  async ({ force }) => {
                       if(i === (stoptimes.rows.length - 2)) {
                         // innerCallback(false, trajectoryBins)
                         var t1 = performance.now()
-                        console.log('Time interpolation: ', (t1 - t0).toFixed(2), ' millis')
+                        // console.log('Time interpolation: ', (t1 - t0).toFixed(2), ' millis')
                         innerCallback(false, trajectories)
                       }
                     } catch(e) {
@@ -294,7 +301,7 @@ const ingestLatestGTFS =  async ({ force }) => {
                       client.query({ text: query, values: values }, (err, response) => {
                         if(err) innerCallback({ err: err, query: query }) 
                         var t1 = performance.now()
-                        console.log('Postgis exec time: ', (t1 - t0).toFixed(2), ' millis')
+                        // console.log('Postgis exec time: ', (t1 - t0).toFixed(2), ' millis')
                         if(response) innerCallback()
                       })
                     }
