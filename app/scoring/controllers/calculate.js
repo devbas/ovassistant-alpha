@@ -1,31 +1,23 @@
 const Sentry = require('../sentry.js');
-const pool = require('../modules/database')
 const axios = require('axios')
 const utils = require('../utils')
 const moment = require('moment')
 const _ = require('lodash')
 const redisClient = require('../redis-client')
 const redisLayerStore = require('../redis-layer-store')
-const { Client, Pool } = require('pg')
-const config = require('../config/config')
 
-const getVehicleCandidates = async (data) => { 
-
+const getVehicleCandidates = async (data, pgPool) => { 
   let response = {}
 
-  const pgPool = new Pool(config.pg)
-  // const client = new Client(config.pg)
-  // await client.connect()
-
   try {
-    console.log('data', data)
+    console.log('vehicleCandidates', data)
     if(!data.userId || !data.lon || !data.lat || !data.datetime) {
       throw { 'message': 'Make sure to send the longitude, latitude and datetime for an event.', 'status': 500 }
     }
 
     // Save the user location for further analysis
-    pool.query('INSERT INTO user_location SET `user_id` = ?, `lon` = ?, `lat` = ?, `datetime` = ?', 
-                      [parseInt(data.userId), data.lon, data.lat, data.datetime])
+    // pool.query('INSERT INTO user_location SET `user_id` = ?, `lon` = ?, `lat` = ?, `datetime` = ?', 
+    //                   [parseInt(data.userId), data.lon, data.lat, data.datetime])
 
     // Get vehicle candidates from Nearest   
     const vehicleCandidatesRaw = await axios.get(`http://nearest:9002/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}`)
@@ -33,7 +25,7 @@ const getVehicleCandidates = async (data) => {
                                                 Sentry.captureException(err)
                                                 throw { 'message': 'Something went wrong on our end. Please try again later.', 'status': 500 }
                                               })
-    // console.log('raw: ', vehicleCandidatesRaw.data.observations)
+    console.log('raw: ', vehicleCandidatesRaw.data.observations)
     // const vehicleData = JSON.parse(vehicleCandidatesRaw.data)
     let vehicleCandidates = vehicleCandidatesRaw.data.observations ? vehicleCandidatesRaw.data.observations : false 
     // let vehicleCandidates = JSON.parse(vehicleCandidatesRaw.data.observations)
@@ -201,104 +193,104 @@ const getStoptimes = async ({ tripId, pgPool, timetableTime, timetableDate, nest
   return await Promise.all(upcomingStoptimes)
 }
 
-const parseVehicleItemInfo = async function(data) {
+// const parseVehicleItemInfo = async function(data) {
 
-  try {
+//   try {
 
-    if(!data || !data.type || !data.vehicleId) {
-      throw 'Please send all parameters in the proper format.'
-    }
+//     if(!data || !data.type || !data.vehicleId) {
+//       throw 'Please send all parameters in the proper format.'
+//     }
 
-    const vehicleRaw = await redisClient.get(data.type + ':' + data.vehicleId)
+//     const vehicleRaw = await redisClient.get(data.type + ':' + data.vehicleId)
 
-    if(!vehicleRaw) {
-      throw 'Not found'
-    }
+//     if(!vehicleRaw) {
+//       throw 'Not found'
+//     }
 
-    const vehicle = JSON.parse(vehicleRaw)
-    const info = await getVehicleItemInfoLeg({ type: data.type, info: vehicle })
+//     const vehicle = JSON.parse(vehicleRaw)
+//     const info = await getVehicleItemInfoLeg({ type: data.type, info: vehicle })
 
-    if (data.type === 'train' && info.destination) {
+//     if (data.type === 'train' && info.destination) {
       
-      const trips = await pool.query('SELECT * FROM trips WHERE trip_short_name = ? AND trip_headsign = ?', [parseInt(data.vehicleId.replace('train:','')), info.destination])
-      if(trips.length === 0) {
-        throw 'No trips found'
-      }
+//       const trips = await pool.query('SELECT * FROM trips WHERE trip_short_name = ? AND trip_headsign = ?', [parseInt(data.vehicleId.replace('train:','')), info.destination])
+//       if(trips.length === 0) {
+//         throw 'No trips found'
+//       }
 
-      // Assumption right here: is the first trip always the right trip? 
-      const trip = trips[0]
+//       // Assumption right here: is the first trip always the right trip? 
+//       const trip = trips[0]
 
-      const stoptimesRaw = await pool.query('SELECT * FROM stop_times WHERE trip_id = ? ORDER BY stop_sequence ASC', [trip.trip_id])
-      const fillFrom = stoptimesRaw.length - info.nextStops.length 
+//       const stoptimesRaw = await pool.query('SELECT * FROM stop_times WHERE trip_id = ? ORDER BY stop_sequence ASC', [trip.trip_id])
+//       const fillFrom = stoptimesRaw.length - info.nextStops.length 
 
-      const transformStoptimes = stoptimesRaw.map(async (stoptime, key) => {
-        if (key >= fillFrom) {
-          stoptime.has_passed = false
-        } else {
-          stoptime.has_passed = true
-        }
+//       const transformStoptimes = stoptimesRaw.map(async (stoptime, key) => {
+//         if (key >= fillFrom) {
+//           stoptime.has_passed = false
+//         } else {
+//           stoptime.has_passed = true
+//         }
 
-        stoptime.arrival_time = utils.fixTime(stoptime.arrival_time)
-        stoptime.departure_time = utils.fixTime(stoptime.departure_time)
+//         stoptime.arrival_time = utils.fixTime(stoptime.arrival_time)
+//         stoptime.departure_time = utils.fixTime(stoptime.departure_time)
 
-        const stop = await pool.query('SELECT * FROM stops WHERE stop_id = ?', [stoptime.stop_id])
+//         const stop = await pool.query('SELECT * FROM stops WHERE stop_id = ?', [stoptime.stop_id])
 
-        if(!stop.has_passed && info.delay_seconds && info.delay_seconds > 60) {
-          stop.new_arrival_time = moment(stoptime.arrival_time, 'HH:mm:ss').add(info.delay_seconds, 'seconds').format('HH:mm:ss') 
-          stop.new_departure_time= moment(stoptime.departure_time, 'HH:mm:ss').add(info.delay_seconds, 'seconds').format('HH:mm:ss')
-        }
+//         if(!stop.has_passed && info.delay_seconds && info.delay_seconds > 60) {
+//           stop.new_arrival_time = moment(stoptime.arrival_time, 'HH:mm:ss').add(info.delay_seconds, 'seconds').format('HH:mm:ss') 
+//           stop.new_departure_time= moment(stoptime.departure_time, 'HH:mm:ss').add(info.delay_seconds, 'seconds').format('HH:mm:ss')
+//         }
 
-        return _.merge(stoptime, stop)
-      })
+//         return _.merge(stoptime, stop)
+//       })
 
-      trip.stoptimes = await Promise.all(transformStoptimes)
-      info.trip = trip
+//       trip.stoptimes = await Promise.all(transformStoptimes)
+//       info.trip = trip
       
-    } else {
+//     } else {
 
-      const trips = await pool.query('SELECT * FROM trips WHERE realtime_trip_id = ?', [data.vehicleId.replace('vehicle:','')])
+//       const trips = await pool.query('SELECT * FROM trips WHERE realtime_trip_id = ?', [data.vehicleId.replace('vehicle:','')])
 
-      if(trips.length === 0) {
-        throw 'No trips found'
-      }
+//       if(trips.length === 0) {
+//         throw 'No trips found'
+//       }
 
-      const trip = trips[0]
-      info.destination = trip.trip_headsign
+//       const trip = trips[0]
+//       info.destination = trip.trip_headsign
 
-      const stoptimesRaw = await pool.query('SELECT * FROM stop_times WHERE trip_id = ? ORDER BY stop_sequence ASC', [trip.trip_id])
+//       const stoptimesRaw = await pool.query('SELECT * FROM stop_times WHERE trip_id = ? ORDER BY stop_sequence ASC', [trip.trip_id])
 
-      const transformStoptimes = stoptimesRaw.map(async (stoptime, key) => {
-        stoptime.arrival_time = utils.fixTime(stoptime.arrival_time)
-        stoptime.departure_time = utils.fixTime(stoptime.departure_time)
+//       const transformStoptimes = stoptimesRaw.map(async (stoptime, key) => {
+//         stoptime.arrival_time = utils.fixTime(stoptime.arrival_time)
+//         stoptime.departure_time = utils.fixTime(stoptime.departure_time)
 
-        const stop = await pool.query('SELECT * FROM stops WHERE stop_id = ?', [stoptime.stop_id])
-        // stop.has_passed = info.has_passed
-        if(stoptime.stop_sequence < info.nextStop[0].stop_sequence) {
-          stop.has_passed = true 
-        } else {
-          stop.has_passed = false 
-        }
+//         const stop = await pool.query('SELECT * FROM stops WHERE stop_id = ?', [stoptime.stop_id])
+//         // stop.has_passed = info.has_passed
+//         if(stoptime.stop_sequence < info.nextStop[0].stop_sequence) {
+//           stop.has_passed = true 
+//         } else {
+//           stop.has_passed = false 
+//         }
 
-        if (!stop.has_passed && info.delay_seconds && info.delay_seconds > 60) {
-          stop.new_arrival_time = moment(stoptime.arrival_time, 'HH:mm:ss').add(info.delay_seconds, 'seconds').format('HH:mm:ss') 
-          stop.new_departure_time= moment(stoptime.departure_time, 'HH:mm:ss').add(info.delay_seconds, 'seconds').format('HH:mm:ss') 
-        } 
+//         if (!stop.has_passed && info.delay_seconds && info.delay_seconds > 60) {
+//           stop.new_arrival_time = moment(stoptime.arrival_time, 'HH:mm:ss').add(info.delay_seconds, 'seconds').format('HH:mm:ss') 
+//           stop.new_departure_time= moment(stoptime.departure_time, 'HH:mm:ss').add(info.delay_seconds, 'seconds').format('HH:mm:ss') 
+//         } 
 
-        return _.merge(stoptime, stop)
-      })
+//         return _.merge(stoptime, stop)
+//       })
 
-      trip.stoptimes = await Promise.all(transformStoptimes)
-      info.trip = trip
-    }
+//       trip.stoptimes = await Promise.all(transformStoptimes)
+//       info.trip = trip
+//     }
 
-    return info 
+//     return info 
 
-  } catch(err) {
-    Sentry.captureException(err)
-    throw err
-  }
+//   } catch(err) {
+//     Sentry.captureException(err)
+//     throw err
+//   }
 
-}
+// }
 
 const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgPool, datetime }) => {
 
@@ -387,7 +379,7 @@ const travelSituationRouter = async ({ vehicleCandidates, matches, userData, pgP
 
 module.exports = { 
   getVehicleCandidates: getVehicleCandidates, 
-  parseVehicleItemInfo: parseVehicleItemInfo, 
+  // parseVehicleItemInfo: parseVehicleItemInfo, 
   // getVehicleContext: getVehicleContext, 
   travelSituationRouter: travelSituationRouter
 }

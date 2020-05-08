@@ -1,50 +1,19 @@
 const express = require('express')
-const passport = require('passport')
-const utils = require('../../modules/utils')
-const jwt = require('jsonwebtoken')
-const config = require('../../config/config')
 const Sentry = require('../../sentry.js')
 const matchCalculationController = require('../../controllers/calculate')
-require('../../modules/passport.js')(passport)
+const config = require('../../config/config')
+const { Pool } = require('pg')
 
 var router = express.Router()
 
-router.post('/create', (req, res, next) => {
-  console.log('hit it!')
-  req.body.username = utils.makeid(10)
-  req.body.password = utils.makeid(15)
+const pgPool = new Pool(config.pg)
 
-  passport.authenticate('device-register', (err, user, info) => {
-    if(err) {
-      if(err.status) {
-        res.status(err.status).send(err)
-      } else {
-        res.status(500).send(err)
-      }
-    } else if(user) {
-      req.login(user, (err) => {
-        if(err) {
-          console.log('err: ', err, user)
-          res.status(500).send({ 'message': 'Something went wrong on our end, try again later.', 'status': 500 })
-        } else {
-          const token = jwt.sign({ user_id: user.user_id, organisation_id: user.organisation_id, name: user.name }, config.jwtSecret)
-          res.status(200).send({ 
-            auth: true, 
-            token: token 
-          })
-        }
-      })
-    } else {
-      res.status(500).send({ 'message': 'Something went wrong on our end, try again later.', 'status': 500 })
-    }
-  })(req, res, next)
-})
-
-router.post('/score', passport.authenticate('jwt-login', { session: false }), async (req, res) => {
-  console.log('retrieved request: ', req.header('X-Transaction-ID'))
+router.post('/score', async (req, res) => {
+  console.log('retrieved request HALLO: ', req.header('X-Transaction-ID'))
   const data = req.body
+  console.log('data: ', req.body)
 
-  data.userId = req.user.user_id
+  // data.userId = req.body.user_id
 
   if(data.datetime) {
     data.datetime = parseInt(data.datetime)
@@ -59,17 +28,15 @@ router.post('/score', passport.authenticate('jwt-login', { session: false }), as
   }
 
   try {
-    const result = await matchCalculationController.getVehicleCandidates(data)
+    console.log('call the controller', data)
+    const result = await matchCalculationController.getVehicleCandidates(data, pgPool)
     console.log('sending result for: ', req.header('X-Transaction-ID'))
     res.status(200).json({ data: result })
   } catch(err) {
+    console.log('err: ', err)
     res.status(500).send({ error: JSON.stringify(err) })
     Sentry.captureException(err)
   }
-})
-
-router.get('/context', passport.authenticate('jwt-login', { session: false }), (req, res) => {
-
 })
 
 module.exports = router

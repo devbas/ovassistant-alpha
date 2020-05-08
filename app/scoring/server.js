@@ -4,20 +4,14 @@ const Sentry = require('./sentry.js');
 const _ = require('lodash');
 const cors = require('cors');             
 const bodyParser = require('body-parser');
-const matchCalculationController = require('./controllers/calculate'); 
-// const scoringController = require('./controllers/scoring');
 const redisClientPersist = require('./redis-client-persist');
 const fs = require('fs');
 const APIRouter = require('./api');
-const passport = require('passport');
 
 app.use(Sentry.Handlers.requestHandler());
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());   
-app.use(passport.initialize());
-app.use(passport.session()); // persistent login sessions
-require('./modules/passport');
 
 
 var port = process.env.PORT || 8001;
@@ -39,34 +33,6 @@ router.use((req, res, next) => {
 });
 
 app.use('/api/v1', APIRouter); 
-
-// In progress: 
-// router.get('/scoring', async (req, res) => {
-//   console.log('he')
-//   const data = req.query 
-
-//   if(data.userId) {
-//     data.userId = parseInt(data.userId) 
-//   }
-
-//   if(data.datetime) {
-//     data.datetime = parseInt(data.datetime) 
-//   }
-
-//   if(data.lat) {
-//     data.lat = parseFloat(data.lat) 
-//   }
-
-//   if(data.lon) {
-//     data.lon = parseFloat(data.lon) 
-//   }
-
-//   try {
-//     await scoringController.scoreDataPoint(data)
-//   } catch(err) {
-//     console.log('err: ', err)
-//   }
-// })
 
 router.get('/feedback', async (req, res) => {
   res.status(200).send({ message: 'OK' })
