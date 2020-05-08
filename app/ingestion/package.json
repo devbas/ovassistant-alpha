@@ -14,11 +14,8 @@
     "async": "2.6.1",
     "axios": "0.18.1",
     "cors": "2.8.5",
-    "decompress": "4.2.0",
+    "decompress": "^4.2.1",
     "express": "4.16.3",
-    "express-session": "1.15.6",
-    "gtfs": "1.6.10",
-    "gtfs-realtime-bindings": "0.0.5",
     "lodash": "4.17.13",
     "moment": "2.22.2",
     "moment-timezone": "0.5.21",
@@ -30,9 +27,8 @@
     "redis": "2.8.0",
     "request": "2.88.0",
     "request-promise-native": "1.0.7",
-    "superagent": "5.0.5",
     "xml2js": "0.4.19",
-    "zeromq": "5.1.0",
+    "zeromq": "^5.2.0",
     "zlib": "1.0.5"
   }
 }

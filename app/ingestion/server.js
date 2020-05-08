@@ -14,13 +14,18 @@ const redisImportController = require('./controllers/import-redis');
 const { promisify } = require('util');
 const redisClient = require('./redis-client.js');
 const redisClientPersist = require('./redis-client-persist');
-const { ingestLatestGTFS, testCron } = require('./cron/index')
+const { ingestLatestGTFS } = require('./cron/index')
 const cron = require('node-cron')
+const config = require('./config/config')
 
 const redis = require('redis');
 const redisClient2 = redis.createClient({
   url: process.env.REDIS_URL || 'redis://redis/0'
 });
+
+const { Pool } = require('pg')
+
+const pgPool = new Pool(config.pg)
 
 Sentry.init({ dsn: 'https://db56d0c909134020b2d840cb2d86e01c@sentry.io/1728715' });
 const parseString = require('xml2js').parseString;
@@ -136,7 +141,7 @@ sock.on('message', async (topic, message) => {
             orientation: orientation, 
             datetimeUnix: datetimeUnix, 
             type: type
-          })
+          }, pgPool)
         }
       })
     } else if(_.has(result, 'PutReisInformatieBoodschapIn.ReisInformatieProductDVS.0.DynamischeVertrekStaat.0')) {
@@ -162,7 +167,7 @@ sock.on('message', async (topic, message) => {
         result.destination = _.get(result, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
         result.subType = result.Trein[0].TreinSoort[0]._
         result.measurementTimestamp = moment()
-        redisImportController.updateData(id, result)
+        redisImportController.updateData(id, result, pgPool)
       }
     }
 
@@ -235,10 +240,10 @@ sock1.on('message', async (topic, message) => {
               }
 
               if(data.latitude && data.longitude) {
-                redisImportController.importData(data)
+                redisImportController.importData(data, pgPool)
               }
 
-              redisImportController.updateData(id, data);
+              redisImportController.updateData(id, data, pgPool);
             }
           })
 

@@ -1,14 +1,14 @@
 const LatLon = require('../movable.js');
 const Sentry = require('@sentry/node');
 const utils = require('../utils')
-const pool = require('../database')
+
 const moment = require('moment-timezone')
 const _ = require('lodash')
 const redisClient = process.env.INGESTION_PERSIST === 'yes' ? require('../redis-client-persist') : require('../redis-client')
 const fs = require('fs')
 // var stream = fs.createWriteStream("realtime.csv", {flags:'a'});
 
-const importData = async data => {
+const importData = async (data, pgPool) => {
   var row = {
     speed: data.speed, 
     type: data.type, 
@@ -71,7 +71,7 @@ const importData = async data => {
   }
 }
 
-const updateData = async (identifier, data) => {
+const updateData = async (identifier, data, pgPool) => {
 
   try {
     
@@ -79,7 +79,7 @@ const updateData = async (identifier, data) => {
 
     if(data.type === 'vehicle') {
 
-      const tripInfo = await pool.query('SELECT * FROM trips WHERE realtime_trip_id = ?', [identifier.replace('vehicle:','')])
+      const tripInfo = await pgPool.query('SELECT * FROM trips WHERE realtime_trip_id = $1', [identifier.replace('vehicle:','')])
       
       if(tripInfo[0]) {
         data.destination = tripInfo[0].trip_headsign
@@ -91,22 +91,23 @@ const updateData = async (identifier, data) => {
                                                 .subtract(data.delay_seconds, 'seconds')
                                                 .format('HH:mm:ss')
 
-        const vehicleLine = await pool.query(`SELECT route_short_name 
-                                            FROM routes 
-                                            WHERE route_id = ?`, [tripInfo[0].route_id])
+        const vehicleLine = await pgPool.query(`SELECT route_short_name 
+                                              FROM routes 
+                                              WHERE route_id = $1`, [tripInfo[0].route_id])                                         
+
         data.linenumber = vehicleLine[0].route_short_name                                        
 
-        data.nextStop = await pool.query(`SELECT * 
+        data.nextStop = await pgPool.query(`SELECT * 
                                           FROM stop_times ST
-                                          WHERE trip_id = ?
-                                          AND arrival_time > ?
+                                          WHERE trip_id = $1
+                                          AND arrival_time > $2
                                           ORDER BY arrival_time ASC
                                           LIMIT 0,1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
 
-        data.prevStop = await pool.query(`SELECT * 
+        data.prevStop = await pgPool.query(`SELECT * 
                                           FROM stop_times  
-                                          WHERE trip_id = ?
-                                          AND departure_time < ?
+                                          WHERE trip_id = $1
+                                          AND departure_time < $2
                                           ORDER BY departure_time DESC
                                           LIMIT 0,1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
 
@@ -138,8 +139,8 @@ const updateData = async (identifier, data) => {
 
       const destination = _.get(data, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
 
-      const tripInfo = await pool.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = ? AND CD.date = ?', [identifier.replace('train:', ''), moment().format('YYYYMMDD')])
-      // const tripInfo = await pool.query('SELECT * FROM trips WHERE trip_short_name = ? AND trip_headsign = ?', [identifier.replace('train:', ''), destination])
+      const tripInfo = await pgPool.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = $1 AND CD.date = $2', [identifier.replace('train:', ''), moment().format('YYYYMMDD')])
+
       if(tripInfo[0]) {
         data.destination = tripInfo[0].trip_headsign
         data.shapeId = tripInfo[0].shape_id
@@ -150,17 +151,17 @@ const updateData = async (identifier, data) => {
                                                 .subtract(data.delay_seconds, 'seconds')
                                                 .format('HH:mm:ss')
 
-        data.nextStop = await pool.query(`SELECT * 
+        data.nextStop = await pgPool.query(`SELECT * 
                                           FROM stop_times ST
-                                          WHERE trip_id = ?
-                                          AND arrival_time > ?
+                                          WHERE trip_id = $1
+                                          AND arrival_time > $2
                                           ORDER BY arrival_time ASC
                                           LIMIT 0,1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
 
-        data.prevStop = await pool.query(`SELECT * 
+        data.prevStop = await pgPool.query(`SELECT * 
                                           FROM stop_times  
-                                          WHERE trip_id = ?
-                                          AND departure_time < ?
+                                          WHERE trip_id = $1
+                                          AND departure_time < $2
                                           ORDER BY departure_time DESC
                                           LIMIT 0,1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
 
