@@ -27,7 +27,7 @@ const { Pool } = require('pg')
 
 const pgPool = new Pool(config.pg)
 
-Sentry.init({ dsn: 'https://db56d0c909134020b2d840cb2d86e01c@sentry.io/1728715' });
+Sentry.init({ dsn: process.env.SENTRY_DSN });
 const parseString = require('xml2js').parseString;
 const stripPrefix = require('xml2js').processors.stripPrefix;
 

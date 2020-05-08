@@ -14,8 +14,6 @@ const Sentry = require('@sentry/node')
 
 const config = require('../config/config')
 
-Sentry.init({ dsn: env.SENTRY_TOKEN });
-
 const ingestLatestGTFS =  async ({ force }) => {
 
   let startTime = moment() 

@@ -1,4 +1,4 @@
 const Sentry = require('@sentry/node');
-Sentry.init({ dsn: 'https://3251eeefa7c644de8c5b46af97401d90@sentry.io/1728745' });
+Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 module.exports = Sentry;

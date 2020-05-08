@@ -12,18 +12,6 @@ services:
       - 127.0.0.1:6379:6379
     networks: 
       - app
-  nearest: 
-    build: ./app/nearest/
-    depends_on: 
-      - postgis
-      - redis
-    ports: 
-      - 127.0.0.1:9002:9002
-    command: python calculate.py 
-    volumes: 
-      - ./app/nearest/:/usr/src/app
-    networks: 
-      - app
   ingestion: 
     build: ./app/ingestion/
     volumes: 
@@ -32,8 +20,8 @@ services:
     depends_on:
       - redis
       - postgis
-    environment:
-      - INGESTION_PERSIST=0
+    env_file: 
+      - ./app/ingestion/ingestion.env
     ports: 
       - 127.0.0.1:8000:8000
     # command: nodemon --exec node --max-old-space-size=8000 server.js
@@ -47,30 +35,39 @@ services:
       - redis
       - postgis
       - nearest
+    env_file: 
+      - ./app/scoring/scoring.env
     ports: 
       - 127.0.0.1:8001:8001
     networks: 
       - app
   postgis:
-    # build: 
-    #   context: ./app/postgis/docker/
-    #   dockerfile: Dockerfile
     image: mdillon/postgis
     volumes:
       - postgis-data:/var/lib/postgresql
       - ./app/postgis/initdb/:/docker-entrypoint-initdb.d
-      # - dbbackups:/backups
     environment:
       # If you need to create multiple database you can add coma separated databases eg gis,data
       - POSTGRES_DB=gis
       - POSTGRES_USER=docker
       - POSTGRES_PASS=docker
-      # - ALLOW_IP_RANGE=0.0.0.0/0
     ports:
       - 127.0.0.1:5434:5432
     restart: always
     # healthcheck:
       # test: "exit 0"
+    networks: 
+      - app
+  nearest: 
+    build: ./app/nearest/
+    depends_on: 
+      - postgis
+      - redis
+    ports: 
+      - 127.0.0.1:9002:9002
+    command: python calculate.py 
+    volumes: 
+      - ./app/nearest/:/usr/src/app
     networks: 
       - app
 volumes:
