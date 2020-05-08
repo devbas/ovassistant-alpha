@@ -116,61 +116,58 @@ sock.on('message', async (topic, message) => {
     const buffer = await zlibWrapper.unzip(message)
     const data = buffer.toString('utf8')
     
-    let result = await new Promise((resolve, reject) => parseString(data, { tagNameProcessors: [ stripPrefix ]}, (err, result) => {
-      if(err) reject(err) 
-      else resolve(result)
-    }))
+    parseString(data, { tagNameProcessors: [ stripPrefix ]}, (err, result) => {
 
-    if(_.has(result, 'ArrayOfTreinLocation')) {
-      result = _.get(result, 'ArrayOfTreinLocation.TreinLocation')
-      result.forEach((train) => {
-        const speed = _.get(train, 'TreinMaterieelDelen.0.Snelheid.0')
-        const id = 'train:' + _.get(train, 'TreinNummer.0')
-        const latitude = Number(_.get(train, 'TreinMaterieelDelen.0.Latitude.0'))
-        const longitude = Number(_.get(train, 'TreinMaterieelDelen.0.Longitude.0'))
-        const orientation = Number(_.get(train, 'TreinMaterieelDelen.0.Richting.0'))
-        const datetimeRaw = moment(train['TreinMaterieelDelen'][0]['GpsDatumTijd'][0])
-        const datetime = moment(datetimeRaw, 'YYYY-MM-DDTHH:mm:ss')
-        const datetimeUnix = moment(datetime).unix()
-        const type = 'train'
-        if (latitude && longitude) { 
-          redisImportController.importData({
-            id: id, 
-            latitude: latitude, 
-            longitude: longitude, 
-            orientation: orientation, 
-            datetimeUnix: datetimeUnix, 
-            type: type
-          }, pgPool)
+      if(_.has(result, 'ArrayOfTreinLocation')) {
+        result = _.get(result, 'ArrayOfTreinLocation.TreinLocation')
+        result.forEach((train) => {
+          const speed = _.get(train, 'TreinMaterieelDelen.0.Snelheid.0')
+          const id = 'train:' + _.get(train, 'TreinNummer.0')
+          const latitude = Number(_.get(train, 'TreinMaterieelDelen.0.Latitude.0'))
+          const longitude = Number(_.get(train, 'TreinMaterieelDelen.0.Longitude.0'))
+          const orientation = Number(_.get(train, 'TreinMaterieelDelen.0.Richting.0'))
+          const datetimeRaw = moment(train['TreinMaterieelDelen'][0]['GpsDatumTijd'][0])
+          const datetime = moment(datetimeRaw, 'YYYY-MM-DDTHH:mm:ss')
+          const datetimeUnix = moment(datetime).unix()
+          const type = 'train'
+          if (latitude && longitude) { 
+            redisImportController.importData({
+              id: id, 
+              latitude: latitude, 
+              longitude: longitude, 
+              orientation: orientation, 
+              datetimeUnix: datetimeUnix, 
+              type: type
+            }, pgPool)
+          }
+        })
+      } else if(_.has(result, 'PutReisInformatieBoodschapIn.ReisInformatieProductDVS.0.DynamischeVertrekStaat.0')) {
+        result = _.get(result, 'PutReisInformatieBoodschapIn.ReisInformatieProductDVS.0.DynamischeVertrekStaat.0')
+        let id = _.get(result, 'RitId.0')
+        
+        result.delay_seconds = 0 
+        if (_.has(result, 'Trein.0.ExacteVertrekVertraging.0') && _.get(result, 'Trein.0.ExacteVertrekVertraging') !== 'PT0S') {
+          result.has_delay = true;
+          result.delay_seconds = moment.duration(_.get(data, 'Trein.0.ExacteVertrekVertraging.0')).asSeconds()
         }
-      })
-    } else if(_.has(result, 'PutReisInformatieBoodschapIn.ReisInformatieProductDVS.0.DynamischeVertrekStaat.0')) {
-      result = _.get(result, 'PutReisInformatieBoodschapIn.ReisInformatieProductDVS.0.DynamischeVertrekStaat.0')
-      let id = _.get(result, 'RitId.0')
-      
-      result.delay_seconds = 0 
-      if (_.has(result, 'Trein.0.ExacteVertrekVertraging.0') && _.get(result, 'Trein.0.ExacteVertrekVertraging') !== 'PT0S') {
-        result.has_delay = true;
-        result.delay_seconds = moment.duration(_.get(data, 'Trein.0.ExacteVertrekVertraging.0')).asSeconds()
+
+        if (result.delay_seconds < 60) {
+          result.has_delay = false
+          // delete result.delay_seconds;
+        } 
+
+        if(id) {
+          id = 'train:' + id; 
+          // redisImportController.locationSanitaryCheck(id, redisWrapper)
+          result.type = 'train'
+          result.updated = Math.round((new Date()).getTime() / 1000)
+          result.destination = _.get(result, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
+          result.subType = result.Trein[0].TreinSoort[0]._
+          result.measurementTimestamp = moment()
+          redisImportController.updateData(id, result, pgPool)
+        }
       }
-
-      if (result.delay_seconds < 60) {
-        result.has_delay = false
-        // delete result.delay_seconds;
-      } 
-
-      if(id) {
-        id = 'train:' + id; 
-        // redisImportController.locationSanitaryCheck(id, redisWrapper)
-        result.type = 'train'
-        result.updated = Math.round((new Date()).getTime() / 1000)
-        result.destination = _.get(result, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
-        result.subType = result.Trein[0].TreinSoort[0]._
-        result.measurementTimestamp = moment()
-        redisImportController.updateData(id, result, pgPool)
-      }
-    }
-
+    })
   } catch(err) {
     Sentry.captureException(err)
   }
@@ -184,82 +181,83 @@ sock1.on('message', async (topic, message) => {
     const buffer = await zlibWrapper.unzip(message)
     const data = buffer.toString('utf8')
 
-    let result = await new Promise((resolve, reject) => parseString(data, { tagNameProcessors: [ stripPrefix ]}, (err, result) => {
-      if(err) reject(err) 
-      else resolve(result)
-    }))
+    parseString(data, { tagNameProcessors: [ stripPrefix ] }, (err, result) => {
+      if(err) {
+        throw(err)
+      }
 
-    if (_.get(result, 'VV_TM_PUSH.DossierName.0') === 'KV6posinfo') {
-      const positions = _.get(result, 'VV_TM_PUSH.KV6posinfo');
+      if (_.get(result, 'VV_TM_PUSH.DossierName.0') === 'KV6posinfo') {
+        const positions = _.get(result, 'VV_TM_PUSH.KV6posinfo');
 
-      _.forEach(positions, (messages) => {
-        
-        _.forEach(_.keys(messages), (positionType) => {
+        _.forEach(positions, (messages) => {
           
-          const positionMessages = messages[positionType]
-          _.forEach(positionMessages, (positionMessage, i) => {
-            const id = `vehicle:${positionMessage.dataownercode[0]}:${positionMessage.lineplanningnumber[0]}:${positionMessage.journeynumber[0]}`
-            // console.log('vehicle: ', positionMessage)
-            if (positionType === 'END') {
-              redisClient.del(id)
-              redisImportController.locationSanitaryCheck(id)
-              // redisClient.zrem('items', id)
-            } else {
-              // console.log('positionMessage: ', positionMessage)
-              const nowUnix = Math.round((new Date()).getTime() / 1000)
+          _.forEach(_.keys(messages), (positionType) => {
+            
+            const positionMessages = messages[positionType]
+            _.forEach(positionMessages, (positionMessage, i) => {
+              const id = `vehicle:${positionMessage.dataownercode[0]}:${positionMessage.lineplanningnumber[0]}:${positionMessage.journeynumber[0]}`
+              // console.log('vehicle: ', positionMessage)
+              if (positionType === 'END') {
+                redisClient.del(id)
+                redisImportController.locationSanitaryCheck(id)
+                // redisClient.zrem('items', id)
+              } else {
+                // console.log('positionMessage: ', positionMessage)
+                const nowUnix = Math.round((new Date()).getTime() / 1000)
 
-              const data = {
-                id: id, 
-                type: 'vehicle', 
-                agencyCode: positionMessage.dataownercode[0], 
-                datetimeUnix: nowUnix, 
-                measurementTimestamp: positionMessage.timestamp[0]
-              }
-
-              if (positionMessage['rd-x'] && positionMessage['rd-x'][0] != -1 && positionMessage['rd-y'][0] != -1) {
-                data.latitude = utils.RD2lat(positionMessage['rd-x'][0], positionMessage['rd-y'][0]);
-                data.longitude = utils.RD2lng(positionMessage['rd-x'][0], positionMessage['rd-y'][0]);
-
-                if (data.longitude < -180 || data.longitude > 180) {
-                  delete data.longitude
+                const data = {
+                  id: id, 
+                  type: 'vehicle', 
+                  agencyCode: positionMessage.dataownercode[0], 
+                  datetimeUnix: nowUnix, 
+                  measurementTimestamp: positionMessage.timestamp[0]
                 }
 
-                if (data.latitude < -85 || data.latitude > 85) {
-                  delete data.latitude
+                if (positionMessage['rd-x'] && positionMessage['rd-x'][0] != -1 && positionMessage['rd-y'][0] != -1) {
+                  data.latitude = utils.RD2lat(positionMessage['rd-x'][0], positionMessage['rd-y'][0]);
+                  data.longitude = utils.RD2lng(positionMessage['rd-x'][0], positionMessage['rd-y'][0]);
+
+                  if (data.longitude < -180 || data.longitude > 180) {
+                    delete data.longitude
+                  }
+
+                  if (data.latitude < -85 || data.latitude > 85) {
+                    delete data.latitude
+                  }
                 }
-              }
 
-              if (positionMessage.punctuality) {
-                data.delay_seconds = positionMessage.punctuality[0]
-        
-                if (positionMessage.punctuality[0] > 60) {
-                  data.has_delay = true
-                } else {
-                  data.has_delay = false
-                }                  
-              }
+                if (positionMessage.punctuality) {
+                  data.delay_seconds = positionMessage.punctuality[0]
+          
+                  if (positionMessage.punctuality[0] > 60) {
+                    data.has_delay = true
+                  } else {
+                    data.has_delay = false
+                  }                  
+                }
 
-              if(data.latitude && data.longitude) {
-                redisImportController.importData(data, pgPool)
-              }
+                if(data.latitude && data.longitude) {
+                  redisImportController.importData(data, pgPool)
+                }
 
-              redisImportController.updateData(id, data, pgPool);
-            }
+                redisImportController.updateData(id, data, pgPool);
+              }
+            })
+
           })
 
         })
-
-      })
-    } else {
-      // console.log('maybe interesting: ', result)
-      if(_.has(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtStation.0')) {
-        // console.log('in other stuff: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtStation.0'))
-      } else if(_.has(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtTrein.0')) {
-        // console.log('in other stuff trein: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtTrein.0'))
-      } else if(_.has(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtLandelijk.0')) {
-        // console.log('in other stuff landelijk: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtLandelijk.0'))
+      } else {
+        // console.log('maybe interesting: ', result)
+        if(_.has(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtStation.0')) {
+          // console.log('in other stuff: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtStation.0'))
+        } else if(_.has(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtTrein.0')) {
+          // console.log('in other stuff trein: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtTrein.0'))
+        } else if(_.has(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtLandelijk.0')) {
+          // console.log('in other stuff landelijk: ', _.get(result, 'PutReisInformatieBoodschapIn.ServiceInformatieProductVrijeTekstBerichtLandelijk.0'))
+        }
       }
-    }
+    })
   } catch(err) {
     Sentry.captureException(err)
   }
