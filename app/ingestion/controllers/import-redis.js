@@ -76,10 +76,11 @@ const updateData = async (identifier, data, pgPool) => {
   try {
     
     var isPersist = process.env.INGESTION_PERSIST
+    const client = await pgPool.connect()
 
-    if(data.type === 'vehicle') {
+    if(data.type === 'vehicle') { 
 
-      const tripInfo = await pgPool.query('SELECT * FROM trips WHERE realtime_trip_id = $1', [identifier.replace('vehicle:','')])
+      const tripInfo = await client.query('SELECT * FROM trips WHERE realtime_trip_id = $1', [identifier.replace('vehicle:','')])
       
       if(tripInfo[0]) {
         data.destination = tripInfo[0].trip_headsign
@@ -91,20 +92,20 @@ const updateData = async (identifier, data, pgPool) => {
                                                 .subtract(data.delay_seconds, 'seconds')
                                                 .format('HH:mm:ss')
 
-        const vehicleLine = await pgPool.query(`SELECT route_short_name 
+        const vehicleLine = await client.query(`SELECT route_short_name 
                                               FROM routes 
                                               WHERE route_id = $1`, [tripInfo[0].route_id])                                         
 
         data.linenumber = vehicleLine[0].route_short_name                                        
 
-        data.nextStop = await pgPool.query(`SELECT * 
+        data.nextStop = await client.query(`SELECT * 
                                           FROM stop_times ST
                                           WHERE trip_id = $1
                                           AND arrival_time > $2
                                           ORDER BY arrival_time ASC
                                           LIMIT 0,1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
 
-        data.prevStop = await pgPool.query(`SELECT * 
+        data.prevStop = await client.query(`SELECT * 
                                           FROM stop_times  
                                           WHERE trip_id = $1
                                           AND departure_time < $2
@@ -139,7 +140,7 @@ const updateData = async (identifier, data, pgPool) => {
 
       const destination = _.get(data, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
 
-      const tripInfo = await pgPool.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = $1 AND CD.date = $2', [identifier.replace('train:', ''), moment().format('YYYYMMDD')])
+      const tripInfo = await client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = $1 AND CD.date = $2', [identifier.replace('train:', ''), moment().format('YYYYMMDD')])
 
       if(tripInfo[0]) {
         data.destination = tripInfo[0].trip_headsign
@@ -151,14 +152,14 @@ const updateData = async (identifier, data, pgPool) => {
                                                 .subtract(data.delay_seconds, 'seconds')
                                                 .format('HH:mm:ss')
 
-        data.nextStop = await pgPool.query(`SELECT * 
+        data.nextStop = await client.query(`SELECT * 
                                           FROM stop_times ST
                                           WHERE trip_id = $1
                                           AND arrival_time > $2
                                           ORDER BY arrival_time ASC
                                           LIMIT 0,1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
 
-        data.prevStop = await pgPool.query(`SELECT * 
+        data.prevStop = await client.query(`SELECT * 
                                           FROM stop_times  
                                           WHERE trip_id = $1
                                           AND departure_time < $2
@@ -183,6 +184,8 @@ const updateData = async (identifier, data, pgPool) => {
       
   } catch(err) {  
     Sentry.captureException(err)
+  } finally {
+    client.release()
   }
   
 }
