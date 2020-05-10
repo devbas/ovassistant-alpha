@@ -76,7 +76,7 @@ app.set('view engine', 'jade');
 
 app.listen(port, '127.0.0.1', () => {
   console.log('servert listening on: ', port)
-  ingestLatestGTFS({ force: false })
+  ingestLatestGTFS({ force: true })
 });
 
 const zlibWrapper = {
@@ -108,8 +108,8 @@ const redisFlush = function() {
 redisFlush()
 
 
-sock.connect('tcp://pubsub.besteffort.ndovloket.nl:7664');
-sock.subscribe('/');
+// sock.connect('tcp://pubsub.besteffort.ndovloket.nl:7664');
+// sock.subscribe('/');
 
 sock.on('message', async (topic, message) => {
   try {
@@ -173,8 +173,8 @@ sock.on('message', async (topic, message) => {
   }
 }); 
 
-sock1.connect('tcp://pubsub.besteffort.ndovloket.nl:7658');
-sock1.subscribe('/');
+// sock1.connect('tcp://pubsub.besteffort.ndovloket.nl:7658');
+// sock1.subscribe('/');
 
 sock1.on('message', async (topic, message) => {
   try {
