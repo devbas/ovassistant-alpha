@@ -35,212 +35,212 @@ const ingestLatestGTFS =  async ({ force }) => {
       return false; 
     }  
 
-    // await client.query('TRUNCATE temp_shapes')
-    // Sentry.captureMessage('GTFS Ingestion -- TRUNCATED temp_shapes')
-    // console.log(new Date(), ' Temp Shapes table truncated')
+    await client.query('TRUNCATE temp_shapes')
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED temp_shapes')
+    console.log(new Date(), ' Temp Shapes table truncated')
 
-    // console.log(new Date(), ' Truncate trajectories table') 
-    // Sentry.captureMessage('GTFS Ingestion -- TRUNCATED trajectories')
-    // await client.query('TRUNCATE trajectories')
+    console.log(new Date(), ' Truncate trajectories table') 
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED trajectories')
+    await client.query('TRUNCATE trajectories')
 
-    // console.log(new Date(), ' Truncate trips table')
-    // Sentry.captureMessage('GTFS Ingestion -- TRUNCATED trips')
-    // await client.query('TRUNCATE trips')
+    console.log(new Date(), ' Truncate trips table')
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED trips')
+    await client.query('TRUNCATE trips')
 
-    // console.log(new Date(), ' Truncate stop_times table')
-    // Sentry.captureMessage('GTFS Ingestion -- TRUNCATED stop_times')
-    // await client.query('TRUNCATE stop_times')
+    console.log(new Date(), ' Truncate stop_times table')
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED stop_times')
+    await client.query('TRUNCATE stop_times')
 
-    // console.log(new Date(), ' Truncate stops table')
-    // Sentry.captureMessage('GTFS Ingestion -- TRUNCATED stops')
-    // await client.query('TRUNCATE stops')
+    console.log(new Date(), ' Truncate stops table')
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED stops')
+    await client.query('TRUNCATE stops')
 
-    // console.log(new Date(), ' Truncate calendar dates table')
-    // Sentry.captureMessage('GTFS Ingestion -- TRUNCATED calendar_dates')
-    // await client.query('TRUNCATE calendar_dates')
-    // client.release()
+    console.log(new Date(), ' Truncate calendar dates table')
+    Sentry.captureMessage('GTFS Ingestion -- TRUNCATED calendar_dates')
+    await client.query('TRUNCATE calendar_dates')
+    client.release()
 
-    // async function downloadGtfs() { 
-    //   console.log('step 2')
-    //   return new Promise((resolve, reject) => {
-    //     request('http://gtfs.openov.nl/gtfs-rt/gtfs-openov-nl.zip')
-    //       .on('error', function(err) {
-    //         reject(err)
-    //       })
-    //       .on('end', () => {
-    //         console.log('step 3')
-    //         Sentry.captureMessage('GTFS Ingestion -- TRUNCATED temp_shapes')
-    //         console.log('Finished downloading GTFS NL')
-    //         resolve()
-    //       })
-    //       .pipe(
-    //         fs.createWriteStream(zipFile)
-    //       )
-    //   })
+    async function downloadGtfs() { 
+      console.log('step 2')
+      return new Promise((resolve, reject) => {
+        request('http://gtfs.openov.nl/gtfs-rt/gtfs-openov-nl.zip')
+          .on('error', function(err) {
+            reject(err)
+          })
+          .on('end', () => {
+            console.log('step 3')
+            Sentry.captureMessage('GTFS Ingestion -- TRUNCATED temp_shapes')
+            console.log('Finished downloading GTFS NL')
+            resolve()
+          })
+          .pipe(
+            fs.createWriteStream(zipFile)
+          )
+      })
       
-    // }
+    }
 
-    // console.log('step 0')
-    // await new Promise(async (resolve, reject) => {
-    //   console.log('step 1')
-    //   await downloadGtfs()
-    //   console.log('stap 4')
+    console.log('step 0')
+    await new Promise(async (resolve, reject) => {
+      console.log('step 1')
+      await downloadGtfs()
+      console.log('stap 4')
 
-    //   decompress(zipFile, 'tmp').then(files => {
-    //     fs.unlink(zipFile)
-    //     console.log('unlinked')
-    //     resolve()
-    //   }).catch(err => {
-    //     Sentry.captureException(err)
-    //     reject(err)
-    //   })
-    // })
+      decompress(zipFile, 'tmp').then(files => {
+        fs.unlink(zipFile)
+        console.log('unlinked')
+        resolve()
+      }).catch(err => {
+        Sentry.captureException(err)
+        reject(err)
+      })
+    })
 
-    // console.log('step 5')
+    console.log('step 5')
 
-    // await new Promise(async (resolve, reject) => {
-    //   console.log(new Date(), ' Inserting shapes')
-    //   const client = await pgPool.connect()
-    //   let stream = client.query(copyFrom('COPY temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
-    //   let fileStream = fs.createReadStream('./tmp/shapes.txt')
-    //   fileStream.on('error', err => {
-    //     reject(err)
-    //   })
-    //   stream.on('error', err => {
-    //     console.log('shapes, joe error')
-    //     client.release()
-    //     reject(err)
-    //   })
-    //   stream.on('end', () => {
-    //     console.log('shapes, joe done')
-    //     Sentry.captureMessage('GTFS Ingestion -- INSERTED shapes')
-    //     client.release()
-    //     resolve()
-    //   })
-    //   fileStream.pipe(stream)
-    // })
+    await new Promise(async (resolve, reject) => {
+      console.log(new Date(), ' Inserting shapes')
+      const client = await pgPool.connect()
+      let stream = client.query(copyFrom('COPY temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
+      let fileStream = fs.createReadStream('./tmp/shapes.txt')
+      fileStream.on('error', err => {
+        reject(err)
+      })
+      stream.on('error', err => {
+        console.log('shapes, joe error')
+        client.release()
+        reject(err)
+      })
+      stream.on('end', () => {
+        console.log('shapes, joe done')
+        Sentry.captureMessage('GTFS Ingestion -- INSERTED shapes')
+        client.release()
+        resolve()
+      })
+      fileStream.pipe(stream)
+    })
 
-    // console.log('step 6')
+    console.log('step 6')
 
-    // await new Promise(async (resolve, reject) => {
-    //   console.log(new Date(), ' Inserting stop_times')
-    //   const client = await pgPool.connect()
-    //   let stream = client.query(copyFrom('COPY stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
-    //   let fileStream = fs.createReadStream('./tmp/stop_times.txt')
+    await new Promise(async (resolve, reject) => {
+      console.log(new Date(), ' Inserting stop_times')
+      const client = await pgPool.connect()
+      let stream = client.query(copyFrom('COPY stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
+      let fileStream = fs.createReadStream('./tmp/stop_times.txt')
 
-    //   fileStream.on('error', err => {
-    //     console.log('stoptimes, joe error file', err)
-    //     reject(err)
-    //     Sentry.captureException(err)
-    //   })
-    //   stream.on('error', err => {
-    //     console.log('stoptimes, joe error stream', err)
-    //     reject(err)
-    //     Sentry.captureException(err)
-    //     client.release()
-    //   })
-    //   stream.on('end', () => {
-    //     console.log('stoptimes, joe doen')
-    //     Sentry.captureMessage('GTFS Ingestion -- INSERTED stop_times')
-    //     client.release()
-    //     resolve()
-    //   })
-    //   fileStream.pipe(stream)
-    // })
+      fileStream.on('error', err => {
+        console.log('stoptimes, joe error file', err)
+        reject(err)
+        Sentry.captureException(err)
+      })
+      stream.on('error', err => {
+        console.log('stoptimes, joe error stream', err)
+        reject(err)
+        Sentry.captureException(err)
+        client.release()
+      })
+      stream.on('end', () => {
+        console.log('stoptimes, joe doen')
+        Sentry.captureMessage('GTFS Ingestion -- INSERTED stop_times')
+        client.release()
+        resolve()
+      })
+      fileStream.pipe(stream)
+    })
 
-    // console.log('step 7')
+    console.log('step 7')
 
-    // await new Promise(async (resolve, reject) => {
-    //   console.log(new Date(), ' Inserting trips')
-    //   const client = await pgPool.connect()
-    //   let stream = client.query(copyFrom('COPY trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
-    //   let fileStream = fs.createReadStream('./tmp/trips.txt')
+    await new Promise(async (resolve, reject) => {
+      console.log(new Date(), ' Inserting trips')
+      const client = await pgPool.connect()
+      let stream = client.query(copyFrom('COPY trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
+      let fileStream = fs.createReadStream('./tmp/trips.txt')
 
-    //   fileStream.on('error', err => {
-    //     reject(err)
-    //   })
-    //   stream.on('error', err => {
-    //     client.release()
-    //     reject(err)
-    //   })
-    //   stream.on('end', () => {
-    //     Sentry.captureMessage('GTFS Ingestion -- INSERTED trips')
-    //     client.release()
-    //     resolve()
-    //   })
-    //   fileStream.pipe(stream)
-    // })
+      fileStream.on('error', err => {
+        reject(err)
+      })
+      stream.on('error', err => {
+        client.release()
+        reject(err)
+      })
+      stream.on('end', () => {
+        Sentry.captureMessage('GTFS Ingestion -- INSERTED trips')
+        client.release()
+        resolve()
+      })
+      fileStream.pipe(stream)
+    })
 
-    // console.log('step 8')
+    console.log('step 8')
 
-    // await new Promise(async (resolve, reject) => {
-    //   console.log(new Date(), ' Inserting routes')
-    //   const client = await pgPool.connect()
-    //   let stream = client.query(copyFrom('COPY routes (route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_color,route_text_color,route_url) FROM STDIN CSV HEADER'))
-    //   let fileStream = fs.createReadStream('./tmp/routes.txt')
+    await new Promise(async (resolve, reject) => {
+      console.log(new Date(), ' Inserting routes')
+      const client = await pgPool.connect()
+      let stream = client.query(copyFrom('COPY routes (route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_color,route_text_color,route_url) FROM STDIN CSV HEADER'))
+      let fileStream = fs.createReadStream('./tmp/routes.txt')
 
-    //   fileStream.on('error', err => {
-    //     reject(err)
-    //   })
-    //   stream.on('error', err => {
-    //     client.release()
-    //     reject(err)
-    //   })
-    //   stream.on('end', () => {
-    //     Sentry.captureMessage('GTFS Ingestion -- INSERTED routes')
-    //     client.release()
-    //     resolve()
-    //   })
-    //   fileStream.pipe(stream) 
-    // })
+      fileStream.on('error', err => {
+        reject(err)
+      })
+      stream.on('error', err => {
+        client.release()
+        reject(err)
+      })
+      stream.on('end', () => {
+        Sentry.captureMessage('GTFS Ingestion -- INSERTED routes')
+        client.release()
+        resolve()
+      })
+      fileStream.pipe(stream) 
+    })
 
-    // console.log('step 9')
+    console.log('step 9')
 
-    // await new Promise(async (resolve, reject) => {
-    //   console.log(new Date(), ' Inserting stops')
-    //   const client = await pgPool.connect()
-    //   let stream = client.query(copyFrom('COPY stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
-    //   let fileStream = fs.createReadStream('./tmp/stops.txt')
+    await new Promise(async (resolve, reject) => {
+      console.log(new Date(), ' Inserting stops')
+      const client = await pgPool.connect()
+      let stream = client.query(copyFrom('COPY stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
+      let fileStream = fs.createReadStream('./tmp/stops.txt')
 
-    //   fileStream.on('error', err => {
-    //     reject(err)
-    //   })
-    //   stream.on('error', err => {
-    //     client.release()
-    //     reject(err)
-    //   })
-    //   stream.on('end', () => {
-    //     Sentry.captureMessage('GTFS Ingestion -- INSERTED stops')
-    //     client.release()
-    //     resolve()
-    //   })
-    //   fileStream.pipe(stream)
-    // })
+      fileStream.on('error', err => {
+        reject(err)
+      })
+      stream.on('error', err => {
+        client.release()
+        reject(err)
+      })
+      stream.on('end', () => {
+        Sentry.captureMessage('GTFS Ingestion -- INSERTED stops')
+        client.release()
+        resolve()
+      })
+      fileStream.pipe(stream)
+    })
 
-    // console.log('step 10')
+    console.log('step 10')
 
-    // await new Promise(async (resolve, reject) => {
-    //   console.log(new Date(), ' Inserting calendar_dates')
-    //   const client = await pgPool.connect()
-    //   let stream = client.query(copyFrom('COPY calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
-    //   let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
+    await new Promise(async (resolve, reject) => {
+      console.log(new Date(), ' Inserting calendar_dates')
+      const client = await pgPool.connect()
+      let stream = client.query(copyFrom('COPY calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
+      let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
 
-    //   fileStream.on('error', err => {
-    //     reject(err)
-    //   })
-    //   stream.on('error', err => {
-    //     client.release()
-    //     reject(err)
-    //   })
-    //   stream.on('end', () => {
-    //     Sentry.captureMessage('GTFS Ingestion -- INSERTED calendar_dates')
-    //     client.release()
-    //     resolve()
-    //   })
-    //   fileStream.pipe(stream) 
-    // })
+      fileStream.on('error', err => {
+        reject(err)
+      })
+      stream.on('error', err => {
+        client.release()
+        reject(err)
+      })
+      stream.on('end', () => {
+        Sentry.captureMessage('GTFS Ingestion -- INSERTED calendar_dates')
+        client.release()
+        resolve()
+      })
+      fileStream.pipe(stream) 
+    })
 
-    // console.log('step 11')
+    console.log('step 11')
 
     await new Promise(async (resolve, reject) => {
       console.log('accessed the function')
@@ -306,50 +306,50 @@ const ingestLatestGTFS =  async ({ force }) => {
               shape.shape_dist_traveled >= A['shape_dist_traveled'] && 
               shape.shape_dist_traveled <= B['shape_dist_traveled'])
           
-          //   for(let j = 0; j < vertices.length; j++) {
-          //     // Calculate the distance from v1 to A
-          //     const v1 = vertices[j]
-          //     let d_v1_A = v1['shape_dist_traveled'] - A['shape_dist_traveled'] === 0 ? 1 : v1['shape_dist_traveled'] - A['shape_dist_traveled']
+            for(let j = 0; j < vertices.length; j++) {
+              // Calculate the distance from v1 to A
+              const v1 = vertices[j]
+              let d_v1_A = v1['shape_dist_traveled'] - A['shape_dist_traveled'] === 0 ? 1 : v1['shape_dist_traveled'] - A['shape_dist_traveled']
 
-          //     vertices[j]['arrival_time'] = moment.utc((d_v1_A / d_AB * t_AB) + A_time).format('HH:mm:ss')
+              vertices[j]['arrival_time'] = moment.utc((d_v1_A / d_AB * t_AB) + A_time).format('HH:mm:ss')
               
-          //     if(vertices[j]['arrival_time'] === 'Invalid date') {
-          //       console.log('time stuff: ', d_v1_A, d_AB, t_AB, A_time, A['arrival_time'], B['arrival_time']);
-          //       console.log('arrival_time: ', moment.utc((d_v1_A / d_AB * t_AB) + A_time).format('HH:mm:ss'))
-          //       process.exit()
-          //     }
-          //   }
+              if(vertices[j]['arrival_time'] === 'Invalid date') {
+                console.log('time stuff: ', d_v1_A, d_AB, t_AB, A_time, A['arrival_time'], B['arrival_time']);
+                console.log('arrival_time: ', moment.utc((d_v1_A / d_AB * t_AB) + A_time).format('HH:mm:ss'))
+                process.exit()
+              }
+            }
 
-          //   trajectories = [...trajectories, ...vertices]
+            trajectories = [...trajectories, ...vertices]
 
           }
 
-          // trajectories = _.orderBy(trajectories, ['shape_dist_traveled'], ['asc'])
+          trajectories = _.orderBy(trajectories, ['shape_dist_traveled'], ['asc'])
 
-          // let query = "INSERT INTO trajectories (trip_id, vehicle_id, geom) VALUES($1, $2, ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
-          // let textLinestring = 'LINESTRING('
-          // let values = [trip.trip_id, trip.realtime_trip_id] 
+          let query = "INSERT INTO trajectories (trip_id, vehicle_id, geom) VALUES($1, $2, ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
+          let textLinestring = 'LINESTRING('
+          let values = [trip.trip_id, trip.realtime_trip_id] 
 
-          // let counter = 0 
-          // trajectories.forEach(point => {
-          //   counter = counter + 1 
-          //   query = query + `${point.shape_pt_lon} ${point.shape_pt_lat} ${moment(trip.date + ' ' + point.arrival_time, "YYYYMMDD HH:mm:ss").unix()}`
-          //   textLinestring = textLinestring + `${point.shape_pt_lon} ${point.shape_pt_lat}`
+          let counter = 0 
+          trajectories.forEach(point => {
+            counter = counter + 1 
+            query = query + `${point.shape_pt_lon} ${point.shape_pt_lat} ${moment(trip.date + ' ' + point.arrival_time, "YYYYMMDD HH:mm:ss").unix()}`
+            textLinestring = textLinestring + `${point.shape_pt_lon} ${point.shape_pt_lat}`
 
-          //   counter !== trajectories.length ? query = query + ', ' : query = query + ")'))"
-          //   counter !== trajectories.length ? textLinestring = textLinestring + ', ' : textLinestring = textLinestring + ")"
-          // })
+            counter !== trajectories.length ? query = query + ', ' : query = query + ")'))"
+            counter !== trajectories.length ? textLinestring = textLinestring + ', ' : textLinestring = textLinestring + ")"
+          })
 
-          // try {
-          //   if(trajectories.length > 0) {
-          //     const client = await pgPool.connect()
-          //     await client.query({ text: query, values: values })
-          //     client.release()
-          //   } 
-          // } catch(e) {
-          //   console.log('err: ', e)
-          //   Sentry.captureException(e)
-          // }
+          try {
+            if(trajectories.length > 0) {
+              const client = await pgPool.connect()
+              await client.query({ text: query, values: values })
+              client.release()
+            } 
+          } catch(e) {
+            console.log('err: ', e)
+            Sentry.captureException(e)
+          }
 
           var t1 = performance.now()
           totalProcessingTime = totalProcessingTime + (t1 - t0)
@@ -367,69 +367,69 @@ const ingestLatestGTFS =  async ({ force }) => {
       }
     })
 
-    // await client.query({ text: `UPDATE trajectories 
-    //                             SET start_planned = subquery.start_planned,
-    //                                 end_planned = subquery.end_planned 
-    //                             FROM (
-    //                               SELECT ST_M(ST_StartPoint(geom)) AS start_planned, ST_M(ST_EndPoint(geom)) AS end_planned, trajectory_id
-    //                               FROM trajectories	
-    //                             ) AS subquery
-    //                             WHERE trajectories.trajectory_id = subquery.trajectory_id` })
+    await client.query({ text: `UPDATE trajectories 
+                                SET start_planned = subquery.start_planned,
+                                    end_planned = subquery.end_planned 
+                                FROM (
+                                  SELECT ST_M(ST_StartPoint(geom)) AS start_planned, ST_M(ST_EndPoint(geom)) AS end_planned, trajectory_id
+                                  FROM trajectories	
+                                ) AS subquery
+                                WHERE trajectories.trajectory_id = subquery.trajectory_id` })
     
-    // await client.query(`CREATE TABLE tmp_stop_times 
-    //                     (
-    //                       trip_id int8,
-    //                       stop_sequence int4,
-    //                       stop_id varchar(255),
-    //                       stop_headsign varchar(255),
-    //                       arrival_time varchar(255),
-    //                       departure_time varchar(255),
-    //                       pickup_type int4,
-    //                       drop_off_type int4,
-    //                       timepoint int8,
-    //                       shape_dist_traveled int4,
-    //                       fare_units_traveled int8, 
-    //                       geom geometry(POINT,4326)
-    //                     )`)
+    await client.query(`CREATE TABLE tmp_stop_times 
+                        (
+                          trip_id int8,
+                          stop_sequence int4,
+                          stop_id varchar(255),
+                          stop_headsign varchar(255),
+                          arrival_time varchar(255),
+                          departure_time varchar(255),
+                          pickup_type int4,
+                          drop_off_type int4,
+                          timepoint int8,
+                          shape_dist_traveled int4,
+                          fare_units_traveled int8, 
+                          geom geometry(POINT,4326)
+                        )`)
     
-    // await client.query(`INSERT INTO tmp_stop_times(
-    //   trip_id, 
-    //   stop_sequence, 
-    //   stop_id, 
-    //   stop_headsign, 
-    //   arrival_time, 
-    //   departure_time, 
-    //   pickup_type, 
-    //   drop_off_type, 
-    //   timepoint, 
-    //   shape_dist_traveled, 
-    //   fare_units_traveled, 
-    //   geom
-    // )
-    // (SELECT 
-    //   trip_id, 
-    //   stop_sequence, 
-    //   ST.stop_id, 
-    //   stop_headsign, 
-    //   arrival_time, 
-    //   departure_time, 
-    //   pickup_type, 
-    //   drop_off_type, 
-    //   timepoint, 
-    //   shape_dist_traveled, 
-    //   fare_units_traveled, 
-    //   ST_SetSRID(ST_MakePoint(S.stop_lon, S.stop_lat), 4326)
-    // FROM stop_times ST 
-    // JOIN stops S 
-    // ON ST.stop_id = S.stop_id)`)
+    await client.query(`INSERT INTO tmp_stop_times(
+      trip_id, 
+      stop_sequence, 
+      stop_id, 
+      stop_headsign, 
+      arrival_time, 
+      departure_time, 
+      pickup_type, 
+      drop_off_type, 
+      timepoint, 
+      shape_dist_traveled, 
+      fare_units_traveled, 
+      geom
+    )
+    (SELECT 
+      trip_id, 
+      stop_sequence, 
+      ST.stop_id, 
+      stop_headsign, 
+      arrival_time, 
+      departure_time, 
+      pickup_type, 
+      drop_off_type, 
+      timepoint, 
+      shape_dist_traveled, 
+      fare_units_traveled, 
+      ST_SetSRID(ST_MakePoint(S.stop_lon, S.stop_lat), 4326)
+    FROM stop_times ST 
+    JOIN stops S 
+    ON ST.stop_id = S.stop_id)`)
 
     
-    // await client.query('DROP TABLE stop_times')
+    await client.query('DROP TABLE stop_times')
 
-    // await client.query('ALTER TABLE tmp_stop_times RENAME TO stop_times')
+    await client.query('ALTER TABLE tmp_stop_times RENAME TO stop_times')
 
-    // await client.query('CREATE INDEX idx_stoptimes_stop_id ON stop_times(stop_id)')
-    // await client.query('CREATE INDEX idx_stoptimes_trip_id ON stop_times(trip_id)')
+    await client.query('CREATE INDEX idx_stoptimes_stop_id ON stop_times(stop_id)')
+    await client.query('CREATE INDEX idx_stoptimes_trip_id ON stop_times(trip_id)')
 
     client.release() 
 
