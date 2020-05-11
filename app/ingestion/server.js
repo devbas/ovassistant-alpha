@@ -9,7 +9,6 @@ const _              = require('lodash');
 const cors           = require('cors');             
 const bodyParser     = require('body-parser');
 const utils          = require('./utils');
-const moment         = require('moment-timezone');
 const redisImportController = require('./controllers/import-redis');
 const { promisify } = require('util');
 const redisClient = require('./redis-client.js');
@@ -17,6 +16,11 @@ const redisClientPersist = require('./redis-client-persist');
 const { ingestLatestGTFS } = require('./cron/index')
 const cron = require('node-cron')
 const config = require('./config/config')
+
+// date-fns
+const parseISO = require('date-fns/parseISO')
+const format = require('date-fns/format')
+
 
 const redis = require('redis');
 const redisClient2 = redis.createClient({
@@ -100,16 +104,17 @@ redisClient2.psubscribe('__keyevent*__:expired');
 
 const redisFlush = function() { 
   console.log('start flushing')
-  const flushStatus = redisClientPersist.flushall() 
+  const flushPersistStatus = redisClientPersist.flushall() 
+  const flushStatus = redisClient.flushall() 
 
   console.log('flush all: ', flushStatus)  
 }
 
 redisFlush()
+ 
 
-
-// sock.connect('tcp://pubsub.besteffort.ndovloket.nl:7664');
-// sock.subscribe('/');
+sock.connect('tcp://pubsub.besteffort.ndovloket.nl:7664');
+sock.subscribe('/');
 
 sock.on('message', async (topic, message) => {
   try {
@@ -121,14 +126,11 @@ sock.on('message', async (topic, message) => {
       if(_.has(result, 'ArrayOfTreinLocation')) {
         result = _.get(result, 'ArrayOfTreinLocation.TreinLocation')
         result.forEach((train) => {
-          const speed = _.get(train, 'TreinMaterieelDelen.0.Snelheid.0')
           const id = 'train:' + _.get(train, 'TreinNummer.0')
           const latitude = Number(_.get(train, 'TreinMaterieelDelen.0.Latitude.0'))
           const longitude = Number(_.get(train, 'TreinMaterieelDelen.0.Longitude.0'))
           const orientation = Number(_.get(train, 'TreinMaterieelDelen.0.Richting.0'))
-          const datetimeRaw = moment(train['TreinMaterieelDelen'][0]['GpsDatumTijd'][0])
-          const datetime = moment(datetimeRaw, 'YYYY-MM-DDTHH:mm:ss')
-          const datetimeUnix = moment(datetime).unix()
+          const datetimeUnix = parseInt(parseISO(train['TreinMaterieelDelen'][0]['GpsDatumTijd'][0], 'yyyy-MM-dd HH:mm:ss', new Date()).getTime() / 1000)
           const type = 'train'
           if (latitude && longitude) { 
             redisImportController.importData({
@@ -148,7 +150,7 @@ sock.on('message', async (topic, message) => {
         result.delay_seconds = 0 
         if (_.has(result, 'Trein.0.ExacteVertrekVertraging.0') && _.get(result, 'Trein.0.ExacteVertrekVertraging') !== 'PT0S') {
           result.has_delay = true;
-          result.delay_seconds = moment.duration(_.get(data, 'Trein.0.ExacteVertrekVertraging.0')).asSeconds()
+          result.delay_seconds = utils.durationToSeconds(_.get(result, 'Trein.0.ExacteVertrekVertraging.0'))
         }
 
         if (result.delay_seconds < 60) {
@@ -158,23 +160,25 @@ sock.on('message', async (topic, message) => {
 
         if(id) {
           id = 'train:' + id; 
+          const measurementTimestamp = new Date()
           // redisImportController.locationSanitaryCheck(id, redisWrapper)
           result.type = 'train'
           result.updated = Math.round((new Date()).getTime() / 1000)
           result.destination = _.get(result, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
           result.subType = result.Trein[0].TreinSoort[0]._
-          result.measurementTimestamp = moment()
+          result.measurementTimestamp = measurementTimestamp.toJSON()
           redisImportController.updateData(id, result, pgPool)
         }
       }
     })
   } catch(err) {
+    console.log('err: ', err)
     Sentry.captureException(err)
   }
 }); 
 
-// sock1.connect('tcp://pubsub.besteffort.ndovloket.nl:7658');
-// sock1.subscribe('/');
+sock1.connect('tcp://pubsub.besteffort.ndovloket.nl:7658');
+sock1.subscribe('/');
 
 sock1.on('message', async (topic, message) => {
   try {

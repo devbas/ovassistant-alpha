@@ -1,3 +1,5 @@
+const dateFunctions = require("date-fns")
+
 var toCartesian = function(lat, lng, callback) {
     var R = parseFloat(6731000);
     var radians_per_degree = 0.017453292519943295;
@@ -243,6 +245,26 @@ var makeid = function() {
   return text;
 }
 
+const ISO_PERIOD = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/
+
+var durationToSeconds = function(duration) {
+  date = new Date()
+
+  duration = duration.trim()
+  const matches = ISO_PERIOD.exec(duration)
+  if (!matches || duration.length < 3) {
+    throw new TypeError(`invalid duration: "${duration}". Must be an ISO 8601 duration. See https://en.wikipedia.org/wiki/ISO_8601#Durations`)
+  }
+
+  const prefix = matches[1] === "-" ? "sub" : "add"
+  const then = ["Years", "Months", "Weeks", "Days", "Hours", "Minutes", "Seconds"].reduce((result, part, index) => {
+    const value = matches[index+2] // +2 for full match and sign parts
+    return value ? dateFunctions[prefix + part](result, value) : result
+  }, date)
+
+  return (then.getTime() - date.getTime()) / 1000
+}
+
 module.exports = { 
     toCartesian: toCartesian, 
     gps2X: gps2X, 
@@ -250,5 +272,6 @@ module.exports = {
     RD2lat: RD2lat, 
     RD2lng: RD2lng,
     fixTime: fixTime, 
-    makeid: makeid
+    makeid: makeid, 
+    durationToSeconds: durationToSeconds
 }
