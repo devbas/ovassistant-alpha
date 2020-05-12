@@ -15,6 +15,7 @@
     "axios": "0.18.1",
     "cors": "2.8.5",
     "date-fns": "^2.13.0",
+    "date-fns-tz": "^1.0.10",
     "decompress": "^4.2.1",
     "express": "4.16.3",
     "lodash": "4.17.13",

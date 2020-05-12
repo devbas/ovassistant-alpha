@@ -2,7 +2,6 @@ const LatLon = require('../movable.js');
 const Sentry = require('@sentry/node');
 const utils = require('../utils')
 
-const moment = require('moment-timezone')
 const _ = require('lodash')
 const redisClient = process.env.INGESTION_PERSIST === 'yes' ? require('../redis-client-persist') : require('../redis-client')
 const fs = require('fs')
@@ -11,6 +10,7 @@ const fs = require('fs')
 const format = require('date-fns/format')
 const parseISO = require('date-fns/parseISO')
 const sub = require('date-fns/sub')
+const tzFormat = require('date-fns-tz/format')
 
 const importData = async (data, pgPool) => {
   var row = {
@@ -89,12 +89,7 @@ const updateData = async (identifier, data, pgPool) => {
         data.destination = tripInfo[0].trip_headsign
         data.shapeId = tripInfo[0].shape_id
       
-        const formattedMeasurementTimestamp2 = sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds })
-        // console.log({ formattedMeasurementTimestamp: formattedMeasurementTimestamp2 })
-        const formattedMeasurementTimestamp = moment(data.measurementTimestamp, moment.ISO_8601)
-                                                .tz('Europe/Amsterdam')
-                                                .subtract(data.delay_seconds, 'seconds')
-                                                .format('HH:mm:ss')
+        const formattedMeasurementTimestamp = tzFormat(sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds }), 'HH:mm:ss', { timeZone: 'Europe/Amsterdam' })
 
         const { rows: vehicleLine } = await client.query(`SELECT route_short_name 
                                               FROM routes 
@@ -152,13 +147,7 @@ const updateData = async (identifier, data, pgPool) => {
         data.destination = tripInfo[0].trip_headsign
         data.shapeId = tripInfo[0].shape_id
       
-
-        const formattedMeasurementTimestamp2 = sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds })
-        console.log({ formattedMeasurementTimestamp: formattedMeasurementTimestamp2 })
-        const formattedMeasurementTimestamp = moment(data.measurementTimestamp, moment.ISO_8601)
-                                                .tz('Europe/Amsterdam')
-                                                .subtract(data.delay_seconds, 'seconds')
-                                                .format('HH:mm:ss')
+        const formattedMeasurementTimestamp = tzFormat(sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds }), 'HH:mm:ss', { timeZone: 'Europe/Amsterdam' })
 
         const { rows: nextStop } = await client.query(`SELECT * 
                                           FROM stop_times ST
@@ -193,6 +182,7 @@ const updateData = async (identifier, data, pgPool) => {
     }
       
   } catch(err) {  
+    console.log({ err: err, data: data })
     Sentry.captureException(err)
   } finally {
     client.release()
