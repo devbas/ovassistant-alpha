@@ -13,9 +13,10 @@ const redisImportController = require('./controllers/import-redis');
 const { promisify } = require('util');
 const redisClient = require('./redis-client.js');
 const redisClientPersist = require('./redis-client-persist');
-const { ingestLatestGTFS } = require('./cron/index')
+// const { ingestLatestGTFS } = require('./cron/index')
 const cron = require('node-cron')
 const config = require('./config/config')
+const { spawn } = require('child_process')
 
 // date-fns
 const parseISO = require('date-fns/parseISO')
