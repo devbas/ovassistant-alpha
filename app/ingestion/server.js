@@ -45,7 +45,14 @@ var port = process.env.PORT || 8000;
 var router = express.Router();
 
 cron.schedule('0 0 3 * * *', () => {
-  ingestLatestGTFS({ force: true })
+  const command = spawn('node', ['cron/index.js', 'force'])
+  let result = ''
+  command.stdout.on('data', function(data) {
+    result += data.toString();
+  });
+  command.on('close', function(code) {
+    console.log({ result: result })
+  });
   console.log('GTFS Ingestion Scheduled!')
 }, {
   scheduled: true, 
@@ -80,7 +87,14 @@ app.set('view engine', 'jade');
 
 app.listen(port, '127.0.0.1', () => {
   console.log('servert listening on: ', port)
-  ingestLatestGTFS({ force: true })
+  importCron = spawn('node', ['cron/index.js', 'force'])
+  let result = ''
+  importCron.stdout.on('data', function(data) {
+    result += data.toString();
+  });
+  importCron.on('close', function(code) {
+    console.log({ result: result })
+  });
 });
 
 const zlibWrapper = {

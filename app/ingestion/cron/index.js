@@ -444,4 +444,15 @@ const ingestLatestGTFS =  async ({ force }) => {
   }
 }
 
-module.exports = { ingestLatestGTFS: ingestLatestGTFS }
+const fileArgs = process.argv.slice(2);
+
+let force = undefined 
+switch (fileArgs[0]) {
+  case 'force': 
+    force = true
+    break;
+  default:
+    force = false
+}
+
+ingestLatestGTFS({ force: force })
