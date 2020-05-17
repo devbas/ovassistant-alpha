@@ -1,15 +1,18 @@
+import os
+
 redis = {
-  'host': 'redis', 
-  'port': 6379, 
-  'db': 2, 
-  'shape_db': 3, 
-  'layer_db': 1, 
+  'host': os.environ['REDIS_HOST'], 
+  'port': os.environ['REDIS_PORT'], 
+  'db': os.environ['REDIS_DB'], 
+  'shape_db': os.environ['REDIS_SHAPE_DB'], 
+  'layer_db': os.environ['REDIS_LAYER_DB'], 
   'decode_responses': True 
 }
 
 psql = {
-  'host': 'postgis', 
-  'db': 'gis', 
-  'user': 'docker', 
-  'password': 'docker'
+  'host': os.environ['PSQL_HOST'], 
+  'db': os.environ['PSQL_DB'], 
+  'user': os.environ['PSQL_USER'], 
+  'password': os.environ['PSQL_PASSWORD'], 
+  'port': os.environ['PSQL_PORT']
 }

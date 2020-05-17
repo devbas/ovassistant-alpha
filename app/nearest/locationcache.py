@@ -15,7 +15,7 @@ from psycopg2 import pool
 redis_user_location_history = redis.StrictRedis(host=cfg.redis['host'], port=cfg.redis['port'], db=cfg.redis['layer_db'], decode_responses=cfg.redis['decode_responses'])
 
 try:
-  postgres_pool = psycopg2.pool.SimpleConnectionPool(1,20, host=cfg.psql['host'], port=5432, database=cfg.psql['db'], user=cfg.psql['user'], password=cfg.psql['password'])
+  postgres_pool = psycopg2.pool.SimpleConnectionPool(1,20, host=cfg.psql['host'], port=cfg.psql['port'], database=cfg.psql['db'], user=cfg.psql['user'], password=cfg.psql['password'])
 
   if(postgres_pool): 
     print('Postgres Connection pool created successfully')

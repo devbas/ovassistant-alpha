@@ -16,7 +16,6 @@ services:
     build: ./app/ingestion/
     volumes: 
       - ./app/ingestion/:/var/www/ovassistant/app/ingestion
-      # - node_modules:/app/node_modules
     depends_on:
       - redis
       - postgis
@@ -24,7 +23,6 @@ services:
       - ./app/ingestion/ingestion.env
     ports: 
       - 127.0.0.1:8000:8000
-    # command: nodemon --exec node --max-old-space-size=8000 server.js
     networks: 
       - app
   scoring: 
@@ -68,6 +66,8 @@ services:
     command: python calculate.py 
     volumes: 
       - ./app/nearest/:/usr/src/app
+    env_file: 
+      - ./app/nearest/nearest.env
     networks: 
       - app
 volumes:
