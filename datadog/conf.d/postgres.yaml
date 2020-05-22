@@ -85,13 +85,13 @@ instances:
     ##
     #
     relations:
-      - calendar_dates
-      - stop_times
-      - routes 
-      - trajectories
-      - temp_shapes
-      - stops
-      - trips
+        - calendar_dates
+        - stop_times
+        - routes 
+        - trajectories
+        - temp_shapes
+        - stops
+        - trips
     # relations:
     #   - relation_name: <TABLE_NAME>
     #     schemas:
@@ -101,7 +101,7 @@ instances:
     ## @param collect_function_metrics - boolean - optional - default: false
     ## If set to true, collects metrics regarding PL/pgSQL functions from pg_stat_user_functions
     #
-    # collect_function_metrics: false
+    collect_function_metrics: true
 
     ## @param collect_count_metrics - boolean - optional - default: true
     ## Collect count metrics.
