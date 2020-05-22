@@ -80,7 +80,7 @@ const updateData = async (identifier, data, pgPool) => {
   try {
     
     var isPersist = process.env.INGESTION_PERSIST
-    // const client = await pgPool.connect()
+    const client = await pgPool.connect()
 
     if(data.type === 'vehicle') { 
 
@@ -129,15 +129,15 @@ const updateData = async (identifier, data, pgPool) => {
 
     if(data.type === 'train') {
       
-      const plannedDeparturePlatform = _.get(data, 'Trein.0.TreinVertrekSpoor.0.SpoorNummer.0')
-      const plannedDeparturePlatformPart = _.get(data, 'Trein.0.TreinVertrekSpoor.0.SpoorFase.0')
-      const actualDeparturePlatform = _.get(data, 'Trein.0.TreinVertrekSpoor.1.SpoorNummer.0')
-      const actualDeparturePlatformPart = _.get(data, 'Trein.0.TreinVertrekSpoor.1.SpoorFase.0')
+      // const plannedDeparturePlatform = _.get(data, 'Trein.0.TreinVertrekSpoor.0.SpoorNummer.0')
+      // const plannedDeparturePlatformPart = _.get(data, 'Trein.0.TreinVertrekSpoor.0.SpoorFase.0')
+      // const actualDeparturePlatform = _.get(data, 'Trein.0.TreinVertrekSpoor.1.SpoorNummer.0')
+      // const actualDeparturePlatformPart = _.get(data, 'Trein.0.TreinVertrekSpoor.1.SpoorFase.0')
 
       // For which station is this? 
-      if(plannedDeparturePlatform !== actualDeparturePlatform) {
+      // if(plannedDeparturePlatform !== actualDeparturePlatform) {
         // console.log('different platform: ', _.get(data, 'Trein.0.TreinVertrekSpoor'))
-      }
+      // }
 
       const destination = _.get(data, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
 
@@ -180,12 +180,11 @@ const updateData = async (identifier, data, pgPool) => {
       //   redisClient.set(identifier, JSON.stringify(data), 'EX', 40)
       // }
     }
-      
+    
+    client.release()
   } catch(err) {  
     console.log({ err: err, data: data })
     Sentry.captureException(err)
-  } finally {
-    // client.release()
   }
   
 }
