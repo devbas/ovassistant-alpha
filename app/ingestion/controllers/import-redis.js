@@ -84,7 +84,7 @@ const updateData = async (identifier, data, pgPool) => {
 
     if(data.type === 'vehicle') { 
 
-      const { rows: tripInfo } = await client.query('SELECT * FROM trips WHERE realtime_trip_id = $1', [identifier.replace('vehicle:','')])
+      // const { rows: tripInfo } = await client.query('SELECT * FROM trips WHERE realtime_trip_id = $1', [identifier.replace('vehicle:','')])
       // if(tripInfo[0]) {
       //   data.destination = tripInfo[0].trip_headsign
       //   data.shapeId = tripInfo[0].shape_id
@@ -120,11 +120,11 @@ const updateData = async (identifier, data, pgPool) => {
       //   }                                        
       // }                               
       
-      if (isPersist === 'yes') {
-        redisClient.set(identifier, JSON.stringify(data))
-      } else {
-        redisClient.set(identifier, JSON.stringify(data), 'EX', 40)
-      }
+      // if (isPersist === 'yes') {
+      //   redisClient.set(identifier, JSON.stringify(data))
+      // } else {
+      //   redisClient.set(identifier, JSON.stringify(data), 'EX', 40)
+      // }
     }
 
     if(data.type === 'train') {
@@ -141,7 +141,7 @@ const updateData = async (identifier, data, pgPool) => {
 
       const destination = _.get(data, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
 
-      const { rows: tripInfo } = await client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = $1 AND CD.date = $2', [identifier.replace('train:', ''), format(new Date(), 'yyyyMMdd')])
+      // const { rows: tripInfo } = await client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = $1 AND CD.date = $2', [identifier.replace('train:', ''), format(new Date(), 'yyyyMMdd')])
 
       // if(tripInfo[0]) {
       //   data.destination = tripInfo[0].trip_headsign
@@ -174,11 +174,11 @@ const updateData = async (identifier, data, pgPool) => {
       //   // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
       // }
 
-      if (isPersist === 'yes') {
-        redisClient.set(identifier, JSON.stringify(data))
-      } else {
-        redisClient.set(identifier, JSON.stringify(data), 'EX', 40)
-      }
+      // if (isPersist === 'yes') {
+      //   redisClient.set(identifier, JSON.stringify(data))
+      // } else {
+      //   redisClient.set(identifier, JSON.stringify(data), 'EX', 40)
+      // }
     }
       
   } catch(err) {  
