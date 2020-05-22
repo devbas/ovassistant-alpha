@@ -154,7 +154,7 @@ sock.on('message', async (topic, message) => {
           result.destination = _.get(result, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
           result.subType = result.Trein[0].TreinSoort[0]._
           result.measurementTimestamp = new Date().toJSON()
-          // redisImportController.updateData(id, result, pgPool)
+          redisImportController.updateData(id, result, pgPool)
         }
       }
     })
@@ -231,7 +231,7 @@ sock1.on('message', async (topic, message) => {
                   redisImportController.importData(data, pgPool)
                 }
 
-                // redisImportController.updateData(id, data, pgPool);
+                redisImportController.updateData(id, data, pgPool);
               }
             })
 
