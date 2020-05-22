@@ -3,16 +3,15 @@ const request = require('request')
 const fs = require('fs')
 const { Pool } = require('pg')
 var copyFrom = require('pg-copy-streams').from
-const async = require('async')
-// const _ = require('lodash')
 const { orderBy, filter } = require('lodash')
 const moment = require('moment')
-const utils = require('../utils')
+const utils = require('./utils.js')
 const { performance } = require('perf_hooks')
 const Sentry = require('@sentry/node')
 const { Queue } = require('./queue.js')
+const cron = require('node-cron')
 
-const config = require('../config/config')
+const config = require('./config/config')
 
 const ingestLatestGTFS =  async ({ force }) => {
   console.log('go ahead')
@@ -29,7 +28,6 @@ const ingestLatestGTFS =  async ({ force }) => {
 
     const client = await pgPool.connect()
     const trajectoryCount = await client.query('SELECT COUNT(*) FROM trajectories')
-     
 
     if(trajectoryCount.rows[0].count > 0 && !force) {
       return false; 
@@ -433,26 +431,26 @@ const ingestLatestGTFS =  async ({ force }) => {
     await client.query('CREATE INDEX idx_stoptimes_trip_id ON stop_times(trip_id)')
 
     Sentry.captureMessage('GTFS Ingestion -- stop_times table updated')
+
+    client.release() 
   } catch(e) {
     console.log('err: ', e)
     Sentry.captureException(e);
   } finally {
     let endTime = moment() 
     Sentry.captureMessage('GTFS Ingestion finished in ' + moment.utc(moment(endTime).diff(startTime)).format('HH:mm:ss'))
-    client.release() 
     console.log('Done in ', moment.utc(moment(endTime).diff(startTime)).format('HH:mm:ss'))
   }
 }
 
-const fileArgs = process.argv.slice(2);
+const task = cron.schedule('0 0 3 * * *', () => {
+  console.log('GTFS Ingestion Scheduled!')
+  ingestLatestGTFS({ force: true })
+}, {
+  scheduled: true, 
+  timezone: "Europe/Amsterdam"
+})
 
-let force = undefined 
-switch (fileArgs[0]) {
-  case 'force': 
-    force = true
-    break;
-  default:
-    force = false
-}
+task.start()
 
-ingestLatestGTFS({ force: force })
+ingestLatestGTFS({ force: false })

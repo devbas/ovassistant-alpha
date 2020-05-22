@@ -1,0 +1,9 @@
+{
+  "pg": {
+    "host": "postgis", 
+    "port": 5432, 
+    "user": "docker", 
+    "password": "docker", 
+    "database": "gis"
+  }
+}

@@ -13,15 +13,10 @@ const redisImportController = require('./controllers/import-redis');
 const { promisify } = require('util');
 const redisClient = require('./redis-client.js');
 const redisClientPersist = require('./redis-client-persist');
-// const { ingestLatestGTFS } = require('./cron/index')
-const cron = require('node-cron')
 const config = require('./config/config')
-const { spawn } = require('child_process')
 
 // date-fns
 const parseISO = require('date-fns/parseISO')
-const format = require('date-fns/format')
-
 
 const redis = require('redis');
 const redisClient2 = redis.createClient({
@@ -44,21 +39,6 @@ app.use(bodyParser.json());
 var port = process.env.PORT || 8000;
 
 var router = express.Router();
-
-cron.schedule('0 0 3 * * *', () => {
-  const command = spawn('node', ['cron/index.js', 'force'])
-  let result = ''
-  command.stdout.on('data', function(data) {
-    result += data.toString();
-  });
-  command.on('close', function(code) {
-    console.log({ result: result })
-  });
-  console.log('GTFS Ingestion Scheduled!')
-}, {
-  scheduled: true, 
-  timezone: "Europe/Amsterdam"
-})
 
 router.use((req, res, next) => {
   // do logging
@@ -88,14 +68,6 @@ app.set('view engine', 'jade');
 
 app.listen(port, '127.0.0.1', () => {
   console.log('servert listening on: ', port)
-  importCron = spawn('node', ['cron/index.js', 'force'])
-  let result = ''
-  importCron.stdout.on('data', function(data) {
-    result += data.toString();
-  });
-  importCron.on('close', function(code) {
-    console.log({ result: result })
-  });
 });
 
 const zlibWrapper = {

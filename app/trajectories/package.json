@@ -1,0 +1,22 @@
+{
+  "name": "trajectories",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@sentry/node": "^5.15.5",
+    "decompress": "^4.2.1",
+    "lodash": "^4.17.15",
+    "moment": "^2.26.0",
+    "node-cron": "^2.0.3",
+    "pg": "^8.2.1",
+    "pg-copy-streams": "^5.0.0",
+    "request": "^2.88.2"
+  }
+}
