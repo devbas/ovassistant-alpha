@@ -341,7 +341,7 @@ const ingestLatestGTFS =  async ({ force }) => {
       }
     })
 
-    const client = await pgPool.connect()
+    client = await pgPool.connect()
 
     await client.query({ text: `UPDATE tmp_trajectories 
                                 SET start_planned = subquery.start_planned,
