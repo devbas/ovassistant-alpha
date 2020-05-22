@@ -77,6 +77,7 @@ const ingestLatestGTFS =  async ({ force }) => {
       try {
         console.log(new Date(), ' Inserting shapes')
         var client = await pgPool.connect()
+        console.log('drawn from the pool')
         let stream = client.query(copyFrom('COPY tmp_temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
         let fileStream = fs.createReadStream('./tmp/shapes.txt')
         fileStream.on('error', err => {
