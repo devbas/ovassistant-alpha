@@ -85,40 +85,40 @@ const updateData = async (identifier, data, pgPool) => {
     if(data.type === 'vehicle') { 
 
       const { rows: tripInfo } = await client.query('SELECT * FROM trips WHERE realtime_trip_id = $1', [identifier.replace('vehicle:','')])
-      // if(tripInfo[0]) {
-      //   data.destination = tripInfo[0].trip_headsign
-      //   data.shapeId = tripInfo[0].shape_id
+      if(tripInfo[0]) {
+        data.destination = tripInfo[0].trip_headsign
+        data.shapeId = tripInfo[0].shape_id
       
-      //   const formattedMeasurementTimestamp = tzFormat(sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds }), 'HH:mm:ss', { timeZone: 'Europe/Amsterdam' })
+        const formattedMeasurementTimestamp = tzFormat(sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds }), 'HH:mm:ss', { timeZone: 'Europe/Amsterdam' })
 
-      //   const { rows: vehicleLine } = await client.query(`SELECT route_short_name 
-      //                                         FROM routes 
-      //                                         WHERE route_id = $1`, [tripInfo[0].route_id])                                        
+        const { rows: vehicleLine } = await client.query(`SELECT route_short_name 
+                                              FROM routes 
+                                              WHERE route_id = $1`, [tripInfo[0].route_id])                                        
 
-      //   data.linenumber = vehicleLine[0].route_short_name                                        
+        data.linenumber = vehicleLine[0].route_short_name                                        
 
-      //   const { rows: nextStop } = await client.query(`SELECT * 
-      //                                     FROM stop_times ST
-      //                                     WHERE trip_id = $1
-      //                                     AND arrival_time > $2
-      //                                     ORDER BY arrival_time ASC
-      //                                     LIMIT 1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
-      //   data.nextStop = nextStop                                          
+        const { rows: nextStop } = await client.query(`SELECT * 
+                                          FROM stop_times ST
+                                          WHERE trip_id = $1
+                                          AND arrival_time > $2
+                                          ORDER BY arrival_time ASC
+                                          LIMIT 1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
+        data.nextStop = nextStop                                          
 
-      //   const { rows: prevStop } = await client.query(`SELECT * 
-      //                                     FROM stop_times  
-      //                                     WHERE trip_id = $1
-      //                                     AND departure_time < $2
-      //                                     ORDER BY departure_time DESC
-      //                                     LIMIT 1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
-      //   data.prevStop = prevStop                                           
+        const { rows: prevStop } = await client.query(`SELECT * 
+                                          FROM stop_times  
+                                          WHERE trip_id = $1
+                                          AND departure_time < $2
+                                          ORDER BY departure_time DESC
+                                          LIMIT 1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
+        data.prevStop = prevStop                                           
 
-      //   if(data.nextStop.length === 0 && data.prevStop) {
-      //     // console.log('time: ', formattedMeasurementTimestamp, '  and prev stop: ', data.prevStop[0].stop_sequence)
-      //   } else if(data.nextStop.length === 0 && data.prevStop.length === 0) {
-      //     console.log('no stops found')
-      //   }                                        
-      // }                               
+        if(data.nextStop.length === 0 && data.prevStop) {
+          // console.log('time: ', formattedMeasurementTimestamp, '  and prev stop: ', data.prevStop[0].stop_sequence)
+        } else if(data.nextStop.length === 0 && data.prevStop.length === 0) {
+          console.log('no stops found')
+        }                                        
+      }                               
       
       if (isPersist === 'yes') {
         redisClient.set(identifier, JSON.stringify(data))
@@ -143,36 +143,36 @@ const updateData = async (identifier, data, pgPool) => {
 
       const { rows: tripInfo } = await client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = $1 AND CD.date = $2', [identifier.replace('train:', ''), format(new Date(), 'yyyyMMdd')])
 
-      // if(tripInfo[0]) {
-      //   data.destination = tripInfo[0].trip_headsign
-      //   data.shapeId = tripInfo[0].shape_id
+      if(tripInfo[0]) {
+        data.destination = tripInfo[0].trip_headsign
+        data.shapeId = tripInfo[0].shape_id
       
-      //   const formattedMeasurementTimestamp = tzFormat(sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds }), 'HH:mm:ss', { timeZone: 'Europe/Amsterdam' })
+        const formattedMeasurementTimestamp = tzFormat(sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds }), 'HH:mm:ss', { timeZone: 'Europe/Amsterdam' })
 
-      //   const { rows: nextStop } = await client.query(`SELECT * 
-      //                                     FROM stop_times ST
-      //                                     WHERE trip_id = $1
-      //                                     AND arrival_time > $2
-      //                                     ORDER BY arrival_time ASC
-      //                                     LIMIT 1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
-      //   data.nextStop = nextStop                                       
+        const { rows: nextStop } = await client.query(`SELECT * 
+                                          FROM stop_times ST
+                                          WHERE trip_id = $1
+                                          AND arrival_time > $2
+                                          ORDER BY arrival_time ASC
+                                          LIMIT 1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
+        data.nextStop = nextStop                                       
 
-      //   const { rows: prevStop } = await client.query(`SELECT * 
-      //                                     FROM stop_times  
-      //                                     WHERE trip_id = $1
-      //                                     AND departure_time < $2
-      //                                     ORDER BY departure_time DESC
-      //                                     LIMIT 1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
-      //   data.prevStop = prevStop
+        const { rows: prevStop } = await client.query(`SELECT * 
+                                          FROM stop_times  
+                                          WHERE trip_id = $1
+                                          AND departure_time < $2
+                                          ORDER BY departure_time DESC
+                                          LIMIT 1`, [tripInfo[0].trip_id, formattedMeasurementTimestamp])
+        data.prevStop = prevStop
 
-      //   if(data.nextStop.length === 0 && data.prevStop) {
-      //     // console.log('time: ', formattedMeasurementTimestamp, '  and prev stop: ', data.prevStop[0].stop_sequence)
-      //   } else if(data.nextStop.length === 0 && data.prevStop.length === 0) {
-      //     console.log('no stops found')
-      //   }
-      // }  else {
-      //   // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
-      // }
+        if(data.nextStop.length === 0 && data.prevStop) {
+          // console.log('time: ', formattedMeasurementTimestamp, '  and prev stop: ', data.prevStop[0].stop_sequence)
+        } else if(data.nextStop.length === 0 && data.prevStop.length === 0) {
+          console.log('no stops found')
+        }
+      }  else {
+        // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
+      }
 
       if (isPersist === 'yes') {
         redisClient.set(identifier, JSON.stringify(data))
