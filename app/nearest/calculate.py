@@ -8,8 +8,12 @@ import calculate2
 import sentry_sdk
 import logging
 import time 
+import os
 import locationcache
 sentry_sdk.init("https://29436939613d4654864055395fa84a2d@sentry.io/1339196")
+
+from datadog import initialize, statsd
+initialize(statsd_host=os.environ.get('DATADOG_HOST'))
 
 HOST_NAME = '0.0.0.0'
 PORT_NUMBER = 9002

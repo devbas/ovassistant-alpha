@@ -70,6 +70,20 @@ services:
       - ./app/nearest/nearest.env
     networks: 
       - app
+  datadog:
+    links:
+      - redis 
+      - nearest
+      - scoring
+      - ingestion
+      - postgis
+    build: datadog
+    env_file: 
+      - ./datadog/datadog.env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
 volumes:
   redis-data:
   node_modules:
