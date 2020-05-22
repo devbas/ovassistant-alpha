@@ -84,6 +84,14 @@ instances:
     ##   - <TABLE_NAME2>
     ##
     #
+    relations:
+      - calendar_dates
+      - stop_times
+      - routes 
+      - trajectories
+      - temp_shapes
+      - stops
+      - trips
     # relations:
     #   - relation_name: <TABLE_NAME>
     #     schemas:
