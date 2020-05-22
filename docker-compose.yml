@@ -84,6 +84,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /proc/:/host/proc/:ro
       - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+    networks:
+      - app
 volumes:
   redis-data:
   node_modules:
