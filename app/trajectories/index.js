@@ -74,33 +74,37 @@ const ingestLatestGTFS =  async ({ force }) => {
     console.log('step 5')
 
     await new Promise(async (resolve, reject) => {
-      console.log(new Date(), ' Inserting shapes')
-      const client = await pgPool.connect()
-      let stream = client.query(copyFrom('COPY tmp_temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
-      let fileStream = fs.createReadStream('./tmp/shapes.txt')
-      fileStream.on('error', err => {
-        console.log({ err: err })
-        reject(err)
-      })
-      stream.on('error', err => {
-        console.log('shapes, joe error')
-        client.release()
-        reject(err)
-      })
-      stream.on('end', () => {
-        console.log('shapes, joe done')
-        Sentry.captureMessage('GTFS Ingestion -- INSERTED shapes')
-        client.release()
-        resolve()
-      })
-      fileStream.pipe(stream)
+      try {
+        console.log(new Date(), ' Inserting shapes')
+        var client = await pgPool.connect()
+        let stream = client.query(copyFrom('COPY tmp_temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./tmp/shapes.txt')
+        fileStream.on('error', err => {
+          console.log({ err: err })
+          reject(err)
+        })
+        stream.on('error', err => {
+          console.log('shapes, joe error')
+          client.release()
+          reject(err)
+        })
+        stream.on('end', () => {
+          console.log('shapes, joe done')
+          Sentry.captureMessage('GTFS Ingestion -- INSERTED shapes')
+          client.release()
+          resolve()
+        })
+        fileStream.pipe(stream)
+      } catch(e) {
+        console.log('not sure what is happning here: ', e)
+      }
     })
 
     console.log('step 6')
 
     await new Promise(async (resolve, reject) => {
       console.log(new Date(), ' Inserting stop_times')
-      const client = await pgPool.connect()
+      var client = await pgPool.connect()
       let stream = client.query(copyFrom('COPY tmp_stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
       let fileStream = fs.createReadStream('./tmp/stop_times.txt')
 
