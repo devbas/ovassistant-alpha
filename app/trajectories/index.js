@@ -79,6 +79,7 @@ const ingestLatestGTFS =  async ({ force }) => {
       let stream = client.query(copyFrom('COPY tmp_temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
       let fileStream = fs.createReadStream('./tmp/shapes.txt')
       fileStream.on('error', err => {
+        console.log({ err: err })
         reject(err)
       })
       stream.on('error', err => {
