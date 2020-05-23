@@ -57,7 +57,7 @@ const ingestLatestGTFS =  async ({ force }) => {
     console.log('step 0')
     await new Promise(async (resolve, reject) => {
       // console.log('step 1')
-      // await downloadGtfs()
+      await downloadGtfs()
       console.log('stap 4')
 
       decompress(zipFile, 'tmp').then(files => {
