@@ -27,7 +27,7 @@ const ingestLatestGTFS =  async ({ force }) => {
 
     const pgPool = new Pool(config.pg)
 
-    const client = await pgPool.connect()
+    let client = await pgPool.connect()
     console.log('connected to Postgis!')
     const trajectoryCount = await client.query('SELECT COUNT(*) FROM trajectories')
 
