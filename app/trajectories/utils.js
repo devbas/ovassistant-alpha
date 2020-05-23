@@ -31,7 +31,7 @@ var fixTime = function(time) {
     return '07'+time.slice(2)
   }
 
-  return timeå
+  return time
 }
 
 module.exports = { 
