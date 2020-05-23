@@ -80,7 +80,7 @@ const ingestLatestGTFS =  async ({ force }) => {
         }
 
         let stream = client.query(copyFrom('COPY tmp_temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./app/trajectories/tmp/shapes.txt')
+        let fileStream = fs.createReadStream('./tmp/shapes.txt')
         fileStream.on('error', err => {
           reject(err)
         })
@@ -114,7 +114,7 @@ const ingestLatestGTFS =  async ({ force }) => {
         }
 
         let stream = client.query(copyFrom('COPY tmp_stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./app/trajectories/tmp/stop_times.txt')
+        let fileStream = fs.createReadStream('./tmp/stop_times.txt')
         fileStream.on('error', err => {
           reject(err)
         })
@@ -148,7 +148,7 @@ const ingestLatestGTFS =  async ({ force }) => {
         }
 
         let stream = client.query(copyFrom('COPY tmp_trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./app/trajectories/tmp/trips.txt')
+        let fileStream = fs.createReadStream('./tmp/trips.txt')
         fileStream.on('error', err => {
           reject(err)
         })
@@ -182,7 +182,7 @@ const ingestLatestGTFS =  async ({ force }) => {
         }
 
         let stream = client.query(copyFrom('COPY tmp_routes (route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_color,route_text_color,route_url) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./app/trajectories/tmp/routes.txt')
+        let fileStream = fs.createReadStream('./tmp/routes.txt')
         fileStream.on('error', err => {
           reject(err)
         })
@@ -216,7 +216,7 @@ const ingestLatestGTFS =  async ({ force }) => {
         }
 
         let stream = client.query(copyFrom('COPY tmp_stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./app/trajectories/tmp/stops.txt')
+        let fileStream = fs.createReadStream('./tmp/stops.txt')
         fileStream.on('error', err => {
           reject(err)
         })
@@ -249,7 +249,7 @@ const ingestLatestGTFS =  async ({ force }) => {
         }
 
         let stream = client.query(copyFrom('COPY tmp_calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./app/trajectories/tmp/calendar_dates.txt')
+        let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
         fileStream.on('error', err => {
           reject(err)
         })
