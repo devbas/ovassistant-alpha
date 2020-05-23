@@ -219,7 +219,7 @@ const ingestLatestGTFS =  async ({ force }) => {
       const today = moment().format('YYYYMMDD')
       const tomorrow = moment().add(1, 'day').format('YYYYMMDD')
 
-      const client = await pgPool.connect()
+      let client = await pgPool.connect()
       const trips = await client.query({ text: 'SELECT * FROM tmp_trips T JOIN tmp_calendar_dates CD ON T.service_id = CD.service_id WHERE (CD.date = $1 OR CD.date = $2) AND T.shape_id IS NOT NULL', values: [today, tomorrow] })
       client.release()
 
