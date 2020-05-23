@@ -17,9 +17,46 @@ const test = async () => {
   client.release()
 
   try {
+    
+    const zipFile = 'gtfs-openov-nl.zip'
+    const extractEntryTo = ''
+    const outputDir = './tmp/'
+
+    async function downloadGtfs() { 
+      console.log('step 2')
+      return new Promise((resolve, reject) => {
+        request('http://gtfs.openov.nl/gtfs-rt/gtfs-openov-nl.zip')
+          .on('error', function(err) {
+            reject(err)
+          })
+          .on('end', () => {
+            console.log('Finished downloading GTFS NL')
+            resolve()
+          })
+          .pipe(
+            fs.createWriteStream(zipFile)
+          )
+      })
+    }
+
+    console.log('step 0')
+    await new Promise(async (resolve, reject) => {
+      // console.log('step 1')
+      await downloadGtfs()
+      console.log('stap 4')
+
+      decompress(zipFile, 'tmp').then(files => {
+        fs.unlink(zipFile)
+        console.log('unlinked')
+        resolve()
+      }).catch(err => {
+        Sentry.captureException(err)
+        reject(err)
+      })
+    })
 
     await new Promise(async (resolve, reject) => {
-      pgPool.connect((err, client) => {
+      pgPool.connect((err, client) => { 
 
         if(err) {
           reject(err)
