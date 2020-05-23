@@ -11,6 +11,8 @@ const Sentry = require('@sentry/node')
 const { Queue } = require('./queue.js')
 const cron = require('node-cron')
 
+Sentry.init({ dsn: process.env.SENTRY_DSN });
+
 const config = require('./config/config')
 
 const ingestLatestGTFS =  async ({ force }) => {
@@ -18,15 +20,15 @@ const ingestLatestGTFS =  async ({ force }) => {
   let startTime = moment()
   
   try {
-    Sentry.captureMessage('GTFS Ingestion started on: ' + new Date())
+    // Sentry.captureMessage('GTFS Ingestion started on: ' + new Date())
     const zipFile = 'gtfs-openov-nl.zip'
     const extractEntryTo = ''
     const outputDir = './tmp/'
 
     const pgPool = new Pool(config.pg)
-    console.log('connected to Postgis!')
 
     const client = await pgPool.connect()
+    console.log('connected to Postgis!')
     const trajectoryCount = await client.query('SELECT COUNT(*) FROM trajectories')
 
     if(trajectoryCount.rows[0].count > 0 && !force) {
@@ -43,8 +45,6 @@ const ingestLatestGTFS =  async ({ force }) => {
             reject(err)
           })
           .on('end', () => {
-            console.log('step 3')
-            Sentry.captureMessage('GTFS Ingestion -- TRUNCATED temp_shapes')
             console.log('Finished downloading GTFS NL')
             resolve()
           })
@@ -52,13 +52,12 @@ const ingestLatestGTFS =  async ({ force }) => {
             fs.createWriteStream(zipFile)
           )
       })
-      
     }
 
     console.log('step 0')
     await new Promise(async (resolve, reject) => {
-      console.log('step 1')
-      await downloadGtfs()
+      // console.log('step 1')
+      // await downloadGtfs()
       console.log('stap 4')
 
       decompress(zipFile, 'tmp').then(files => {
@@ -73,152 +72,204 @@ const ingestLatestGTFS =  async ({ force }) => {
 
     console.log('step 5')
 
-    await new Promise(async (resolve, reject) => {
-      try {
-        console.log(new Date(), ' Inserting shapes')
-        var client = await pgPool.connect()
-        console.log('drawn from the pool')
+    await new Promise((resolve, reject) => {
+      pgPool.connect((err, client) => {
+
+        if(err) {
+          reject(err)
+        }
+
         let stream = client.query(copyFrom('COPY tmp_temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/shapes.txt')
+        let fileStream = fs.createReadStream('./app/trajectories/tmp/shapes.txt')
         fileStream.on('error', err => {
-          console.log({ err: err })
           reject(err)
         })
+        fileStream.on('drain', err => {
+          reject(err)
+        })
+        fileStream.on('finish', msg => {
+          resolve() 
+        })
+        fileStream.on('close', () => {
+          resolve()
+        })
         stream.on('error', err => {
-          console.log('shapes, joe error')
-          client.release()
           reject(err)
         })
         stream.on('end', () => {
-          console.log('shapes, joe done')
-          Sentry.captureMessage('GTFS Ingestion -- INSERTED shapes')
-          client.release()
           resolve()
         })
         fileStream.pipe(stream)
-      } catch(e) {
-        console.log('not sure what is happning here: ', e)
-      }
+      })
     })
 
     console.log('step 6')
 
-    await new Promise(async (resolve, reject) => {
+    await new Promise((resolve, reject) => {
       console.log(new Date(), ' Inserting stop_times')
-      var client = await pgPool.connect()
-      let stream = client.query(copyFrom('COPY tmp_stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
-      let fileStream = fs.createReadStream('./tmp/stop_times.txt')
+      pgPool.connect((err, client) => {
 
-      fileStream.on('error', err => {
-        console.log('stoptimes, joe error file', err)
-        reject(err)
-        Sentry.captureException(err)
+        if(err) {
+          reject(err)
+        }
+
+        let stream = client.query(copyFrom('COPY tmp_stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./app/trajectories/tmp/stop_times.txt')
+        fileStream.on('error', err => {
+          reject(err)
+        })
+        fileStream.on('drain', err => {
+          reject(err)
+        })
+        fileStream.on('finish', msg => {
+          resolve() 
+        })
+        fileStream.on('close', () => {
+          resolve()
+        })
+        stream.on('error', err => {
+          reject(err)
+        })
+        stream.on('end', () => {
+          resolve()
+        })
+        fileStream.pipe(stream)
       })
-      stream.on('error', err => {
-        console.log('stoptimes, joe error stream', err)
-        reject(err)
-        Sentry.captureException(err)
-        client.release()
-      })
-      stream.on('end', () => {
-        console.log('stoptimes, joe doen')
-        Sentry.captureMessage('GTFS Ingestion -- INSERTED stop_times')
-        client.release()
-        resolve()
-      })
-      fileStream.pipe(stream)
     })
 
     console.log('step 7')
 
-    await new Promise(async (resolve, reject) => {
+    await new Promise((resolve, reject) => {
       console.log(new Date(), ' Inserting trips')
-      const client = await pgPool.connect()
-      let stream = client.query(copyFrom('COPY tmp_trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
-      let fileStream = fs.createReadStream('./tmp/trips.txt')
+      pgPool.connect((err, client) => {
 
-      fileStream.on('error', err => {
-        reject(err)
+        if(err) {
+          reject(err)
+        }
+
+        let stream = client.query(copyFrom('COPY tmp_trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./app/trajectories/tmp/trips.txt')
+        fileStream.on('error', err => {
+          reject(err)
+        })
+        fileStream.on('drain', err => {
+          reject(err)
+        })
+        fileStream.on('finish', msg => {
+          resolve() 
+        })
+        fileStream.on('close', () => {
+          resolve()
+        })
+        stream.on('error', err => {
+          reject(err)
+        })
+        stream.on('end', () => {
+          resolve()
+        })
+        fileStream.pipe(stream)
       })
-      stream.on('error', err => {
-        client.release()
-        reject(err)
-      })
-      stream.on('end', () => {
-        Sentry.captureMessage('GTFS Ingestion -- INSERTED trips')
-        client.release()
-        resolve()
-      })
-      fileStream.pipe(stream)
     })
 
     console.log('step 8')
 
     await new Promise(async (resolve, reject) => {
       console.log(new Date(), ' Inserting routes')
-      const client = await pgPool.connect()
-      let stream = client.query(copyFrom('COPY tmp_routes (route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_color,route_text_color,route_url) FROM STDIN CSV HEADER'))
-      let fileStream = fs.createReadStream('./tmp/routes.txt')
+      pgPool.connect((err, client) => {
 
-      fileStream.on('error', err => {
-        reject(err)
+        if(err) {
+          reject(err)
+        }
+
+        let stream = client.query(copyFrom('COPY tmp_routes (route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_color,route_text_color,route_url) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./app/trajectories/tmp/routes.txt')
+        fileStream.on('error', err => {
+          reject(err)
+        })
+        fileStream.on('drain', err => {
+          reject(err)
+        })
+        fileStream.on('finish', msg => {
+          resolve() 
+        })
+        fileStream.on('close', () => {
+          resolve()
+        })
+        stream.on('error', err => {
+          reject(err)
+        })
+        stream.on('end', () => {
+          resolve()
+        })
+        fileStream.pipe(stream)
       })
-      stream.on('error', err => {
-        client.release()
-        reject(err)
-      })
-      stream.on('end', () => {
-        Sentry.captureMessage('GTFS Ingestion -- INSERTED routes')
-        client.release()
-        resolve()
-      })
-      fileStream.pipe(stream) 
     })
 
     console.log('step 9')
 
     await new Promise(async (resolve, reject) => {
       console.log(new Date(), ' Inserting stops')
-      const client = await pgPool.connect()
-      let stream = client.query(copyFrom('COPY tmp_stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
-      let fileStream = fs.createReadStream('./tmp/stops.txt')
+      pgPool.connect((err, client) => {
 
-      fileStream.on('error', err => {
-        reject(err)
+        if(err) {
+          reject(err)
+        }
+
+        let stream = client.query(copyFrom('COPY tmp_stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./app/trajectories/tmp/stops.txt')
+        fileStream.on('error', err => {
+          reject(err)
+        })
+        fileStream.on('drain', err => {
+          reject(err)
+        })
+        fileStream.on('finish', msg => {
+          resolve() 
+        })
+        fileStream.on('close', () => {
+          resolve()
+        })
+        stream.on('error', err => {
+          reject(err)
+        })
+        stream.on('end', () => {
+          resolve()
+        })
+        fileStream.pipe(stream)
       })
-      stream.on('error', err => {
-        client.release()
-        reject(err)
-      })
-      stream.on('end', () => {
-        Sentry.captureMessage('GTFS Ingestion -- INSERTED stops')
-        client.release()
-        resolve()
-      })
-      fileStream.pipe(stream)
     })
 
     console.log('step 10')
 
     await new Promise(async (resolve, reject) => {
-      console.log(new Date(), ' Inserting calendar_dates')
-      const client = await pgPool.connect()
-      let stream = client.query(copyFrom('COPY tmp_calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
-      let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
+      pgPool.connect((err, client) => {
 
-      fileStream.on('error', err => {
-        reject(err)
+        if(err) {
+          reject(err)
+        }
+
+        let stream = client.query(copyFrom('COPY tmp_calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./app/trajectories/tmp/calendar_dates.txt')
+        fileStream.on('error', err => {
+          reject(err)
+        })
+        fileStream.on('drain', err => {
+          reject(err)
+        })
+        fileStream.on('finish', msg => {
+          resolve() 
+        })
+        fileStream.on('close', () => {
+          resolve()
+        })
+        stream.on('error', err => {
+          reject(err)
+        })
+        stream.on('end', () => {
+          resolve()
+        })
+        fileStream.pipe(stream) 
       })
-      stream.on('error', err => {
-        client.release()
-        reject(err)
-      })
-      stream.on('end', () => {
-        Sentry.captureMessage('GTFS Ingestion -- INSERTED calendar_dates')
-        client.release()
-        resolve()
-      })
-      fileStream.pipe(stream) 
     })
 
     // console.log('step 11')
