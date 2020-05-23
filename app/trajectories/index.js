@@ -114,10 +114,33 @@ const ingestLatestGTFS =  async ({ force }) => {
         fileStream.on('error', reject)
         fileStream.on('drain', reject)
         fileStream.on('finish', resolve)
-        fileStream.on('close', resolve)
+        fileStream.on('close', async () => {
+          const result = await client.query('SELECT COUNT(trip_id) FROM tmp_stop_times')
+          console.log('closed!', result.rows[0].count)
+          resolve() 
+        })
         stream.on('error', reject)
         stream.on('end', resolve)
         fileStream.pipe(stream)
+      })
+    })
+
+    await new Promise(async (resolve, reject) => {
+      pgPool.connect((err, client) => {
+
+        if(err) {
+          reject(err)
+        }
+
+        let stream = client.query(copyFrom('COPY tmp_calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
+        fileStream.on('error', reject)
+        fileStream.on('drain', reject)
+        fileStream.on('finish', resolve)
+        fileStream.on('close', resolve)
+        stream.on('error', reject)
+        stream.on('end', resolve)
+        fileStream.pipe(stream) 
       })
     })
 
@@ -188,25 +211,6 @@ const ingestLatestGTFS =  async ({ force }) => {
     })
 
     console.log('step 10')
-
-    await new Promise(async (resolve, reject) => {
-      pgPool.connect((err, client) => {
-
-        if(err) {
-          reject(err)
-        }
-
-        let stream = client.query(copyFrom('COPY tmp_calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
-        fileStream.on('error', reject)
-        fileStream.on('drain', reject)
-        fileStream.on('finish', resolve)
-        fileStream.on('close', resolve)
-        stream.on('error', reject)
-        stream.on('end', resolve)
-        fileStream.pipe(stream) 
-      })
-    })
 
     // console.log('step 11')
     console.log('need to access the function')
