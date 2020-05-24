@@ -70,6 +70,15 @@ ALTER TABLE "public"."trips" OWNER TO "docker";
 CREATE INDEX idx_trips_trip_id
 ON trips(trip_id);
 
+CREATE INDEX idx_trips_realtime_trip_id
+ON trips(realtime_trip_id);
+
+CREATE INDEX idx_trips_trip_short_name
+ON trips(trip_short_name);
+
+CREATE INDEX idx_trips_service_id
+ON trips(service_id);
+
 CREATE TABLE "public"."stops" (
 	"stop_id" varchar(255) COLLATE "default",
 	"stop_code" varchar(255) COLLATE "default",
@@ -182,6 +191,15 @@ ALTER TABLE "public"."tmp_trips" OWNER TO "docker";
 
 CREATE INDEX idx_tmp_trips_trip_id
 ON tmp_trips(trip_id);
+
+CREATE INDEX idx_tmp_trips_realtime_trip_id
+ON tmp_trips(realtime_trip_id);
+
+CREATE INDEX idx_tmp_trips_trip_short_name
+ON tmp_trips(trip_short_name);
+
+CREATE INDEX idx_tmp_trips_service_id
+ON tmp_trips(service_id);
 
 CREATE TABLE "public"."tmp_stops" (
 	"stop_id" varchar(255) COLLATE "default",
