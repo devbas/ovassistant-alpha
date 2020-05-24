@@ -122,7 +122,7 @@ WITH (OIDS=FALSE);
 ALTER TABLE "public"."routes" OWNER TO "docker";
 
 CREATE INDEX idx_routes_route_id
-ON routes(route_id)
+ON routes(route_id);
 
 -- ----------------------------
 --  Primary key structure for table trajectories
@@ -137,7 +137,9 @@ CREATE TABLE "public"."tmp_temp_shapes" (
   "shape_pt_lon" float NOT NULL,
   "shape_dist_traveled" int4 NULL, 
   "geom" geography(POINT,4326)
-);
+)
+WITH (OIDS=FALSE);
+ALTER TABLE "public"."tmp_temp_shapes" OWNER TO "docker";
 
 CREATE INDEX idx_tmp_temp_shapes_shape_id
 ON tmp_temp_shapes(shape_id);
@@ -247,4 +249,4 @@ WITH (OIDS=FALSE);
 ALTER TABLE "public"."tmp_routes" OWNER TO "docker";
 
 CREATE INDEX idx_tmp_routes_route_id
-ON tmp_routes(route_id)
+ON tmp_routes(route_id);

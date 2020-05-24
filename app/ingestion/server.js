@@ -150,7 +150,6 @@ sock.on('message', async (topic, message) => {
 
         if(id) {
           id = 'train:' + id; 
-          // redisImportController.locationSanitaryCheck(id, redisWrapper)
           result.type = 'train'
           result.updated = Math.round((new Date()).getTime() / 1000)
           result.destination = _.get(result, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
@@ -192,7 +191,6 @@ sock1.on('message', async (topic, message) => {
               // console.log('vehicle: ', positionMessage)
               if (positionType === 'END') {
                 redisClient.del(id)
-                redisImportController.locationSanitaryCheck(id)
                 // redisClient.zrem('items', id)
               } else {
                 // console.log('positionMessage: ', positionMessage)

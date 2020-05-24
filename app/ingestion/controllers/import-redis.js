@@ -118,7 +118,16 @@ const updateData = async (identifier, data, pgPool) => {
           // console.log('time: ', formattedMeasurementTimestamp, '  and prev stop: ', data.prevStop[0].stop_sequence)
         } else if(data.nextStop.length === 0 && data.prevStop.length === 0) {
           console.log('no stops found')
-        }                                        
+        }
+        
+        if(data.delay_seconds && data.has_delay) {
+          const scheduledLocation = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT($1 $2)', ST_LocateAlong(geom, $3)) AS delay_distance_noise
+                                                        FROM trajectories
+                                                        WHERE trip_id = $4
+                                                        LIMIT 1`, [data.longitude, data.latitude, data.datetimeUnix, tripInfo[0].trip_id])
+    
+          console.log({ scheduledLocation: scheduledLocation })   
+        }
       }                               
       
       if (isPersist === 'yes') {
@@ -171,6 +180,17 @@ const updateData = async (identifier, data, pgPool) => {
         } else if(data.nextStop.length === 0 && data.prevStop.length === 0) {
           console.log('no stops found')
         }
+
+        if(data.delay_seconds && data.has_delay) {
+
+          const scheduledLocation = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT($1 $2)', ST_LocateAlong(geom, $3)) AS delay_distance_noise
+                                                        FROM trajectories
+                                                        WHERE trip_id = $4
+                                                        LIMIT 1`, [data.longitude, data.latitude, data.datetimeUnix, tripInfo[0].trip_id])
+    
+          console.log({ scheduledLocation: scheduledLocation })                                                   
+          
+        }
       }  else {
         // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
       }
@@ -190,15 +210,4 @@ const updateData = async (identifier, data, pgPool) => {
   
 }
 
-const locationSanitaryCheck = async (id) => {
-  // Get all Redis geo items 
-  // let cursor = 0 
-  // vehicleLocations = await redisClient.zscan('items', cursor, 'match', `${id}:*`)
-  /*
-  * Foreach item: 
-  *   check if item exists in 
-  * 
-  */
-}
-
-module.exports = { importData: importData, updateData: updateData, locationSanitaryCheck: locationSanitaryCheck }
+module.exports = { importData: importData, updateData: updateData }
