@@ -89,7 +89,7 @@ const updateData = async (identifier, data, pgPool) => {
         data.destination = tripInfo[0].trip_headsign
         data.shapeId = tripInfo[0].shape_id
       
-        const formattedMeasurementTimestamp = tzFormat(sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds }), 'HH:mm:ss', { timeZone: 'Europe/Amsterdam' })
+        const formattedMeasurementTimestamp = tzFormat(sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds ? data.delay_seconds : 0 }), 'HH:mm:ss', { timeZone: 'Europe/Amsterdam' })
 
         const { rows: vehicleLine } = await client.query(`SELECT route_short_name 
                                               FROM routes 
@@ -147,7 +147,7 @@ const updateData = async (identifier, data, pgPool) => {
         data.destination = tripInfo[0].trip_headsign
         data.shapeId = tripInfo[0].shape_id
       
-        const formattedMeasurementTimestamp = tzFormat(sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds }), 'HH:mm:ss', { timeZone: 'Europe/Amsterdam' })
+        const formattedMeasurementTimestamp = tzFormat(sub(parseISO(data.measurementTimestamp), { seconds: data.delay_seconds ? data.delay_seconds : 0 }), 'HH:mm:ss', { timeZone: 'Europe/Amsterdam' })
 
         const { rows: nextStop } = await client.query(`SELECT * 
                                           FROM stop_times ST
