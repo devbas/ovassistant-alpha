@@ -121,6 +121,9 @@ CREATE TABLE "public"."routes" (
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."routes" OWNER TO "docker";
 
+CREATE INDEX idx_routes_route_id
+ON routes(route_id)
+
 -- ----------------------------
 --  Primary key structure for table trajectories
 -- ----------------------------
@@ -242,3 +245,6 @@ CREATE TABLE "public"."tmp_routes" (
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."tmp_routes" OWNER TO "docker";
+
+CREATE INDEX idx_tmp_routes_route_id
+ON tmp_routes(route_id)
