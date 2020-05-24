@@ -84,7 +84,7 @@ const updateData = async (identifier, data, pgPool) => {
 
     if(data.type === 'vehicle') { 
 
-      const { rows: tripInfo } = await client.query('SELECT * FROM trips WHERE realtime_trip_id = $1', [identifier.replace('vehicle:','')])
+      const { rows: tripInfo } = await client.query('SELECT * FROM trips WHERE realtime_trip_id = $1 LIMIT 1', [identifier.replace('vehicle:','')])
       if(tripInfo[0]) {
         data.destination = tripInfo[0].trip_headsign
         data.shapeId = tripInfo[0].shape_id
@@ -93,7 +93,8 @@ const updateData = async (identifier, data, pgPool) => {
 
         const { rows: vehicleLine } = await client.query(`SELECT route_short_name 
                                               FROM routes 
-                                              WHERE route_id = $1`, [tripInfo[0].route_id])                                        
+                                              WHERE route_id = $1
+                                              LIMIT 1`, [tripInfo[0].route_id])                                        
 
         data.linenumber = vehicleLine[0].route_short_name                                        
 
@@ -141,7 +142,7 @@ const updateData = async (identifier, data, pgPool) => {
 
       const destination = _.get(data, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
 
-      const { rows: tripInfo } = await client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = $1 AND CD.date = $2', [identifier.replace('train:', ''), format(new Date(), 'yyyyMMdd')])
+      const { rows: tripInfo } = await client.query('SELECT * FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE trip_short_name = $1 AND CD.date = $2 LIMIT 1', [identifier.replace('train:', ''), format(new Date(), 'yyyyMMdd')])
 
       if(tripInfo[0]) {
         data.destination = tripInfo[0].trip_headsign
