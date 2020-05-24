@@ -403,8 +403,8 @@ const ingestLatestGTFS =  async ({ force }) => {
 
     await client.query('ALTER TABLE tmp_tmp_stop_times RENAME TO tmp_stop_times')
 
-    await client.query('CREATE INDEX idx_stoptimes_stop_id ON tmp_stop_times(stop_id)')
-    await client.query('CREATE INDEX idx_stoptimes_trip_id ON tmp_stop_times(trip_id)')
+    await client.query(`CREATE INDEX ${utils.makeId()}_idx_stoptimes_stop_id ON tmp_stop_times(stop_id)`)
+    await client.query(`CREATE INDEX ${utils.makeId()}_idx_stoptimes_trip_id ON tmp_stop_times(trip_id)`)
     
     // Have the actual switch in a SQL Transaction
     await client.query('BEGIN')
