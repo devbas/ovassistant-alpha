@@ -5,6 +5,7 @@ const { Pool } = require('pg')
 var copyFrom = require('pg-copy-streams').from
 const { orderBy, filter } = require('lodash')
 const moment = require('moment')
+const momenttz = require('moment-timezone')
 const utils = require('./utils.js')
 const { performance } = require('perf_hooks')
 const Sentry = require('@sentry/node')
@@ -318,7 +319,7 @@ const ingestLatestGTFS =  async ({ force }) => {
           } else {
             trajectories.forEach(point => {
               counter = counter + 1 
-              query = query + `${point.shape_pt_lon} ${point.shape_pt_lat} ${moment(trip.date + ' ' + point.arrival_time, "YYYYMMDD HH:mm:ss").unix()}`
+              query = query + `${point.shape_pt_lon} ${point.shape_pt_lat} ${momenttz.tz(trip.date + ' ' + point.arrival_time, "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()}`
               textLinestring = textLinestring + `${point.shape_pt_lon} ${point.shape_pt_lat}`
 
               counter !== trajectories.length ? query = query + ', ' : query = query + ")'))"
