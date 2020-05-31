@@ -77,10 +77,11 @@ const importData = async (data, pgPool) => {
 
 const updateData = async (identifier, data, pgPool) => {
 
+  const client = await pgPool.connect()
+
   try {
     
     var isPersist = process.env.INGESTION_PERSIST
-    const client = await pgPool.connect()
 
     if(data.type === 'vehicle') { 
 
@@ -207,6 +208,7 @@ const updateData = async (identifier, data, pgPool) => {
     
     client.release()
   } catch(err) {  
+    client.release()
     console.log({ err: err, data: data })
     Sentry.captureException(err)
   }
