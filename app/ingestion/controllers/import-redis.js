@@ -160,11 +160,13 @@ const updateData = async (identifier, data, pgPool) => {
           WHERE trip_id = $2
           LIMIT 1`, [data.datetimeUnix, tripInfo[0].trip_id]) 
 
-          console.log({ 
-            baseline: [data.longitude, data.latitude], 
-            distance: scheduledLocationAfterDistance[0].delay_distance_noise,
-            tripId: tripInfo[0].trip_id
-          })                                    
+          if(scheduledLocationAfterDistance[0].delay_distance_noise > 1000) {
+            console.log({ 
+              baseline: [data.longitude, data.latitude], 
+              distance: scheduledLocationAfterDistance[0].delay_distance_noise,
+              tripId: tripInfo[0].trip_id
+            })   
+          }                                 
         }
       }                               
       
