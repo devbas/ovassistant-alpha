@@ -155,6 +155,13 @@ const updateData = async (identifier, data, pgPool) => {
 
           query = query + updatedTrajectory + `, delay_seconds = $1 WHERE trip_id = $2`
 
+          const { rows: scheduledLocation } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
+                                              FROM trajectories
+                                              WHERE trip_id = $2
+                                              LIMIT 1`, [data.datetimeUnix, tripInfo[0].trip_id])
+          
+          console.log({ distanceNoise: scheduledLocation[0].delay_distance_noise })
+
           client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
         }
       }                               
@@ -219,6 +226,13 @@ const updateData = async (identifier, data, pgPool) => {
           const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds ? parseInt(trajectory[0].delay_seconds) : 0)
 
           query = query + updatedTrajectory + `, delay_seconds = $1 WHERE trip_id = $2`
+
+          const { rows: scheduledLocation } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
+          FROM trajectories
+          WHERE trip_id = $2
+          LIMIT 1`, [data.datetimeUnix, tripInfo[0].trip_id])
+
+          console.log({ distanceNoise: scheduledLocation[0].delay_distance_noise })
 
           client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
         }
