@@ -126,12 +126,16 @@ const updateData = async (identifier, data, pgPool) => {
           const datetimeUnix = parseInt(data.datetimeUnix)
           const query = `SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, ${datetimeUnix - delay})) AS delay_distance_noise FROM trajectories WHERE trip_id = ${tripInfo[0].trip_id} LIMIT 1`
 
-          const { rows: scheduledLocation } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
-                                                        FROM trajectories
-                                                        WHERE trip_id = $2
-                                                        LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
+          // const { rows: scheduledLocation } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
+          //                                               FROM trajectories
+          //                                               WHERE trip_id = $2
+          //                                               LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
     
-          console.log({ query: query, identifier: identifier.replace('vehicle:',''), scheduledLocation: scheduledLocation })   
+          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) FROM trjaectories WHERE trip_id = $2`, [tripInfo[0].trip_id])
+          const trajectoryPoints = trajectory.substring(trajectory.lastIndexOf('(') + 1, trajectory.lastIndexOf(')')).split(',')
+
+          console.log({ trajectoryPoints: trajectoryPoints })
+          // console.log({ query: query, identifier: identifier.replace('vehicle:',''), scheduledLocation: scheduledLocation })   
         }
       }                               
       
