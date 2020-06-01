@@ -71,13 +71,6 @@ services:
     networks: 
       - app
   datadog:
-    links:
-      - redis 
-      - nearest
-      - scoring
-      - ingestion
-      - postgis
-      - trajectories
     build: datadog
     env_file: 
       - ./datadog/datadog.env
