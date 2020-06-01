@@ -75,6 +75,25 @@ const importData = async (data, pgPool) => {
   }
 }
 
+const updateTrajectory = (points, delay) => {
+  let linestring = `ST_GeomFromEWKT('SRID=4326;LINESTRINGM(`
+  let counter = 0 
+
+  if(points.length === 0) {
+    linestring = linestring + `)')`
+  } else {
+    points.forEach(point => {
+      const pointData = point.split(' ')
+      counter = counter + 1 
+      linestring = linestring + `${pointData[0]} ${pointData[1]} ${pointData[2] - delay}`
+
+      counter !== points.length ? linestring = linestring + ', ' : linestring = linestring + ")'))"
+    })
+  }
+
+  console.log({ linestring: linestring })
+}
+
 const updateData = async (identifier, data, pgPool) => {
 
   const client = await pgPool.connect()
@@ -122,20 +141,16 @@ const updateData = async (identifier, data, pgPool) => {
         }
         
         if(data.delay_seconds && data.has_delay && data.longitude && data.latitude) {
-          const delay = parseInt(data.delay_seconds)
-          const datetimeUnix = parseInt(data.datetimeUnix)
-          const query = `SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, ${datetimeUnix - delay})) AS delay_distance_noise FROM trajectories WHERE trip_id = ${tripInfo[0].trip_id} LIMIT 1`
-
-          // const { rows: scheduledLocation } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
-          //                                               FROM trajectories
-          //                                               WHERE trip_id = $2
-          //                                               LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
-    
           const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
-          console.log({ trajectory: trajectory})
           const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
 
-          console.log({ trajectoryPoints: trajectoryPoints })
+          let query = `UPDATE trajectories SET geom = `
+
+          const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds)
+
+          query = query + updatedTrajectory + ` WHERE trip_id = $1`
+
+          console.log({ trajectoryPoints: trajectoryPoints, query: query })
           // console.log({ query: query, identifier: identifier.replace('vehicle:',''), scheduledLocation: scheduledLocation })   
         }
       }                               
@@ -192,19 +207,16 @@ const updateData = async (identifier, data, pgPool) => {
         }
 
         if(data.delay_seconds && data.has_delay && data.longitude && data.latitude) {
-          const delay = parseInt(data.delay_seconds)
-          const datetimeUnix = parseInt(data.datetimeUnix)
-          const query = `SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, ${datetimeUnix - delay})) AS delay_distance_noise FROM trajectories WHERE trip_id = ${tripInfo[0].trip_id} LIMIT 1`
-
-          // const { rows: scheduledLocation } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
-          //                                               FROM trajectories
-          //                                               WHERE trip_id = $2
-          //                                               LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
-          
           const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
           const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
 
-          console.log({ trajectoryPoints: trajectoryPoints })
+          let query = `UPDATE trajectories SET geom = `
+
+          const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds)
+
+          query = query + updatedTrajectory + ` WHERE trip_id = $1`
+
+          console.log({ trajectoryPoints: trajectoryPoints, query: query })
           // console.log({ query: query, identifier: identifier.replace('train:', ''), scheduledLocation: scheduledLocation })   
         }
       }  else {
