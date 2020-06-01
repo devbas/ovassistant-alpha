@@ -162,7 +162,7 @@ const updateData = async (identifier, data, pgPool) => {
           
           console.log({ distanceNoise: scheduledLocation[0].delay_distance_noise })
 
-          client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
+          await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
         }
       }                               
       
@@ -234,7 +234,7 @@ const updateData = async (identifier, data, pgPool) => {
 
           console.log({ distanceNoise: scheduledLocation[0].delay_distance_noise })
 
-          client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
+          await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
         }
       }  else {
         // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
