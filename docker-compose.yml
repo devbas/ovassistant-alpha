@@ -86,6 +86,7 @@ services:
       - /proc/:/host/proc/:ro
       - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
       - /sys/kernel/debug:/sys/kernel/debug
+      - /opt/datadog-agent/run:/opt/datadog-agent/run:rw
     networks:
       - app
     security_opt:
