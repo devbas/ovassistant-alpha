@@ -86,7 +86,7 @@ const updateTrajectory = (points, delay, oldDelay) => {
       const pointData = point.split(' ')
       counter = counter + 1 
       if(counter === 1) {
-        console.log({ oldDelay: oldDelay: delay: delay, oldTimestamp: pointData[2], newTimestamp: (pointData[2] + oldDelay) - delay})
+        console.log({ oldDelay: oldDelay, delay: delay, oldTimestamp: pointData[2], newTimestamp: (pointData[2] + oldDelay) - delay})
       }
       linestring = linestring + `${pointData[0]} ${pointData[1]} ${(pointData[2] + oldDelay) - delay}`
 
