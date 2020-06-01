@@ -143,11 +143,6 @@ sock.on('message', async (topic, message) => {
           result.delay_seconds = utils.durationToSeconds(_.get(result, 'Trein.0.ExacteVertrekVertraging.0'))
         }
 
-        if (result.delay_seconds < 60) {
-          result.has_delay = false
-          // delete result.delay_seconds;
-        } 
-
         if(id) {
           id = 'train:' + id; 
           result.type = 'train'
@@ -220,13 +215,11 @@ sock1.on('message', async (topic, message) => {
                 }
 
                 if (positionMessage.punctuality) {
-                  data.delay_seconds = positionMessage.punctuality[0]
+                  data.delay_seconds = parseInt(positionMessage.punctuality[0])
           
-                  if (positionMessage.punctuality[0] > 60) {
+                  if (data.delay_seconds !== 0) {
                     data.has_delay = true
-                  } else {
-                    data.has_delay = false
-                  }                  
+                  } 
                 }
 
                 if(data.latitude && data.longitude) {
