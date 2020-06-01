@@ -109,10 +109,6 @@ const updateData = async (identifier, data, pgPool) => {
 
       const { rows: tripInfo } = await client.query('SELECT T.* FROM trips T JOIN calendar_dates CD ON CD.service_id = T.service_id WHERE T.realtime_trip_id = $1 AND CD.date = $2', [identifier.replace('vehicle:',''), data.operatingDay.split('-').join('')]);
       
-      if(tripInfo.length > 1) {
-        console.log({ tripInfo: tripInfo })
-      }
-      
       if(tripInfo[0]) {
         data.destination = tripInfo[0].trip_headsign
         data.shapeId = tripInfo[0].shape_id
