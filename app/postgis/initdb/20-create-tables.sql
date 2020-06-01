@@ -28,6 +28,13 @@ CREATE TABLE "public"."trajectories" (
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."trajectories" OWNER TO "docker";
 
+CREATE INDEX idx_trajectories_trip_id
+ON trajectories(trip_id);
+
+CREATE INDEX idx_trajectories_geom
+  ON trajectories
+  USING GIST (geom);
+
 CREATE TABLE "public"."stop_times" (
 	"trip_id" int8 NOT NULL,
 	"stop_sequence" int4,
@@ -107,6 +114,9 @@ CREATE TABLE "public"."calendar_dates" (
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."calendar_dates" OWNER TO "docker";
 
+CREATE INDEX idx_calendar_dates_service_id 
+ON calendar_dates(service_id)
+
 CREATE TABLE "public"."routes" (
 	"route_id" int4 NOT NULL, 
 	"agency_id" varchar(255) COLLATE "default", 
@@ -154,6 +164,13 @@ CREATE TABLE "public"."tmp_trajectories" (
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."tmp_trajectories" OWNER TO "docker";
+
+CREATE INDEX idx_tmp_trajectories_trip_id
+ON tmp_trajectories(trip_id);
+
+CREATE INDEX idx_tmp_trajectories_geom
+ON tmp_trajectories
+USING GIST (geom);
 
 CREATE TABLE "public"."tmp_stop_times" (
 	"trip_id" int8 NOT NULL,
@@ -233,6 +250,9 @@ CREATE TABLE "public"."tmp_calendar_dates" (
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."tmp_calendar_dates" OWNER TO "docker";
+
+CREATE INDEX idx_tmp_calendar_dates_service_id 
+ON tmp_calendar_dates(service_id);
 
 CREATE TABLE "public"."tmp_routes" (
 	"route_id" int4 NOT NULL, 
