@@ -26,32 +26,13 @@ class NearestVehicle(BaseHTTPRequestHandler):
 
   def do_GET(self):
     paths = {
-      '/classify/location': {'status': 200}, 
-      '/test': {'status':200}
+      '/classify/location': {'status': 200}
     }
 
     o = urlparse(self.path) 
     if not o.path in paths:
-      print('not all info avaialbe 2' + str(self.path) + str(o.path) + str(paths))
       self.respond({'status': 500})
       return 
-
-    if str(o.path) == '/test': 
-      print('here we go')
-      variables = parse_qs(o.query)
-      datetime = int(variables['datetime'][0])
-      lon = float(variables['lon'][0])
-      lat = float(variables['lat'][0])
-
-      data = locationcache.get_vehicle_location_state_by_time(lon, lat, datetime)
-      df = { 'observations': data.to_json(orient='records') }
-      # self.respond({'status': 200})
-      self.send_response(200)  
-      self.send_header('Content-type','text-html')  
-      self.send_header('Access-Control-Allow-Origin','*')  
-      self.end_headers()  
-      self.wfile.write(str.encode(json.dumps(df)))
-      return
     
     if not o.query: 
       print('not all info avaialbe 3')

@@ -1,14 +1,5 @@
 FROM python:3.6.1
 
-# RUN apk update \
-#   && apk add \
-#     build-base \
-#     libpq \
-#     python3-dev \
-#     libffi \
-#     libffi-dev \
-#     openssl-dev
-
 RUN mkdir /usr/src/app
 WORKDIR /usr/src/app
 COPY ./requirements.txt .
