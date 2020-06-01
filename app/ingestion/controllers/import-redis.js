@@ -150,7 +150,7 @@ const updateData = async (identifier, data, pgPool) => {
 
           query = query + updatedTrajectory + ` WHERE trip_id = $1`
 
-          console.log({ trajectoryPoints: trajectoryPoints, query: query })
+          console.log({ query: query })
           // console.log({ query: query, identifier: identifier.replace('vehicle:',''), scheduledLocation: scheduledLocation })   
         }
       }                               
@@ -216,7 +216,7 @@ const updateData = async (identifier, data, pgPool) => {
 
           query = query + updatedTrajectory + ` WHERE trip_id = $1`
 
-          console.log({ trajectoryPoints: trajectoryPoints, query: query })
+          console.log({ query: query })
           // console.log({ query: query, identifier: identifier.replace('train:', ''), scheduledLocation: scheduledLocation })   
         }
       }  else {
