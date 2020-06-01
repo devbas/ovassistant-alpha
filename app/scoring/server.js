@@ -1,3 +1,6 @@
+const tracer = require('dd-trace').init({
+  analytics: true
+});
 const express = require('express');  
 const app = express();   
 const Sentry = require('./sentry.js');
