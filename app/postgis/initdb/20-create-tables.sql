@@ -23,7 +23,8 @@ CREATE TABLE "public"."trajectories" (
 	"trip_id" int4 NOT NULL, 
 	"start_planned" int4 NULL, 
 	"end_planned" int4 NULL, 
-	"vehicle_id" varchar(64) COLLATE "default"
+	"vehicle_id" varchar(64) COLLATE "default", 
+	"delay_seconds" int4 NULL
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."trajectories" OWNER TO "docker";
@@ -160,7 +161,8 @@ CREATE TABLE "public"."tmp_trajectories" (
 	"trip_id" int4 NOT NULL, 
 	"start_planned" int4 NULL, 
 	"end_planned" int4 NULL, 
-	"vehicle_id" varchar(64) COLLATE "default"
+	"vehicle_id" varchar(64) COLLATE "default", 
+	"delay_seconds" int4 NULL
 )
 WITH (OIDS=FALSE);
 ALTER TABLE "public"."tmp_trajectories" OWNER TO "docker";
