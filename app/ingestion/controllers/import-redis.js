@@ -149,7 +149,7 @@ const updateData = async (identifier, data, pgPool) => {
 
           let query = `UPDATE trajectories SET geom = `
 
-          const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds)
+          const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds ? parseInt(trajectory[0].delay_seconds) : 0)
 
           query = query + updatedTrajectory + ` WHERE trip_id = $1`
         }
@@ -212,7 +212,7 @@ const updateData = async (identifier, data, pgPool) => {
 
           let query = `UPDATE trajectories SET geom = `
 
-          const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, parseInt(trajectory[0].delay_seconds))
+          const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds ? parseInt(trajectory[0].delay_seconds) : 0)
 
           query = query + updatedTrajectory + ` WHERE trip_id = $1`
         }
