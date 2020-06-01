@@ -131,7 +131,7 @@ const updateData = async (identifier, data, pgPool) => {
           //                                               WHERE trip_id = $2
           //                                               LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
     
-          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
+          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
           console.log({ trajectory: trajectory})
           const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
 
@@ -201,7 +201,7 @@ const updateData = async (identifier, data, pgPool) => {
           //                                               WHERE trip_id = $2
           //                                               LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
           
-          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
+          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
           const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
 
           console.log({ trajectoryPoints: trajectoryPoints })
