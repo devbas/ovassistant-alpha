@@ -92,7 +92,7 @@ const updateTrajectory = (points, delay, oldDelay) => {
       }
       linestring = linestring + `${pointData[0]} ${pointData[1]} ${(timestamp + oldDelay) - delay}`
 
-      counter !== points.length ? linestring = linestring + ', ' : linestring = linestring + ")'))"
+      counter !== points.length ? linestring = linestring + ', ' : linestring = linestring + ")')"
     })
   }
 
@@ -160,9 +160,9 @@ const updateData = async (identifier, data, pgPool) => {
                                               WHERE trip_id = $2
                                               LIMIT 1`, [data.datetimeUnix, tripInfo[0].trip_id])
           
-          console.log({ query: query, distanceNoise: scheduledLocation[0].delay_distance_noise })
+          console.log({ distanceNoise: scheduledLocation[0].delay_distance_noise })
 
-          // await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
+          await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
         }
       }                               
       
@@ -234,7 +234,7 @@ const updateData = async (identifier, data, pgPool) => {
 
           console.log({ distanceNoise: scheduledLocation[0].delay_distance_noise })
 
-          // await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
+          await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
         }
       }  else {
         // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
