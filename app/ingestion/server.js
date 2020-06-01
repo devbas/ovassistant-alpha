@@ -155,6 +155,7 @@ sock.on('message', async (topic, message) => {
           result.destination = _.get(result, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
           result.subType = result.Trein[0].TreinSoort[0]._
           result.measurementTimestamp = new Date().toJSON()
+          result.operatingDay = result.RitDatum[0]
           redisImportController.updateData(id, result, pgPool)
         }
       }
@@ -201,7 +202,8 @@ sock1.on('message', async (topic, message) => {
                   type: 'vehicle', 
                   agencyCode: positionMessage.dataownercode[0], 
                   datetimeUnix: nowUnix, 
-                  measurementTimestamp: positionMessage.timestamp[0]
+                  measurementTimestamp: positionMessage.timestamp[0], 
+                  operatingDay: positionMessage.operatingday[0]
                 }
 
                 if (positionMessage['rd-x'] && positionMessage['rd-x'][0] != -1 && positionMessage['rd-y'][0] != -1) {
