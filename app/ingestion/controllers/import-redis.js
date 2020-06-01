@@ -86,7 +86,6 @@ const updateData = async (identifier, data, pgPool) => {
     if(data.type === 'vehicle') { 
 
       const { rows: tripInfo } = await client.query('SELECT T.* FROM trips T JOIN calendar_dates CD ON CD.service_id = T.service_id WHERE T.realtime_trip_id = $1 AND CD.date = $2', [identifier.replace('vehicle:',''), data.operatingDay.split('-').join('')]);
-      // const { rows: tripInfo } = await client.query('SELECT * FROM trips WHERE realtime_trip_id = $1 LIMIT 1', [identifier.replace('vehicle:','')])
       if(tripInfo[0]) {
         data.destination = tripInfo[0].trip_headsign
         data.shapeId = tripInfo[0].shape_id
@@ -127,12 +126,12 @@ const updateData = async (identifier, data, pgPool) => {
           const datetimeUnix = parseInt(data.datetimeUnix)
           const query = `SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, ${datetimeUnix - delay})) AS delay_distance_noise FROM trajectories WHERE trip_id = ${tripInfo[0].trip_id} LIMIT 1`
 
-          // const { rows: scheduledLocation } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
-          //                                               FROM trajectories
-          //                                               WHERE trip_id = $2
-          //                                               LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
+          const { rows: scheduledLocation } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
+                                                        FROM trajectories
+                                                        WHERE trip_id = $2
+                                                        LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
     
-          console.log({ query: query, identifier: identifier.replace('vehicle:','') })   
+          console.log({ query: query, identifier: identifier.replace('vehicle:',''), scheduledLocation: scheduledLocation })   
         }
       }                               
       
@@ -192,13 +191,13 @@ const updateData = async (identifier, data, pgPool) => {
           const datetimeUnix = parseInt(data.datetimeUnix)
           const query = `SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, ${datetimeUnix - delay})) AS delay_distance_noise FROM trajectories WHERE trip_id = ${tripInfo[0].trip_id} LIMIT 1`
 
-          // const { rows: scheduledLocation } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
-          //                                               FROM trajectories
-          //                                               WHERE trip_id = $2
-          //                                               LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
+          const { rows: scheduledLocation } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
+                                                        FROM trajectories
+                                                        WHERE trip_id = $2
+                                                        LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
           
 
-          console.log({ query: query, identifier: identifier.replace('train:', '') })   
+          console.log({ query: query, identifier: identifier.replace('train:', ''), scheduledLocation: scheduledLocation })   
         }
       }  else {
         // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
