@@ -84,11 +84,13 @@ const updateTrajectory = (points, delay, oldDelay) => {
   } else {
     points.forEach(point => {
       const pointData = point.split(' ')
+
+      const timestamp = parseInt(pointData[2])
       counter = counter + 1 
       if(counter === 1) {
-        console.log({ oldDelay: oldDelay, delay: delay, oldTimestamp: pointData[2], newTimestamp: (pointData[2] + oldDelay) - delay})
+        console.log({ oldDelay: oldDelay, delay: delay, oldTimestamp: timestamp, newTimestamp: (timestamp + oldDelay) - delay})
       }
-      linestring = linestring + `${pointData[0]} ${pointData[1]} ${(pointData[2] + oldDelay) - delay}`
+      linestring = linestring + `${pointData[0]} ${pointData[1]} ${(timestamp + oldDelay) - delay}`
 
       counter !== points.length ? linestring = linestring + ', ' : linestring = linestring + ")'))"
     })
