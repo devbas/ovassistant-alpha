@@ -160,20 +160,20 @@ const updateData = async (identifier, data, pgPool) => {
 
           await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
 
-          const { rows: scheduledLocationAfterDistance } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
-          FROM trajectories
-          WHERE trip_id = $2
-          LIMIT 1`, [data.datetimeUnix, tripInfo[0].trip_id]) 
+          // const { rows: scheduledLocationAfterDistance } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
+          // FROM trajectories
+          // WHERE trip_id = $2
+          // LIMIT 1`, [data.datetimeUnix, tripInfo[0].trip_id]) 
 
-          if(scheduledLocationAfterDistance[0].delay_distance_noise > 1000) {
-            console.log({ 
-              baseline: [data.longitude, data.latitude], 
-              distance: scheduledLocationAfterDistance[0].delay_distance_noise,
-              tripId: tripInfo[0].trip_id, 
-              delay: data.delay_seconds, 
-              unix: data.datetimeUnix
-            })   
-          }                                 
+          // if(scheduledLocationAfterDistance[0].delay_distance_noise > 1000) {
+          //   console.log({ 
+          //     baseline: [data.longitude, data.latitude], 
+          //     distance: scheduledLocationAfterDistance[0].delay_distance_noise,
+          //     tripId: tripInfo[0].trip_id, 
+          //     delay: data.delay_seconds, 
+          //     unix: data.datetimeUnix
+          //   })   
+          // }                                 
         }
       }                               
       
