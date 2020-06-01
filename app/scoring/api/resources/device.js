@@ -13,23 +13,27 @@ router.post('/score', async (req, res) => {
   const data = req.body
   console.log('data: ', req.body)
 
-  // data.userId = req.body.user_id
+  let parsedData = {}
 
   if(data.datetime) {
-    data.datetime = parseInt(data.datetime)
+    parsedData.datetime = parseInt(data.datetime)
   }
 
   if(data.location && data.location.coords && data.location.coords.latitude) {
-    data.lat = parseFloat(data.location.coords.latitude)
+    parsedData.lat = parseFloat(data.location.coords.latitude)
   }
 
   if(data.location && data.location.coords && data.location.coords.longitude) {
-    data.lon = parseFloat(data.location.coords.longitude) 
+    parsedData.lon = parseFloat(data.location.coords.longitude) 
+  }
+
+  if(data.userId) {
+    parsedData.userId = data.userId
   }
 
   try {
     console.log('call the controller', data)
-    const result = await matchCalculationController.getVehicleCandidates(data, pgPool)
+    const result = await matchCalculationController.getVehicleCandidates(parsedData, pgPool)
     console.log('sending result for: ', req.header('X-Transaction-ID'))
     res.status(200).json({ data: result })
   } catch(err) {

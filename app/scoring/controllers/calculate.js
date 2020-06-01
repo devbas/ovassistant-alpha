@@ -15,10 +15,6 @@ const getVehicleCandidates = async (data, pgPool) => {
       throw { 'message': 'Make sure to send the longitude, latitude and datetime for an event.', 'status': 500 }
     }
 
-    // Save the user location for further analysis
-    // pool.query('INSERT INTO user_location SET `user_id` = ?, `lon` = ?, `lat` = ?, `datetime` = ?', 
-    //                   [parseInt(data.userId), data.lon, data.lat, data.datetime])
-
     // Get vehicle candidates from Nearest   
     const vehicleCandidatesRaw = await axios.get(`http://nearest:9002/classify/location?lon=${data.lon}&lat=${data.lat}&datetime=${data.datetime}&user_id=${data.userId}`)
                                               .catch(err => {
