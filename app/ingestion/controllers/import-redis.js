@@ -75,7 +75,7 @@ const importData = async (data, pgPool) => {
   }
 }
 
-const updateTrajectory = (points, delay) => {
+const updateTrajectory = (points, delay, oldDelay) => {
   let linestring = `ST_GeomFromEWKT('SRID=4326;LINESTRINGM(`
   let counter = 0 
 
@@ -85,7 +85,10 @@ const updateTrajectory = (points, delay) => {
     points.forEach(point => {
       const pointData = point.split(' ')
       counter = counter + 1 
-      linestring = linestring + `${pointData[0]} ${pointData[1]} ${pointData[2] - delay}`
+      if(counter === 1) {
+        console.log({ oldDelay: oldDelay: delay: delay, oldTimestamp: pointData[2], newTimestamp: (pointData[2] + oldDelay) - delay})
+      }
+      linestring = linestring + `${pointData[0]} ${pointData[1]} ${(pointData[2] + oldDelay) - delay}`
 
       counter !== points.length ? linestring = linestring + ', ' : linestring = linestring + ")'))"
     })
@@ -141,17 +144,14 @@ const updateData = async (identifier, data, pgPool) => {
         }
         
         if(data.delay_seconds && data.has_delay && data.longitude && data.latitude) {
-          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
+          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom, delay_seconds FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
           const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
 
           let query = `UPDATE trajectories SET geom = `
 
-          const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds)
+          const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds)
 
           query = query + updatedTrajectory + ` WHERE trip_id = $1`
-
-          console.log({ query: query })
-          // console.log({ query: query, identifier: identifier.replace('vehicle:',''), scheduledLocation: scheduledLocation })   
         }
       }                               
       
@@ -207,17 +207,14 @@ const updateData = async (identifier, data, pgPool) => {
         }
 
         if(data.delay_seconds && data.has_delay && data.longitude && data.latitude) {
-          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
+          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom, delay_seconds FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
           const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
 
           let query = `UPDATE trajectories SET geom = `
 
-          const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds)
+          const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, parseInt(trajectory[0].delay_seconds))
 
           query = query + updatedTrajectory + ` WHERE trip_id = $1`
-
-          console.log({ query: query })
-          // console.log({ query: query, identifier: identifier.replace('train:', ''), scheduledLocation: scheduledLocation })   
         }
       }  else {
         // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
