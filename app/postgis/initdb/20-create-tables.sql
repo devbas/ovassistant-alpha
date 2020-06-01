@@ -116,7 +116,7 @@ WITH (OIDS=FALSE);
 ALTER TABLE "public"."calendar_dates" OWNER TO "docker";
 
 CREATE INDEX idx_calendar_dates_service_id 
-ON calendar_dates(service_id)
+ON calendar_dates(service_id);
 
 CREATE TABLE "public"."routes" (
 	"route_id" int4 NOT NULL, 
