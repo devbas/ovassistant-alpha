@@ -169,7 +169,9 @@ const updateData = async (identifier, data, pgPool) => {
             console.log({ 
               baseline: [data.longitude, data.latitude], 
               distance: scheduledLocationAfterDistance[0].delay_distance_noise,
-              tripId: tripInfo[0].trip_id
+              tripId: tripInfo[0].trip_id, 
+              delay: data.delay_seconds, 
+              unix: data.datetimeUnix
             })   
           }                                 
         }
