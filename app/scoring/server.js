@@ -10,12 +10,23 @@ const bodyParser = require('body-parser');
 const redisClientPersist = require('./redis-client-persist');
 const fs = require('fs');
 const APIRouter = require('./api');
+const morgan = require('morgan')
+
+morgan.token('id', function getId (req) {
+  return req.id
+})
 
 app.use(Sentry.Handlers.requestHandler());
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());   
+app.use(assignId)
+app.use(morgan(':id :method :url :status :response-time'))
 
+function assignId (req, res, next) {
+  req.id = uuid.v4()
+  next()
+}
 
 var port = process.env.PORT || 8001;
 var router = express.Router();
@@ -26,9 +37,9 @@ router.use((req, res, next) => {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   console.log('Something is happening.');
 
-  if(req.header('X-Transaction-ID')) {
+  if(req.id) {
     Sentry.configureScope(scope => {
-      scope.setTag("X-Transaction-ID", req.header('X-Transaction-ID'));
+      scope.setTag("X-Transaction-ID", req.id);
     })
   }
 
