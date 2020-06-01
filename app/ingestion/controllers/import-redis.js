@@ -196,8 +196,11 @@ const updateData = async (identifier, data, pgPool) => {
                                                         WHERE trip_id = $2
                                                         LIMIT 1`, [datetimeUnix - delay, tripInfo[0].trip_id])
           
+          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) FROM trjaectories WHERE trip_id = $2`, [tripInfo[0].trip_id])
+          const trajectoryPoints = trajectory.substring(trajectory.lastIndexOf('(') + 1, trajectory.lastIndexOf(')')).split(',')
 
-          console.log({ query: query, identifier: identifier.replace('train:', ''), scheduledLocation: scheduledLocation })   
+          console.log({ trajectoryPoints: trajectoryPoints })
+          // console.log({ query: query, identifier: identifier.replace('train:', ''), scheduledLocation: scheduledLocation })   
         }
       }  else {
         // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
