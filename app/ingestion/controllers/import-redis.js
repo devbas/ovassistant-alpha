@@ -154,6 +154,8 @@ const updateData = async (identifier, data, pgPool) => {
           const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds ? parseInt(trajectory[0].delay_seconds) : 0)
 
           query = query + updatedTrajectory + ` WHERE trip_id = $1`
+
+          client.query('UPDATE trajectories SET delay_seconds = $1 WHERE trip_id = $2', [data.delay_seconds, tripInfo[0].trip_id])
         }
       }                               
       
@@ -217,6 +219,8 @@ const updateData = async (identifier, data, pgPool) => {
           const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds ? parseInt(trajectory[0].delay_seconds) : 0)
 
           query = query + updatedTrajectory + ` WHERE trip_id = $1`
+
+          client.query('UPDATE trajectories SET delay_seconds = $1 WHERE trip_id = $2', [data.delay_seconds, tripInfo[0].trip_id])
         }
       }  else {
         // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
