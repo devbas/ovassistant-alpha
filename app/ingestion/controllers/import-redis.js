@@ -91,7 +91,7 @@ const updateTrajectory = (points, delay) => {
     })
   }
 
-  console.log({ linestring: linestring })
+  return linestring
 }
 
 const updateData = async (identifier, data, pgPool) => {
