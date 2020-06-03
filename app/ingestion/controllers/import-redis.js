@@ -145,20 +145,20 @@ const updateData = async (identifier, data, pgPool) => {
         }
         
         if(data.delay_seconds && data.has_delay && data.longitude && data.latitude) {
-          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom, delay_seconds FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
-          if(trajectory.length > 0) {
-            const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
+          // const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom, delay_seconds FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
+          // if(trajectory.length > 0) {
+          //   const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
           
-            let query = `UPDATE trajectories SET geom = `
+          //   let query = `UPDATE trajectories SET geom = `
 
-            const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds ? parseInt(trajectory[0].delay_seconds) : 0)
+          //   const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds ? parseInt(trajectory[0].delay_seconds) : 0)
 
-            query = query + updatedTrajectory + `, delay_seconds = $1 WHERE trip_id = $2`
+          //   query = query + updatedTrajectory + `, delay_seconds = $1 WHERE trip_id = $2`
 
-            await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
-          } else {
-            console.log('no trajectory found for trip: ', tripInfo[0].trip_id, ' and realtime_trip_id: ', data.realtime_trip_id)
-          }
+          //   await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
+          // } else {
+          //   console.log('no trajectory found for trip: ', tripInfo[0].trip_id, ' and realtime_trip_id: ', data.realtime_trip_id)
+          // }
 
           // const { rows: scheduledLocationAfterDistance } = await client.query(`SELECT ST_Distance_Sphere('SRID=4326;POINT(${data.longitude} ${data.latitude})', ST_LocateAlong(geom, $1)) AS delay_distance_noise
           // FROM trajectories
@@ -229,20 +229,20 @@ const updateData = async (identifier, data, pgPool) => {
         }
 
         if(data.delay_seconds && data.has_delay && data.longitude && data.latitude) {
-          const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom, delay_seconds FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
-          if(trajectory.length > 0) {
-            const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
+          // const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom, delay_seconds FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
+          // if(trajectory.length > 0) {
+          //   const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
 
-            let query = `UPDATE trajectories SET geom = `
+          //   let query = `UPDATE trajectories SET geom = `
 
-            const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds ? parseInt(trajectory[0].delay_seconds) : 0)
+          //   const updatedTrajectory = updateTrajectory(trajectoryPoints, data.delay_seconds, trajectory[0].delay_seconds ? parseInt(trajectory[0].delay_seconds) : 0)
 
-            query = query + updatedTrajectory + `, delay_seconds = $1 WHERE trip_id = $2`
+          //   query = query + updatedTrajectory + `, delay_seconds = $1 WHERE trip_id = $2`
 
-            await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
-          } else {
-            console.log('no trajectory found for trip: ', tripInfo[0].trip_id, ' and realtime_trip_id: ', data.realtime_trip_id)
-          }
+          //   await client.query(query, [data.delay_seconds, tripInfo[0].trip_id])
+          // } else {
+          //   console.log('no trajectory found for trip: ', tripInfo[0].trip_id, ' and realtime_trip_id: ', data.realtime_trip_id)
+          // }
         }
       }  else {
         // console.log('no trip found for: ', identifier.replace('train:', ''), ' towards: ', destination, ' on this day: ', moment().format('YYYYMMDD'))
