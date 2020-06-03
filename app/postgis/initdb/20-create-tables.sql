@@ -18,7 +18,7 @@ CREATE INDEX idx_temp_shapes_shape_id
 ON temp_shapes(shape_id);
 
 CREATE TABLE "public"."trajectories" (
-	"trajectory_id" SERIAL PRIMARY KEY,
+	"trajectory_id" SERIAL,
   "geom" geometry(LINESTRINGM,4326), 
 	"trip_id" int4 NOT NULL, 
 	"start_planned" int4 NULL, 
@@ -31,6 +31,9 @@ ALTER TABLE "public"."trajectories" OWNER TO "docker";
 
 CREATE INDEX idx_trajectories_trip_id
 ON trajectories(trip_id);
+
+CREATE INDEX idx_trajectories_trajectory_id
+ON trajectories(trajectory_id);
 
 CREATE INDEX idx_trajectories_geom
   ON trajectories
@@ -156,7 +159,7 @@ CREATE INDEX idx_tmp_temp_shapes_shape_id
 ON tmp_temp_shapes(shape_id);
 
 CREATE TABLE "public"."tmp_trajectories" (
-	"trajectory_id" SERIAL PRIMARY KEY,
+	"trajectory_id" SERIAL,
   "geom" geometry(LINESTRINGM,4326), 
 	"trip_id" int4 NOT NULL, 
 	"start_planned" int4 NULL, 
@@ -169,6 +172,9 @@ ALTER TABLE "public"."tmp_trajectories" OWNER TO "docker";
 
 CREATE INDEX idx_tmp_trajectories_trip_id
 ON tmp_trajectories(trip_id);
+
+CREATE INDEX idx_tmp_trajectories_trajectory_id
+ON tmp_trajectories(trajectory_id);
 
 CREATE INDEX idx_tmp_trajectories_geom
 ON tmp_trajectories
