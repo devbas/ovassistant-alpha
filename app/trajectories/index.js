@@ -307,7 +307,6 @@ const ingestLatestGTFS =  async ({ force }) => {
           trajectories = orderBy(trajectories, ['shape_dist_traveled'], ['asc'])
 
           let query = "INSERT INTO tmp_trajectories (trip_id, vehicle_id, geom) VALUES($1, $2, ST_GeomFromEWKT('SRID=4326;LINESTRINGM("
-          let textLinestring = 'LINESTRING('
           let values = [trip.trip_id, trip.realtime_trip_id] 
 
           let counter = 0 
@@ -320,10 +319,8 @@ const ingestLatestGTFS =  async ({ force }) => {
             trajectories.forEach(point => {
               counter = counter + 1 
               query = query + `${point.shape_pt_lon} ${point.shape_pt_lat} ${momenttz.tz(trip.date + ' ' + point.arrival_time, "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()}`
-              textLinestring = textLinestring + `${point.shape_pt_lon} ${point.shape_pt_lat}`
 
               counter !== trajectories.length ? query = query + ', ' : query = query + ")'))"
-              counter !== trajectories.length ? textLinestring = textLinestring + ', ' : textLinestring = textLinestring + ")"
             })
             // console.log({ query: query })
             await client.query({ text: query, values: values })
@@ -339,7 +336,7 @@ const ingestLatestGTFS =  async ({ force }) => {
             console.log('DONE --- Processing time: ', (t1 - t0).toFixed(2), ' millis. Avg processing time: ', (totalProcessingTime / i).toFixed(2), ' millis.  Expected duration: ', ((totalProcessingTime / i * initialTripQueueLength) / 1000 / 60), 'min' )
           }
         } catch(e) {
-          console.log('err: ', e)
+          console.log('err: ', e, ' for trip: ', trip)
           reject(e)
         } finally {
           client.release()
@@ -458,7 +455,6 @@ const ingestLatestGTFS =  async ({ force }) => {
     Sentry.captureException(e);
   } finally {
     let endTime = moment() 
-    Sentry.captureMessage('GTFS Ingestion finished in ' + moment.utc(moment(endTime).diff(startTime)).format('HH:mm:ss'))
     console.log('Done in ', moment.utc(moment(endTime).diff(startTime)).format('HH:mm:ss'))
   }
 }
