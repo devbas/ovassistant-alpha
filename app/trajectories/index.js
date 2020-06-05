@@ -313,9 +313,9 @@ const ingestLatestGTFS =  async ({ force }) => {
 
           if(trajectories.length === 0) {
             query = query + ")'))"
-            console.log({ tripId: trip.trip_id, realtimeTripId: trip.realtime_trip_id, trajectories: trajectories, query: query })
+            console.log({ msg: 'Skipping: No trajectories found', tripId: trip.trip_id, realtimeTripId: trip.realtime_trip_id, trajectories: trajectories, query: query })
             // process.exit()
-          } else {
+          } else if(trajectories.length > 1) {
             trajectories.forEach(point => {
               counter = counter + 1 
               query = query + `${point.shape_pt_lon} ${point.shape_pt_lat} ${momenttz.tz(trip.date + ' ' + point.arrival_time, "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()}`
@@ -324,6 +324,8 @@ const ingestLatestGTFS =  async ({ force }) => {
             })
             // console.log({ query: query })
             await client.query({ text: query, values: values })
+          } else {
+            console.log({ msg: 'Skipping: Only one trajectory point', tripId: trip.tripId, realtimeTripId: trip.realtime_trip_id, trajectories: trajectories })
           }
 
           var t1 = performance.now()
