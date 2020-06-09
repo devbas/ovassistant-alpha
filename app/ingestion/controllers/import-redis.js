@@ -144,7 +144,7 @@ const updateData = async (identifier, data, pgPool) => {
           console.log('no stops found')
         }
         
-        if(data.delay_seconds && data.has_delay && data.longitude && data.latitude) {
+        if(data.has_delay && data.delay_seconds > 20 && data.longitude && data.latitude) {
           const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom, delay_seconds FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
           if(trajectory.length > 0) {
             const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
@@ -228,7 +228,7 @@ const updateData = async (identifier, data, pgPool) => {
           console.log('no stops found')
         }
 
-        if(data.delay_seconds && data.has_delay && data.longitude && data.latitude) {
+        if(data.has_delay && data.delay_seconds > 20 && data.longitude && data.latitude) {
           const { rows: trajectory } = await client.query(`SELECT ST_AsText(geom) AS geom, delay_seconds FROM trajectories WHERE trip_id = $1`, [tripInfo[0].trip_id])
           if(trajectory.length > 0) {
             const trajectoryPoints = trajectory[0].geom.substring(trajectory[0].geom.lastIndexOf('(') + 1, trajectory[0].geom.lastIndexOf(')')).split(',')
