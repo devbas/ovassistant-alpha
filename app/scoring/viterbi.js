@@ -15,8 +15,6 @@ const util = require('util')
 function viterbi(obs, states, startProb, transProb, emitProb) {
   const sequences = [[]]
 
-  console.log(util.inspect( transProb ))
-
   // Set initial probabilities
   states.map((state, index) => {
     sequences[0][state] = { prob: startProb[state] * emitProb[0][state], prev: undefined }
@@ -24,23 +22,34 @@ function viterbi(obs, states, startProb, transProb, emitProb) {
 
   obs = obs.slice(1)
   obs.map((ob, index) => { // Loop over all measurements 
-    sequences[index + 1] = []
-    states.map((state) => { // Loop over all vehicles
-      let maxTransProb = sequences[index][states[0]]['prob'] * transProb[index][states[0]][state] // Set initial max transition probability
-      let prevStateSelected = states[0]
-      
-      for(let i = 1; i < states.length; i++) { // Determine transition probability from vehicle to each vehicle
-        const stateTransProb = sequences[index][states[i]]['prob'] * transProb[index][states[i]][state] // startProb * 
-        if(transProb > maxTransProb) {
-          maxTransProb = stateTransProb
-          prevStateSelected = states[i]
+    if(index > 0) {
+      sequences[index] = []
+      states.map((state) => { // Loop over all vehicles
+        let maxTransProb = sequences[index - 1][states[0]]['prob'] * transProb[index - 1][states[0]][state] // Set initial max transition probability
+        let prevStateSelected = states[0]
+        
+        for(let i = 1; i < states.length; i++) { // Determine transition probability from vehicle to each vehicle
+          const stateTransProb = sequences[index - 1][states[i]]['prob'] * transProb[index - 1][states[i]][state] // startProb * 
+          if(transProb > maxTransProb) {
+            maxTransProb = stateTransProb
+            prevStateSelected = states[i]
+          }
         }
-      }
 
-      const maxProb = maxTransProb * emitProb[index][state][obs[index + 1]]
-      sequences[index + 1][state] = { prob: maxProb, prev: prevStateSelected }
-    })
+        const maxProb = maxTransProb * emitProb[index - 1][state][obs[index]]
+        console.log({ maxProb: maxProb, maxTransProb: maxTransProb, emitProb: emitProb })
+        sequences[index][state] = { prob: maxProb, prev: prevStateSelected }
+      })
+    }
   })
+
+  let highestMatch = { prob: 0 }
+
+
+  // highest_match = { "prob": 0 }
+  // for state in V[-1]:
+  //   if V[-1][state]["prob"] > highest_match["prob"]: 
+  //     highest_match = { "vehicle_id": state, "prob": V[-1][state]["prob"] }
 
   return sequences
 }
@@ -325,7 +334,7 @@ const data = [
     for(let i = 0; i < data.length; i++) {
       const observation = data[i]
       const result = await score(observation.lon, observation.lat, observation.timestamp, userId)
-      console.log(util.inspect({ result: result, userId: userId }, {showHidden: false, depth: null}))
+      // console.log(util.inspect({ result: result, userId: userId }, {showHidden: false, depth: null}))
       console.log('================================================================')
       outcome.push(result)
     }
