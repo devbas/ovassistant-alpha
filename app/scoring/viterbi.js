@@ -81,7 +81,7 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
     //                                               AND ST_DWithin(ST_LocateAlong(geom, $4)::geography, 'SRID=4326;POINT(${lon} ${lat})::geography', $5, false) 
     //                                               ORDER BY user_vehicle_distance ASC`, [timestamp, timestamp, timestamp, timestamp, radius])
 
-    const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id
+    const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, ST_LocateAlong(geom, $1) as current_vehicle_location
                                                   FROM trajectories 
                                                   WHERE start_planned <= $1 
                                                   AND end_planned >= $2
