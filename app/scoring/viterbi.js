@@ -86,7 +86,7 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
                                                   WHERE start_planned <= $2 
                                                   AND end_planned >= $3 
                                                   AND ST_DWithin(ST_LocateAlong(geom, $4)::geography, 'SRID=4326;POINT(${lon} ${lat})::geography', $5, false) 
-                                                  ORDER BY user_vehicle_distance ASC`, [timestamp, timestamp, timestamp, timestamp, radius])
+                                                  ORDER BY user_vehicle_distance ASC`, [timestamp, timestamp, timestamp, radius])
 
     
     // for(let i = 0; i < vehicles.length; i++) {
