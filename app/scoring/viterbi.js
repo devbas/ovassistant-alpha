@@ -74,7 +74,7 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
   try {
     const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
                                                     ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
-                                                  FROM tmp_trajectories 
+                                                  FROM trajectories 
                                                   WHERE start_planned <= $2 
                                                   AND end_planned >= $3 
                                                   AND ST_DWithin(ST_LocateAlong(geom, $4), 'SRID=4326;POINT(${lon} ${lat})', $5) 
@@ -113,7 +113,7 @@ async function getVehicleClosestStopDistance(tripId, lon, lat) {
   try {
     const { rows: closestStop } = await client.query(`SELECT MIN(ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom)) as closest_stop_distance, 
                                                         stop_id as closest_stop_id 
-                                                      FROM tmp_stop_times 
+                                                      FROM stop_times 
                                                       WHERE trip_id = $1
                                                       GROUP BY stop_id 
                                                       ORDER BY closest_stop_distance ASC 
