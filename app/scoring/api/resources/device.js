@@ -1,17 +1,11 @@
 const express = require('express')
 const Sentry = require('../../sentry.js')
-const matchCalculationController = require('../../controllers/calculate')
-const config = require('../../config/config')
-const { Pool } = require('pg')
+const viterbi = require('../../viterbi')
 
 var router = express.Router()
 
-const pgPool = new Pool(config.pg)
-
 router.post('/score', async (req, res) => {
-  console.log('retrieved request HALLO: ', req.header('X-Transaction-ID'))
   const data = req.body
-  console.log('data: ', req.body)
 
   let parsedData = {}
 
@@ -33,8 +27,8 @@ router.post('/score', async (req, res) => {
 
   try {
     console.log('call the controller', data)
-    const result = await matchCalculationController.getVehicleCandidates(parsedData, pgPool)
-    console.log('sending result for: ', req.header('X-Transaction-ID'))
+
+    const result = await viterbi.score(parsedData.lon, parsedData.lat, parsedData.datetime, parsedData.userId)
     res.status(200).json({ data: result })
   } catch(err) {
     console.log('err: ', err)

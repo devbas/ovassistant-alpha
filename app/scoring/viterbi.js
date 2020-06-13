@@ -1,6 +1,5 @@
 const { pool } = require('./controllers/db.js')
 const store = require('./redis-layer-store')
-const util = require('util')
 const _ = require('lodash')
 
 /**
@@ -278,7 +277,6 @@ async function score(lon, lat, timestamp, userId) {
 
   let result = false
   if(markovLayers.length > 1) {
-    // console.log({ markovLayers: markovLayers, states: states, startProb: startProb, transProb: transProb, emitProb: emitProb })
     result = await viterbi(obs, states, startProb, transProb, emitProb)
   }
 
@@ -288,82 +286,4 @@ async function score(lon, lat, timestamp, userId) {
   
 }
 
-
-const data = [
-  {
-    lon: 4.93199, 
-    lat: 52.40252,
-    timestamp: 1590954480
-  }, {
-    lon: 4.93501, 
-    lat: 52.40255,
-    timestamp: 1590954498
-  }, {
-    lon: 4.93552, 
-    lat: 52.40296,
-    timestamp: 1590954501
-  }, {
-    lon: 4.93591, 
-    lat: 52.40337,
-    timestamp: 1590954505
-  }, {
-    lon: 4.93604, 
-    lat: 52.40354,
-    timestamp: 1590954506
-  }, {
-    lon: 4.9361, 
-    lat: 52.40372,
-    timestamp: 1590954507
-  }, {
-    lon: 4.93599, 
-    lat: 52.40401,
-    timestamp: 1590954509
-  }
-]
-
-;(async () => {
-  try {
-
-    let outcome = []
-    const userId = Math.random()
-    for(let i = 0; i < data.length; i++) {
-      const observation = data[i]
-      const result = await score(observation.lon, observation.lat, observation.timestamp, userId)
-      
-      const opt = []
-      let maxProb = 0
-      let previous = undefined
-      for (let [key, value] of Object.entries(result)) {
-        if(value.prob > maxProb) {
-          maxProb = value.prob
-          opt.push(key)
-          previous = key
-        }
-      }
-      
-      console.log({ maxProb: maxProb, vehicleId: opt[opt.length - 1]})
-      console.log('================================================================')
-      outcome.push(result)
-    }
-
-    
-  } catch(err) {
-    console.log('err: ', err)
-  }
-})().catch(err => {
-  console.log(err)
-})
-
-const obs = ['normal', 'cold', 'dizzy']
-const states = ['Healthy', 'Fever']
-const startProb = { 'Healthy': 0.6, 'Fever': 0.4 }
-const transProb = { 
-  'Healthy': { 'Healthy': 0.7, 'Fever': 0.3 }, 
-  'Fever': { 'Healthy': 0.4, 'Fever': 0.6 }
-}
-const emitProb = {
-  'Healthy': { 'normal': 0.5, 'cold': 0.4, 'dizzy': 0.1 }, 
-  'Fever': { 'normal': 0.1, 'cold': 0.3, 'dizzy': 0.6 }
-}
-
-// console.log(viterbi(obs, states, startProb, transProb, emitProb))
+module.exports = { score: score }
