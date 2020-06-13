@@ -7,14 +7,19 @@ const Sentry = require('./sentry.js');
 const _ = require('lodash');
 const cors = require('cors');             
 const bodyParser = require('body-parser');
-const redisClientPersist = require('./redis-client-persist');
 const fs = require('fs');
 const APIRouter = require('./api');
 const morgan = require('morgan')
+const uuid = require('node-uuid')
 
 morgan.token('id', function getId (req) {
   return req.id
 })
+
+function assignId (req, res, next) {
+  req.id = uuid.v4()
+  next()
+}
 
 app.use(Sentry.Handlers.requestHandler());
 app.use(cors())
@@ -23,11 +28,6 @@ app.use(bodyParser.json());
 app.use(assignId)
 app.use(morgan(':id :method :url :status :response-time'))
 
-function assignId (req, res, next) {
-  req.id = uuid.v4()
-  next()
-}
-
 var port = process.env.PORT || 8001;
 var router = express.Router();
 
@@ -35,7 +35,6 @@ router.use((req, res, next) => {
   // do logging
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  console.log('Something is happening.');
 
   if(req.id) {
     Sentry.configureScope(scope => {
@@ -56,6 +55,10 @@ router.get('/*', (req, res) => {
   res.json({ message: '200' });   
 });
 
+// REGISTER OUR ROUTES -------------------------------
+// all of our routes will be prefixed with /api
+app.use('/api', router);
+
 app.use(Sentry.Handlers.errorHandler());
 // Optional fallthrough error handler
 app.use(function onError(err, req, res, next) {
@@ -65,9 +68,6 @@ app.use(function onError(err, req, res, next) {
   res.end(res.sentry + '\n');
 });
 
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
-app.use('/api', router);
 app.set('view engine', 'jade'); 
 
 app.listen(port);
