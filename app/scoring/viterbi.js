@@ -120,7 +120,6 @@ async function getVehicleClosestStopDistance(tripId, lon, lat) {
                                                       FROM stop_times 
                                                       WHERE trip_id = $1
                                                       GROUP BY stop_id 
-                                                      ORDER BY closest_stop_distance ASC 
                                                       LIMIT 1`, [tripId])
 
     if(closestStop.length > 0) {
