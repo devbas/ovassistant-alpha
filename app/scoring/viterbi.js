@@ -102,7 +102,7 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
     // return []
   } catch(e) {
     console.log({ msg: 'Could not get vehicle location by time', lon: lon, lat: lat, timestamp: timestamp, radius: radius })
-    return false
+    throw e
   } finally {
     client.release()
   }
@@ -189,15 +189,19 @@ async function calculateTransitionMatrix(candidate, fleet) {
  */
 async function setMarkovLayer(lon, lat, timestamp) {
 
-  const observations = await getVehicleLocationByTime(lon, lat, timestamp, 0.002690);
+  try {
+    const observations = await getVehicleLocationByTime(lon, lat, timestamp, 0.002690);
 
-  GPSErrorMargin = 4.07 // Derived from Newson et al. Potential tuning parameter
-  for(let i = 0; i < observations.length; i++) {
-    observations[i].emissionProb = (10 / (Math.sqrt(2 * Math.PI) * GPSErrorMargin)) * Math.exp(-0.5 * (observations[i].user_vehicle_distance / GPSErrorMargin)**2)
-    observations[i].transitionProb = await calculateTransitionMatrix(observations[i], observations)
+    GPSErrorMargin = 4.07 // Derived from Newson et al. Potential tuning parameter
+    for(let i = 0; i < observations.length; i++) {
+      observations[i].emissionProb = (10 / (Math.sqrt(2 * Math.PI) * GPSErrorMargin)) * Math.exp(-0.5 * (observations[i].user_vehicle_distance / GPSErrorMargin)**2)
+      observations[i].transitionProb = await calculateTransitionMatrix(observations[i], observations)
+    }
+
+    return observations
+  } catch(err) {
+    throw err
   }
-
-  return observations
 }
 
 function createObservationId(length = 15) { 
@@ -277,22 +281,26 @@ async function saveMarkovLayer(layer, userId) {
 }
 
 async function score(lon, lat, timestamp, userId) {
-  const result = await getVehicleLocationByTime(lon, lat, timestamp, 0.002690)
-  // const latestMarkovLayer = await setMarkovLayer(lon, lat, timestamp)
-  // const previousMarkovLayers = await getMarkovLayers(userId)
+  try {
+    const result = await getVehicleLocationByTime(lon, lat, timestamp, 0.002690)
+    // const latestMarkovLayer = await setMarkovLayer(lon, lat, timestamp)
+    // const previousMarkovLayers = await getMarkovLayers(userId)
 
-  // const markovLayers = [...previousMarkovLayers ? previousMarkovLayers : [], latestMarkovLayer]
+    // const markovLayers = [...previousMarkovLayers ? previousMarkovLayers : [], latestMarkovLayer]
 
-  // const { obs, startProb, emitProb, transProb, states } = await setMarkovModel(markovLayers)
+    // const { obs, startProb, emitProb, transProb, states } = await setMarkovModel(markovLayers)
 
-  // let result = false
-  // if(markovLayers.length > 1) {
-  //   result = await viterbi(obs, states, startProb, transProb, emitProb)
-  // }
+    // let result = false
+    // if(markovLayers.length > 1) {
+    //   result = await viterbi(obs, states, startProb, transProb, emitProb)
+    // }
 
-  // await saveMarkovLayer(latestMarkovLayer, userId)
+    // await saveMarkovLayer(latestMarkovLayer, userId)
 
-  return result.length > 0 ? result[result.length - 1] : result
+    return result.length > 0 ? result[result.length - 1] : result
+  } catch(err) {
+    throw err
+  }
   
 }
 
