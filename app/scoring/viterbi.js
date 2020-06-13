@@ -71,24 +71,26 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
   
   const client = await pool.connect()
 
-  radius = 200 // overwrite radius for debugging purposes
   try {
+    // const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
+    //                                                 ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
+    //                                               FROM trajectories 
+    //                                               WHERE start_planned <= $2 
+    //                                               AND end_planned >= $3 
+    //                                               AND ST_DWithin(ST_LocateAlong(geom, $4)::geography, 'SRID=4326;POINT(${lon} ${lat})::geography', $5, false) 
+    //                                               ORDER BY user_vehicle_distance ASC`, [timestamp, timestamp, timestamp, timestamp, radius])
+
     const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
                                                     ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
                                                   FROM trajectories 
-                                                  WHERE start_planned <= $2 
-                                                  AND end_planned >= $3 
-                                                  AND ST_DWithin(ST_LocateAlong(geom, $4)::geography, 'SRID=4326;POINT(${lon} ${lat})::geography', $5, false) 
+                                                  WHERE geom &&& ST_Collect(
+                                                    ST_MakePointM(-180, -90, $2),
+                                                    ST_MakePointM(180, 90, $3)
+                                                  )
+                                                  AND ST_DWithin(ST_LocateAlong(geom, $4), 'SRID=4326;POINT(${lon} ${lat})', $5) 
+                                                  GROUP BY geom, trip_id, vehicle_id
                                                   ORDER BY user_vehicle_distance ASC`, [timestamp, timestamp, timestamp, timestamp, radius])
 
-    // const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) as user_vehicle_distance
-    //                                               FROM trajectories 
-    //                                               WHERE start_planned <= $2 
-    //                                               AND end_planned >= $3
-    //                                               AND 
-    //                                               LIMIT 5`, [timestamp, timestamp, timestamp])
-
-    
     // for(let i = 0; i < vehicles.length; i++) {
     //   const closestStop = await getVehicleClosestStopDistance(vehicles[i].trip_id, lon, lat)
 
