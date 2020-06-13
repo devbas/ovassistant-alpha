@@ -73,8 +73,15 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
 
   radius = 200 // overwrite radius for debugging purposes
   try {
-    const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
-                                                    ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
+    // const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
+    //                                                 ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
+    //                                               FROM trajectories 
+    //                                               WHERE start_planned <= $2 
+    //                                               AND end_planned >= $3 
+    //                                               AND ST_DWithin(ST_LocateAlong(geom, $4)::geography, 'SRID=4326;POINT(${lon} ${lat})::geography', $5, false) 
+    //                                               ORDER BY user_vehicle_distance ASC`, [timestamp, timestamp, timestamp, timestamp, radius])
+
+    const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id
                                                   FROM trajectories 
                                                   WHERE start_planned <= $2 
                                                   AND end_planned >= $3 
