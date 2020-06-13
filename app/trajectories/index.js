@@ -411,6 +411,7 @@ const ingestLatestGTFS =  async ({ force }) => {
 
     await client.query(`CREATE INDEX "${utils.makeId()}_idx_stoptimes_stop_id" ON tmp_stop_times(stop_id)`)
     await client.query(`CREATE INDEX "${utils.makeId()}_idx_stoptimes_trip_id" ON tmp_stop_times(trip_id)`)
+    await client.query(`CREATE INDEX "${utils.makeId()}_idx_stoptimes_geom" ON tmp_stop_times USING GIST(geom)`)
     
     // Have the actual switch in a SQL Transaction
     await client.query('BEGIN')
