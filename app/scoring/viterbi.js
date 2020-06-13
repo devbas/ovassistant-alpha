@@ -276,20 +276,20 @@ async function saveMarkovLayer(layer, userId) {
 
 async function score(lon, lat, timestamp, userId) {
   try {
-    const result = await getVehicleLocationByTime(lon, lat, timestamp, 0.002690)
-    // const latestMarkovLayer = await setMarkovLayer(lon, lat, timestamp)
-    // const previousMarkovLayers = await getMarkovLayers(userId)
+    // const result = await getVehicleLocationByTime(lon, lat, timestamp, 0.002690)
+    const latestMarkovLayer = await setMarkovLayer(lon, lat, timestamp)
+    const previousMarkovLayers = await getMarkovLayers(userId)
 
-    // const markovLayers = [...previousMarkovLayers ? previousMarkovLayers : [], latestMarkovLayer]
+    const markovLayers = [...previousMarkovLayers ? previousMarkovLayers : [], latestMarkovLayer]
 
-    // const { obs, startProb, emitProb, transProb, states } = await setMarkovModel(markovLayers)
+    const { obs, startProb, emitProb, transProb, states } = await setMarkovModel(markovLayers)
 
-    // let result = false
-    // if(markovLayers.length > 1) {
-    //   result = await viterbi(obs, states, startProb, transProb, emitProb)
-    // }
+    let result = false
+    if(markovLayers.length > 1) {
+      result = await viterbi(obs, states, startProb, transProb, emitProb)
+    }
 
-    // await saveMarkovLayer(latestMarkovLayer, userId)
+    await saveMarkovLayer(latestMarkovLayer, userId)
 
     return result.length > 0 ? result[result.length - 1] : result
   } catch(err) {
