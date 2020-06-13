@@ -85,7 +85,7 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
                                                   FROM trajectories 
                                                   WHERE start_planned <= $1 
                                                   AND end_planned >= $2
-                                                  AND ST_DWithin(ST_LocateAlong(geom, $3)::geography, 'SRID=4326;POINT(${lon} ${lat})::geography', $4, false)`, [timestamp, timestamp, timestamp, radius])
+                                                  LIMIT 5`, [timestamp, timestamp])
 
     
     // for(let i = 0; i < vehicles.length; i++) {
