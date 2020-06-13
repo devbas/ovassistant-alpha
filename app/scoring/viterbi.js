@@ -91,8 +91,8 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
     //   }
     // } 
 
-    // return vehicles
-    return []
+    return vehicles
+    // return []
   } catch(e) {
     console.log({ msg: 'Could not get vehicle location by time', lon: lon, lat: lat, timestamp: timestamp, radius: radius })
     return false
