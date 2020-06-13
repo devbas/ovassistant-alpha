@@ -84,8 +84,8 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
                                                     ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
                                                   FROM trajectories 
                                                   WHERE geom &&& ST_Collect(
-                                                    ST_MakePointM(-180, -90, $2),
-                                                    ST_MakePointM(180, 90, $3)
+                                                    ST_MakePointM(${lon - 0.10}, ${lat - 0.10}, $2),
+                                                    ST_MakePointM(${lon + 0.10}, ${lat + 0.10}, $3)
                                                   )
                                                   AND ST_DWithin(ST_LocateAlong(geom, $4), 'SRID=4326;POINT(${lon} ${lat})', $5) 
                                                   GROUP BY geom, trip_id, vehicle_id
