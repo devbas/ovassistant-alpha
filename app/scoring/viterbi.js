@@ -72,13 +72,6 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
   const client = await pool.connect()
 
   try {
-    // const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
-    //                                                 ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
-    //                                               FROM trajectories 
-    //                                               WHERE start_planned <= $2 
-    //                                               AND end_planned >= $3 
-    //                                               AND ST_DWithin(ST_LocateAlong(geom, $4)::geography, 'SRID=4326;POINT(${lon} ${lat})::geography', $5, false) 
-    //                                               ORDER BY user_vehicle_distance ASC`, [timestamp, timestamp, timestamp, timestamp, radius])
 
     const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
                                                     ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
@@ -91,14 +84,14 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
                                                   GROUP BY geom, trip_id, vehicle_id
                                                   ORDER BY user_vehicle_distance ASC`, [timestamp, timestamp, timestamp, timestamp, radius])
 
-    // for(let i = 0; i < vehicles.length; i++) {
-    //   const closestStop = await getVehicleClosestStopDistance(vehicles[i].trip_id, lon, lat)
+    for(let i = 0; i < vehicles.length; i++) {
+      const closestStop = await getVehicleClosestStopDistance(vehicles[i].trip_id, lon, lat)
 
-    //   if(closestStop) {
-    //     vehicles[i].closestStopId = closestStop.closest_stop_id
-    //     vehicles[i].closestStopDistance = closestStop.closest_stop_distance
-    //   }
-    // } 
+      if(closestStop) {
+        vehicles[i].closestStopId = closestStop.closest_stop_id
+        vehicles[i].closestStopDistance = closestStop.closest_stop_distance
+      }
+    } 
 
     return vehicles
     // return []
