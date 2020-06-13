@@ -80,30 +80,31 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
     //                                               AND ST_DWithin(ST_LocateAlong(geom, $4), 'SRID=4326;POINT(${lon} ${lat})', $5) 
     //                                               ORDER BY user_vehicle_distance ASC`, [timestamp, timestamp, timestamp, timestamp, radius])
 
-    const { rows: vehicles} = await client.query(`SELECT trip_id, vehicle_id, 
-                                                  ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
-                                                  FROM trajectories T
-                                                  WHERE start_planned <= $2 
-                                                  AND end_planned >= $3
-                                                  AND T.trajectory_id = (
-                                                    SELECT trajectory_id
-                                                    FROM trajectories T2 
-                                                    WHERE T2.trajectory_id = T.trajectory_id 
-                                                    AND ST_DWithin(ST_LocateAlong(geom, $4), ST_GeomFromText('POINT(${lon} ${lat})', 4326), $5) 
-                                                  )
-                                                  LIMIT 10`, [timestamp, timestamp, timestamp, timestamp, radius])
+    // const { rows: vehicles} = await client.query(`SELECT trip_id, vehicle_id, 
+    //                                               ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
+    //                                               FROM trajectories T
+    //                                               WHERE start_planned <= $2 
+    //                                               AND end_planned >= $3
+    //                                               AND T.trajectory_id = (
+    //                                                 SELECT trajectory_id
+    //                                                 FROM trajectories T2 
+    //                                                 WHERE T2.trajectory_id = T.trajectory_id 
+    //                                                 AND ST_DWithin(ST_LocateAlong(geom, $4), ST_GeomFromText('POINT(${lon} ${lat})', 4326), $5) 
+    //                                               )
+    //                                               LIMIT 10`, [timestamp, timestamp, timestamp, timestamp, radius])
 
     
-    for(let i = 0; i < vehicles.length; i++) {
-      const closestStop = await getVehicleClosestStopDistance(vehicles[i].trip_id, lon, lat)
+    // for(let i = 0; i < vehicles.length; i++) {
+    //   const closestStop = await getVehicleClosestStopDistance(vehicles[i].trip_id, lon, lat)
 
-      if(closestStop) {
-        vehicles[i].closestStopId = closestStop.closest_stop_id
-        vehicles[i].closestStopDistance = closestStop.closest_stop_distance
-      }
-    } 
+    //   if(closestStop) {
+    //     vehicles[i].closestStopId = closestStop.closest_stop_id
+    //     vehicles[i].closestStopDistance = closestStop.closest_stop_distance
+    //   }
+    // } 
 
-    return vehicles
+    // return vehicles
+    return []
   } catch(e) {
     console.log({ msg: 'Could not get vehicle location by time', lon: lon, lat: lat, timestamp: timestamp, radius: radius })
     return false
