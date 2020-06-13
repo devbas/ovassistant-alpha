@@ -26,8 +26,6 @@ router.post('/score', async (req, res) => {
   }
 
   try {
-    console.log('call the controller', data)
-
     const result = await viterbi.score(parsedData.lon, parsedData.lat, parsedData.datetime, parsedData.userId)
     res.status(200).json({ data: result })
   } catch(err) {
