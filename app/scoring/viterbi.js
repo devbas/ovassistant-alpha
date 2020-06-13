@@ -83,9 +83,9 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
 
     const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, ST_LocateAlong(geom, $1) as current_vehicle_location
                                                   FROM trajectories 
-                                                  WHERE start_planned <= $1 
-                                                  AND end_planned >= $2
-                                                  LIMIT 5`, [timestamp, timestamp])
+                                                  WHERE start_planned <= $2 
+                                                  AND end_planned >= $3
+                                                  LIMIT 5`, [timestamp, timestamp, timestamp])
 
     
     // for(let i = 0; i < vehicles.length; i++) {
