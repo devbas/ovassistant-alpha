@@ -72,7 +72,7 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
   const client = await pool.connect()
 
   try {
-
+    var t0 = performance.now()
     const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
                                                     ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance, 
                                                     (
@@ -99,7 +99,9 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
                                                   GROUP BY geom, trip_id, vehicle_id
                                                   ORDER BY user_vehicle_distance ASC
                                                   LIMIT 7`, [timestamp, timestamp, timestamp, timestamp, timestamp])
-
+    
+    var t1 = performance.now()                                                
+    console.log(`Database call took ${(t1 - t0)} milliseconds for lon: ${lon}, lat: ${lat}, timestamp: ${timestamp}`)
     return vehicles
     // return []
   } catch(e) {
