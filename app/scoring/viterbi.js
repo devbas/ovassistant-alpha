@@ -87,7 +87,7 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
                                                   LIMIT 7`, [timestamp, timestamp, timestamp, timestamp, timestamp])
 
     for(let i = 0; i < vehicles.length; i++) {
-      const closestStop = await getVehicleClosestStopDistance(vehicles[i].trip_id, lon, lat)
+      const closestStop = await getVehicleClosestStopDistance(vehicles[i].trip_id, lon, lat, client)
 
       if(closestStop) {
         vehicles[i].closestStopId = closestStop.closest_stop_id
@@ -112,9 +112,7 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
  * @param {float} lon Longitude of vehicle expressed in radians
  * @param {float} lat Latitude of vehicle expressed in radians
  */
-async function getVehicleClosestStopDistance(tripId, lon, lat) {
-
-  const client = await pool.connect()
+async function getVehicleClosestStopDistance(tripId, lon, lat, client) {
 
   try {
     const { rows: closestStop } = await client.query(`SELECT MIN(ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom)) as closest_stop_distance, 
@@ -133,8 +131,6 @@ async function getVehicleClosestStopDistance(tripId, lon, lat) {
   } catch(e) {
     console.log({ msg: 'Could not get vehicle closest stop distance', tripId: tripId, lon: lon, lat: lat, err: e })
     return false
-  } finally {
-    client.release()
   }
 }
 
