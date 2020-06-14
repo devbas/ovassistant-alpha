@@ -1,6 +1,7 @@
 const { pool } = require('./controllers/db.js')
 const store = require('./redis-layer-store')
 const _ = require('lodash')
+const {performance} = require('perf_hooks');
 
 /**
  * Returns the probability of the most probable state sequence. 
