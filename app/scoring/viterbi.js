@@ -74,8 +74,22 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
   try {
 
     const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
-                                                    ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance 
-                                                  FROM trajectories 
+                                                    ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance, 
+                                                    (
+                                                      SELECT MIN(ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom)) AS closestStopDistance
+                                                      FROM stop_times ST
+                                                      WHERE ST.trip_id = T.trip_id 
+                                                      GROUP BY stop_id, trip_id 
+                                                      LIMIT 1
+                                                    ) AS closest_stop_distance, 
+                                                    (
+                                                      SELECT stop_id
+                                                      FROM stop_times ST
+                                                      WHERE ST.trip_id = T.trip_id 
+                                                      ORDER BY ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom) ASC
+                                                      LIMIT 1
+                                                    ) AS closestStopId 
+                                                  FROM trajectories T
                                                   WHERE geom &&& ST_Collect(
                                                     ST_MakePointM(${lon}, ${lat}, $2),
                                                     ST_MakePointM(${lon}, ${lat}, $3)
@@ -85,15 +99,15 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
                                                   GROUP BY geom, trip_id, vehicle_id
                                                   ORDER BY user_vehicle_distance ASC
                                                   LIMIT 7`, [timestamp, timestamp, timestamp, timestamp, timestamp])
+                                                
+    // for(let i = 0; i < vehicles.length; i++) {
+    //   const closestStop = await getVehicleClosestStopDistance(vehicles[i].trip_id, lon, lat, client)
 
-    for(let i = 0; i < vehicles.length; i++) {
-      const closestStop = await getVehicleClosestStopDistance(vehicles[i].trip_id, lon, lat, client)
-
-      if(closestStop) {
-        vehicles[i].closestStopId = closestStop.closest_stop_id
-        vehicles[i].closestStopDistance = closestStop.closest_stop_distance
-      }
-    } 
+    //   if(closestStop) {
+    //     vehicles[i].closestStopId = closestStop.closest_stop_id
+    //     vehicles[i].closestStopDistance = closestStop.closest_stop_distance
+    //   }
+    // } 
 
     return vehicles
     // return []
