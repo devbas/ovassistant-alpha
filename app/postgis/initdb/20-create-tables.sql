@@ -138,6 +138,26 @@ ALTER TABLE "public"."routes" OWNER TO "docker";
 CREATE INDEX idx_routes_route_id
 ON routes(route_id);
 
+CREATE TABLE "public"."shapelines" (
+	"geom" "public"."geometry",
+	"shape_id" int4,
+	"shape_pt_sequence_start" int4,
+	"shape_pt_sequence_end" int4,
+	"shapeline_id" SERIAL NOT NULL
+)
+WITH (OIDS=FALSE);
+ALTER TABLE "public"."shapelines" OWNER TO "docker";
+
+CREATE TABLE "public"."trip_times" (
+	"triptime_id" SERIAL NOT NULL,
+	"shapeline_id" int4,
+	"trip_id" int4,
+	"start_planned" int8,
+	"end_planned" int8
+)
+WITH (OIDS=FALSE);
+ALTER TABLE "public"."trip_times" OWNER TO "docker";
+
 -- ----------------------------
 --  Primary key structure for table trajectories
 -- ----------------------------
@@ -278,3 +298,23 @@ ALTER TABLE "public"."tmp_routes" OWNER TO "docker";
 
 CREATE INDEX idx_tmp_routes_route_id
 ON tmp_routes(route_id);
+
+CREATE TABLE "public"."tmp_shapelines" (
+	"geom" "public"."geometry",
+	"shape_id" int4,
+	"shape_pt_sequence_start" int4,
+	"shape_pt_sequence_end" int4,
+	"shapeline_id" SERIAL NOT NULL
+)
+WITH (OIDS=FALSE);
+ALTER TABLE "public"."tmp_shapelines" OWNER TO "docker";
+
+CREATE TABLE "public"."tmp_trip_times" (
+	"triptime_id" SERIAL NOT NULL,
+	"shapeline_id" int4,
+	"trip_id" int4,
+	"start_planned" int8,
+	"end_planned" int8
+)
+WITH (OIDS=FALSE);
+ALTER TABLE "public"."tmp_trip_times" OWNER TO "docker";
