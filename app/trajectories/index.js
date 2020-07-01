@@ -45,7 +45,7 @@ const ingestLatestGTFS =  async ({ force }) => {
     // await client.query('TRUNCATE tmp_stops')
     // await client.query('TRUNCATE tmp_calendar_dates')
     // await client.query('TRUNCATE tmp_routes')
-    // await client.query('TRUNCATE tmp_trip_times')
+    await client.query('TRUNCATE tmp_trip_times')
     await client.query('TRUNCATE tmp_shapelines')
     
     client.release()
@@ -223,53 +223,53 @@ const ingestLatestGTFS =  async ({ force }) => {
     //   })
     // })
 
-    // console.log('step 10')
+    console.log('step 10')
 
-    // await new Promise(async (resolve, reject) => {
-    //   let client = await pgPool.connect()
+    await new Promise(async (resolve, reject) => {
+      let client = await pgPool.connect()
 
-    //   const shapes = await client.query({ text: 'SELECT DISTINCT shape_id FROM tmp_temp_shapes' })
-    //   client.release()
+      const shapes = await client.query({ text: 'SELECT DISTINCT shape_id FROM tmp_temp_shapes' })
+      client.release()
 
-    //   const shapeQueue = new Queue(shapes.rows)
+      const shapeQueue = new Queue(shapes.rows)
 
-    //   let i = 0
+      let i = 0
 
-    //   while(!shapeQueue.isEmpty()) {
-    //     const client = await pgPool.connect()
+      while(!shapeQueue.isEmpty()) {
+        const client = await pgPool.connect()
 
-    //     const shape = shapeQueue.dequeue()
+        const shape = shapeQueue.dequeue()
 
-    //     try {
-    //       const shapePoints = await client.query({ text: 'SELECT * FROM tmp_temp_shapes WHERE shape_id = $1 ORDER BY shape_pt_sequence ASC', values: [shape['shape_id']] })
+        try {
+          const shapePoints = await client.query({ text: 'SELECT * FROM tmp_temp_shapes WHERE shape_id = $1 ORDER BY shape_pt_sequence ASC', values: [shape['shape_id']] })
 
-    //       const shapePointsQueue = new Queue(shapePoints.rows)
+          const shapePointsQueue = new Queue(shapePoints.rows)
 
-    //       let shapeLines = ''
-    //       while(!shapePointsQueue.isEmpty()) {
-    //         const A = shapePointsQueue.dequeue()
-    //         const B = shapePointsQueue.queueSize() === 1 ? shapePointsQueue.dequeue() : shapePointsQueue.front()
+          let shapeLines = ''
+          while(!shapePointsQueue.isEmpty()) {
+            const A = shapePointsQueue.dequeue()
+            const B = shapePointsQueue.queueSize() === 1 ? shapePointsQueue.dequeue() : shapePointsQueue.front()
             
-    //         shapeLines = shapeLines + `(ST_SetSRID(ST_MakeLine(ST_MakePoint(${A['shape_pt_lon']},${A['shape_pt_lat']}), ST_MakePoint(${B['shape_pt_lon']}, ${B['shape_pt_lat']})), 4326), ${shape['shape_id']}, ${A['shape_pt_sequence']}, ${B['shape_pt_sequence']})`            
+            shapeLines = shapeLines + `(ST_SetSRID(ST_MakeLine(ST_MakePoint(${A['shape_pt_lon']},${A['shape_pt_lat']}), ST_MakePoint(${B['shape_pt_lon']}, ${B['shape_pt_lat']})), 4326), ${shape['shape_id']}, ${A['shape_pt_sequence']}, ${B['shape_pt_sequence']})`            
             
-    //         if(shapePointsQueue.queueSize() > 1) {
-    //           shapeLines = shapeLines + ','
-    //         }
-    //       } 
+            if(shapePointsQueue.queueSize() > 1) {
+              shapeLines = shapeLines + ','
+            }
+          } 
 
-    //       await client.query({ text: `INSERT INTO tmp_shapelines (geom, shape_id, shape_pt_sequence_start, shape_pt_sequence_end) VALUES ${shapeLines}`})
+          await client.query({ text: `INSERT INTO tmp_shapelines (geom, shape_id, shape_pt_sequence_start, shape_pt_sequence_end) VALUES ${shapeLines}`})
 
-    //       client.release()
+          client.release()
 
-    //       if(shapeQueue.isEmpty()) {
-    //         resolve()
-    //       }
-    //     } catch(err) {
-    //       client.release()
-    //       reject(err)
-    //     }
-    //   }
-    // })
+          if(shapeQueue.isEmpty()) {
+            resolve()
+          }
+        } catch(err) {
+          client.release()
+          reject(err)
+        }
+      }
+    })
 
     await new Promise(async (resolve, reject) => {
       const today = moment().format('YYYYMMDD')
