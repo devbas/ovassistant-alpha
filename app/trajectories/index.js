@@ -38,245 +38,245 @@ const ingestLatestGTFS =  async ({ force }) => {
       return false; 
     }  
 
-    await client.query('TRUNCATE tmp_temp_shapes')
-    await client.query('TRUNCATE tmp_trajectories')
-    await client.query('TRUNCATE tmp_trips')
-    await client.query('TRUNCATE tmp_stop_times')
-    await client.query('TRUNCATE tmp_stops')
-    await client.query('TRUNCATE tmp_calendar_dates')
-    await client.query('TRUNCATE tmp_routes')
-    await client.query('TRUNCATE tmp_trip_times')
+    // await client.query('TRUNCATE tmp_temp_shapes')
+    // await client.query('TRUNCATE tmp_trajectories')
+    // await client.query('TRUNCATE tmp_trips')
+    // await client.query('TRUNCATE tmp_stop_times')
+    // await client.query('TRUNCATE tmp_stops')
+    // await client.query('TRUNCATE tmp_calendar_dates')
+    // await client.query('TRUNCATE tmp_routes')
+    // await client.query('TRUNCATE tmp_trip_times')
     await client.query('TRUNCATE tmp_shapelines')
     
     client.release()
 
-    async function downloadGtfs() { 
-      console.log('step 2')
-      return new Promise((resolve, reject) => {
-        request('http://gtfs.openov.nl/gtfs-rt/gtfs-openov-nl.zip')
-          .on('error', function(err) {
-            reject(err)
-          })
-          .on('end', () => {
-            console.log('Finished downloading GTFS NL')
-            resolve()
-          })
-          .pipe(
-            fs.createWriteStream(zipFile)
-          )
-      })
-    }
+    // async function downloadGtfs() { 
+    //   console.log('step 2')
+    //   return new Promise((resolve, reject) => {
+    //     request('http://gtfs.openov.nl/gtfs-rt/gtfs-openov-nl.zip')
+    //       .on('error', function(err) {
+    //         reject(err)
+    //       })
+    //       .on('end', () => {
+    //         console.log('Finished downloading GTFS NL')
+    //         resolve()
+    //       })
+    //       .pipe(
+    //         fs.createWriteStream(zipFile)
+    //       )
+    //   })
+    // }
 
-    console.log('step 0')
-    await new Promise(async (resolve, reject) => {
-      // console.log('step 1')
-      await downloadGtfs()
-      console.log('stap 4')
+    // console.log('step 0')
+    // await new Promise(async (resolve, reject) => {
+    //   // console.log('step 1')
+    //   await downloadGtfs()
+    //   console.log('stap 4')
 
-      decompress(zipFile, 'tmp').then(files => {
-        fs.unlink(zipFile)
-        console.log('unlinked')
-        resolve()
-      }).catch(err => {
-        Sentry.captureException(err)
-        reject(err)
-      })
-    })
+    //   decompress(zipFile, 'tmp').then(files => {
+    //     fs.unlink(zipFile)
+    //     console.log('unlinked')
+    //     resolve()
+    //   }).catch(err => {
+    //     Sentry.captureException(err)
+    //     reject(err)
+    //   })
+    // })
 
-    console.log('step 5')
+    // console.log('step 5')
 
-    await new Promise((resolve, reject) => {
-      pgPool.connect((err, client) => {
+    // await new Promise((resolve, reject) => {
+    //   pgPool.connect((err, client) => {
 
-        if(err) {
-          reject(err)
-        }
+    //     if(err) {
+    //       reject(err)
+    //     }
 
-        let stream = client.query(copyFrom('COPY tmp_temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/shapes.txt')
-        fileStream.on('error', reject)
-        fileStream.on('drain', reject)
-        fileStream.on('finish', resolve)
-        fileStream.on('close', resolve)
-        stream.on('error', reject)
-        stream.on('end', resolve)
-        fileStream.pipe(stream)
-      })
-    })
+    //     let stream = client.query(copyFrom('COPY tmp_temp_shapes (shape_id,shape_pt_sequence,shape_pt_lat,shape_pt_lon,shape_dist_traveled) FROM STDIN CSV HEADER'))
+    //     let fileStream = fs.createReadStream('./tmp/shapes.txt')
+    //     fileStream.on('error', reject)
+    //     fileStream.on('drain', reject)
+    //     fileStream.on('finish', resolve)
+    //     fileStream.on('close', resolve)
+    //     stream.on('error', reject)
+    //     stream.on('end', resolve)
+    //     fileStream.pipe(stream)
+    //   })
+    // })
 
-    console.log('step 6')
+    // console.log('step 6')
 
-    await new Promise((resolve, reject) => {
-      console.log(new Date(), ' Inserting stop_times')
-      pgPool.connect((err, client) => {
+    // await new Promise((resolve, reject) => {
+    //   console.log(new Date(), ' Inserting stop_times')
+    //   pgPool.connect((err, client) => {
 
-        if(err) {
-          reject(err)
-        }
+    //     if(err) {
+    //       reject(err)
+    //     }
 
-        let stream = client.query(copyFrom('COPY tmp_stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/stop_times.txt')
-        fileStream.on('error', reject)
-        fileStream.on('drain', reject)
-        fileStream.on('finish', resolve)
-        fileStream.on('close', async () => {
-          const result = await client.query('SELECT COUNT(trip_id) FROM tmp_stop_times')
-          console.log('tmp_stop_times closed!', result.rows[0].count)
-          resolve() 
-        })
-        stream.on('error', reject)
-        stream.on('end', resolve)
-        fileStream.pipe(stream)
-      })
-    })
+    //     let stream = client.query(copyFrom('COPY tmp_stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
+    //     let fileStream = fs.createReadStream('./tmp/stop_times.txt')
+    //     fileStream.on('error', reject)
+    //     fileStream.on('drain', reject)
+    //     fileStream.on('finish', resolve)
+    //     fileStream.on('close', async () => {
+    //       const result = await client.query('SELECT COUNT(trip_id) FROM tmp_stop_times')
+    //       console.log('tmp_stop_times closed!', result.rows[0].count)
+    //       resolve() 
+    //     })
+    //     stream.on('error', reject)
+    //     stream.on('end', resolve)
+    //     fileStream.pipe(stream)
+    //   })
+    // })
 
-    await new Promise(async (resolve, reject) => {
-      pgPool.connect((err, client) => {
+    // await new Promise(async (resolve, reject) => {
+    //   pgPool.connect((err, client) => {
 
-        if(err) {
-          reject(err)
-        }
+    //     if(err) {
+    //       reject(err)
+    //     }
 
-        let stream = client.query(copyFrom('COPY tmp_calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
-        fileStream.on('error', reject)
-        fileStream.on('drain', reject)
-        fileStream.on('finish', resolve)
-        fileStream.on('close', async () => {
-          const result = await client.query('SELECT COUNT(service_id) FROM tmp_calendar_dates')
-          console.log('tmp_calendar_dates closed!', result.rows[0].count)
-          resolve() 
-        })
-        stream.on('error', reject)
-        stream.on('end', resolve)
-        fileStream.pipe(stream) 
-      })
-    })
+    //     let stream = client.query(copyFrom('COPY tmp_calendar_dates (service_id,date,exception_type) FROM STDIN CSV HEADER'))
+    //     let fileStream = fs.createReadStream('./tmp/calendar_dates.txt')
+    //     fileStream.on('error', reject)
+    //     fileStream.on('drain', reject)
+    //     fileStream.on('finish', resolve)
+    //     fileStream.on('close', async () => {
+    //       const result = await client.query('SELECT COUNT(service_id) FROM tmp_calendar_dates')
+    //       console.log('tmp_calendar_dates closed!', result.rows[0].count)
+    //       resolve() 
+    //     })
+    //     stream.on('error', reject)
+    //     stream.on('end', resolve)
+    //     fileStream.pipe(stream) 
+    //   })
+    // })
 
-    console.log('step 7')
+    // console.log('step 7')
 
-    await new Promise((resolve, reject) => {
-      console.log(new Date(), ' Inserting trips')
-      pgPool.connect((err, client) => {
+    // await new Promise((resolve, reject) => {
+    //   console.log(new Date(), ' Inserting trips')
+    //   pgPool.connect((err, client) => {
 
-        if(err) {
-          reject(err)
-        }
+    //     if(err) {
+    //       reject(err)
+    //     }
 
-        let stream = client.query(copyFrom('COPY tmp_trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/trips.txt')
-        fileStream.on('error', reject)
-        fileStream.on('drain', reject)
-        fileStream.on('finish', resolve)
-        fileStream.on('close', async () => {
-          const result = await client.query('SELECT COUNT(trip_id) FROM tmp_trips')
-          console.log('tmp_trips closed!', result.rows[0].count)
-          resolve() 
-        })
-        stream.on('error', reject)
-        stream.on('end', resolve)
-        fileStream.pipe(stream)
-      })
-    })
+    //     let stream = client.query(copyFrom('COPY tmp_trips (route_id,service_id,trip_id,realtime_trip_id,trip_headsign,trip_short_name,trip_long_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed) FROM STDIN CSV HEADER'))
+    //     let fileStream = fs.createReadStream('./tmp/trips.txt')
+    //     fileStream.on('error', reject)
+    //     fileStream.on('drain', reject)
+    //     fileStream.on('finish', resolve)
+    //     fileStream.on('close', async () => {
+    //       const result = await client.query('SELECT COUNT(trip_id) FROM tmp_trips')
+    //       console.log('tmp_trips closed!', result.rows[0].count)
+    //       resolve() 
+    //     })
+    //     stream.on('error', reject)
+    //     stream.on('end', resolve)
+    //     fileStream.pipe(stream)
+    //   })
+    // })
 
-    console.log('step 8')
+    // console.log('step 8')
 
-    await new Promise(async (resolve, reject) => {
-      console.log(new Date(), ' Inserting routes')
-      pgPool.connect((err, client) => {
+    // await new Promise(async (resolve, reject) => {
+    //   console.log(new Date(), ' Inserting routes')
+    //   pgPool.connect((err, client) => {
 
-        if(err) {
-          reject(err)
-        }
+    //     if(err) {
+    //       reject(err)
+    //     }
 
-        let stream = client.query(copyFrom('COPY tmp_routes (route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_color,route_text_color,route_url) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/routes.txt')
-        fileStream.on('error', reject)
-        fileStream.on('drain', reject)
-        fileStream.on('finish', resolve)
-        fileStream.on('close', resolve)
-        stream.on('error', reject)
-        stream.on('end', resolve)
-        fileStream.pipe(stream)
-      })
-    })
+    //     let stream = client.query(copyFrom('COPY tmp_routes (route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_color,route_text_color,route_url) FROM STDIN CSV HEADER'))
+    //     let fileStream = fs.createReadStream('./tmp/routes.txt')
+    //     fileStream.on('error', reject)
+    //     fileStream.on('drain', reject)
+    //     fileStream.on('finish', resolve)
+    //     fileStream.on('close', resolve)
+    //     stream.on('error', reject)
+    //     stream.on('end', resolve)
+    //     fileStream.pipe(stream)
+    //   })
+    // })
 
-    console.log('step 9')
+    // console.log('step 9')
 
-    await new Promise(async (resolve, reject) => {
-      console.log(new Date(), ' Inserting stops')
-      pgPool.connect((err, client) => {
+    // await new Promise(async (resolve, reject) => {
+    //   console.log(new Date(), ' Inserting stops')
+    //   pgPool.connect((err, client) => {
 
-        if(err) {
-          reject(err)
-        }
+    //     if(err) {
+    //       reject(err)
+    //     }
 
-        let stream = client.query(copyFrom('COPY tmp_stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream('./tmp/stops.txt')
-        fileStream.on('error', reject)
-        fileStream.on('drain', reject)
-        fileStream.on('finish', resolve)
-        fileStream.on('close', resolve)
-        stream.on('error', reject)
-        stream.on('end', resolve)
-        fileStream.pipe(stream)
-      })
-    })
+    //     let stream = client.query(copyFrom('COPY tmp_stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
+    //     let fileStream = fs.createReadStream('./tmp/stops.txt')
+    //     fileStream.on('error', reject)
+    //     fileStream.on('drain', reject)
+    //     fileStream.on('finish', resolve)
+    //     fileStream.on('close', resolve)
+    //     stream.on('error', reject)
+    //     stream.on('end', resolve)
+    //     fileStream.pipe(stream)
+    //   })
+    // })
 
-    console.log('step 10')
+    // console.log('step 10')
 
-    await new Promise(async (resolve, reject) => {
-      let client = await pgPool.connect()
+    // await new Promise(async (resolve, reject) => {
+    //   let client = await pgPool.connect()
 
-      const shapes = await client.query({ text: 'SELECT DISTINCT shape_id FROM tmp_temp_shapes' })
-      client.release()
+    //   const shapes = await client.query({ text: 'SELECT DISTINCT shape_id FROM tmp_temp_shapes' })
+    //   client.release()
 
-      const shapeQueue = new Queue(shapes.rows)
+    //   const shapeQueue = new Queue(shapes.rows)
 
-      let i = 0
+    //   let i = 0
 
-      while(!shapeQueue.isEmpty()) {
-        const client = await pgPool.connect()
+    //   while(!shapeQueue.isEmpty()) {
+    //     const client = await pgPool.connect()
 
-        const shape = shapeQueue.dequeue()
+    //     const shape = shapeQueue.dequeue()
 
-        try {
-          const shapePoints = await client.query({ text: 'SELECT * FROM tmp_temp_shapes WHERE shape_id = $1 ORDER BY shape_pt_sequence ASC', values: [shape['shape_id']] })
+    //     try {
+    //       const shapePoints = await client.query({ text: 'SELECT * FROM tmp_temp_shapes WHERE shape_id = $1 ORDER BY shape_pt_sequence ASC', values: [shape['shape_id']] })
 
-          const shapePointsQueue = new Queue(shapePoints.rows)
+    //       const shapePointsQueue = new Queue(shapePoints.rows)
 
-          let shapeLines = ''
-          while(!shapePointsQueue.isEmpty()) {
-            const A = shapePointsQueue.dequeue()
-            const B = shapePointsQueue.queueSize() === 1 ? shapePointsQueue.dequeue() : shapePointsQueue.front()
+    //       let shapeLines = ''
+    //       while(!shapePointsQueue.isEmpty()) {
+    //         const A = shapePointsQueue.dequeue()
+    //         const B = shapePointsQueue.queueSize() === 1 ? shapePointsQueue.dequeue() : shapePointsQueue.front()
             
-            shapeLines = shapeLines + `(ST_SetSRID(ST_MakeLine(ST_MakePoint(${A['shape_pt_lon']},${A['shape_pt_lat']}), ST_MakePoint(${B['shape_pt_lon']}, ${B['shape_pt_lat']})), 4326), ${shape['shape_id']}, ${A['shape_pt_sequence']}, ${B['shape_pt_sequence']})`            
+    //         shapeLines = shapeLines + `(ST_SetSRID(ST_MakeLine(ST_MakePoint(${A['shape_pt_lon']},${A['shape_pt_lat']}), ST_MakePoint(${B['shape_pt_lon']}, ${B['shape_pt_lat']})), 4326), ${shape['shape_id']}, ${A['shape_pt_sequence']}, ${B['shape_pt_sequence']})`            
             
-            if(shapePointsQueue.queueSize() > 1) {
-              shapeLines = shapeLines + ','
-            }
-          } 
+    //         if(shapePointsQueue.queueSize() > 1) {
+    //           shapeLines = shapeLines + ','
+    //         }
+    //       } 
 
-          await client.query({ text: `INSERT INTO tmp_shapelines (geom, shape_id, shape_pt_sequence_start, shape_pt_sequence_end) VALUES ${shapeLines}`})
+    //       await client.query({ text: `INSERT INTO tmp_shapelines (geom, shape_id, shape_pt_sequence_start, shape_pt_sequence_end) VALUES ${shapeLines}`})
 
-          client.release()
+    //       client.release()
 
-          if(shapeQueue.isEmpty()) {
-            resolve()
-          }
-        } catch(err) {
-          client.release()
-          reject(err)
-        }
-      }
-    })
+    //       if(shapeQueue.isEmpty()) {
+    //         resolve()
+    //       }
+    //     } catch(err) {
+    //       client.release()
+    //       reject(err)
+    //     }
+    //   }
+    // })
 
     await new Promise(async (resolve, reject) => {
       const today = moment().format('YYYYMMDD')
       const tomorrow = moment().format('YYYYMMDD')
 
       let client = await pgPool.connect()
-      const trips = await client.query({ text: 'SELECT * FROM tmp_trips T JOIN tmp_calendar_dates CD ON T.service_id = CD.service_id WHERE (CD.date = $1 OR CD.date = $2) AND T.shape_id IS NOT NULL LIMIT 1', values: [today, tomorrow] })
+      const trips = await client.query({ text: 'SELECT * FROM tmp_trips T JOIN tmp_calendar_dates CD ON T.service_id = CD.service_id WHERE (CD.date = $1 OR CD.date = $2) AND T.shape_id IS NOT NULL', values: [today, tomorrow] })
       client.release()
 
       const tripQueue = new Queue(trips.rows)
@@ -323,7 +323,7 @@ const ingestLatestGTFS =  async ({ force }) => {
           
             const vertices = filter(shapes.rows, (shape) => 
               shape.shape_dist_traveled >= A['shape_dist_traveled'] && 
-              shape.shape_dist_traveled <= B['shape_dist_traveled'])
+              shape.shape_dist_traveled < B['shape_dist_traveled'])
 
             for(let j = 0; j < vertices.length; j++) {
               // Calculate the distance from v1 to A
