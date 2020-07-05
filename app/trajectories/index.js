@@ -38,7 +38,7 @@ const ingestLatestGTFS =  async ({ force }) => {
     // //   return false; 
     // // }  
 
-    // let client = await pgPool.connect()
+    let client = await pgPool.connect()
 
     // await client.query('TRUNCATE tmp_temp_shapes')
     // await client.query('TRUNCATE tmp_trajectories')
@@ -50,7 +50,7 @@ const ingestLatestGTFS =  async ({ force }) => {
     await client.query('TRUNCATE tmp_trip_times')
     // await client.query('TRUNCATE tmp_shapelines')
     
-    // client.release()
+    client.release()
 
     // async function downloadGtfs() { 
     //   console.log('step 2')
