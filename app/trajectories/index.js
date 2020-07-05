@@ -31,30 +31,12 @@ const ingestLatestGTFS =  async ({ force }) => {
 
     const pgPool = new Pool(config.pg)
 
-    
-    // console.log('connected to Postgis!')
+    console.log('connected to Postgis!')
     // const trajectoryCount = await client.query('SELECT COUNT(*) FROM trajectories')
 
     // if(trajectoryCount.rows[0].count > 0 && !force) {
     //   return false; 
     // }  
-
-    tripTimesImport()
-
-    // Delete temporary trip_times file
-    fs.readdir(tripTimesDirectory, async (err, files) => {
-
-      if(err) {
-        reject(err)
-      }
-
-      for (const file of files) {
-        fs.unlink(path.join(tripTimesDirectory, file), err => {
-          if (err) throw err;
-        })
-      }
-
-    })
 
     let client = await pgPool.connect()
 
