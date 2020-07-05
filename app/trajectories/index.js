@@ -18,68 +18,6 @@ Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 const config = require('./config/config')
 
-const tripTimesQueue = new Queue([])
-
-const tripTimesImport = (breaker) => {
-  let threshold = 10
-  let pause = 5000
-
-  if(!tripTimesQueue.isEmpty()) {
-    const filename = tripTimesQueue.dequeue()
-    console.log('start import of: ', filename)
-    async () => {
-      await new Promise(async (resolve, reject) => {
-        let stream = client.query(copyFrom('COPY tmp_trip_times (shapeline_id, trip_id, start_planned, end_planned) FROM STDIN CSV HEADER'))
-        let fileStream = fs.createReadStream(`./tmp/trip_times/${filename}`)
-        fileStream.on('error', reject)
-        fileStream.on('drain', reject)
-        fileStream.on('finish', resolve)
-        fileStream.on('close', resolve)
-        stream.on('error', reject)
-        stream.on('end', resolve)
-        fileStream.pipe(stream)
-        console.log('Go for it')
-      })
-
-      console.log('finished import of: ', filename)
-      tripTimesImport(0)
-    }
-
-  } else {
-    breaker = breaker + 1
-
-    if(breaker < threshold) {
-      tripTimesImport(breaker)
-    } else {
-      setTimeout(() => {
-        tripTimesImport(0)
-      }, pause)
-    }
-  }
-}
-
-const waitForTripTimesImport = async () => {
-  // Wait for the triptimes queue to empty up
-  await new Promise(async (resolve, reject) => {
-    let threshold = 10
-    let pause = 5000
-
-    if(tripTimesQueue.isEmpty()) {
-      resolve()
-    } else {
-      breaker = breaker + 1
-  
-      if(breaker < threshold) {
-        waitForTripTimesImport()
-      } else {
-        setTimeout(() => {
-          waitForTripTimesImport()
-        }, pause)
-      }
-    }
-  })
-}
-
 const ingestLatestGTFS =  async ({ force }) => {
   console.log('go ahead')
   let startTime = moment()
@@ -418,14 +356,10 @@ const ingestLatestGTFS =  async ({ force }) => {
       const tomorrow = moment().format('YYYYMMDD')
 
       let client = await pgPool.connect()
-      const trips = await client.query({ text: 'SELECT * FROM tmp_trips T JOIN tmp_calendar_dates CD ON T.service_id = CD.service_id WHERE (CD.date = $1 OR CD.date = $2) AND T.shape_id IS NOT NULL', values: [today, tomorrow] })
+      const trips = await client.query({ text: 'SELECT * FROM tmp_trips T JOIN tmp_calendar_dates CD ON T.service_id = CD.service_id WHERE CD.date = $1 AND T.shape_id IS NOT NULL', values: [today] })
       client.release()
 
       const tripQueue = new Queue(trips.rows)
-
-      let streamIterator = 0
-      let filename = utils.makeId()
-      let stream = fs.createWriteStream(`${tripTimesDirectory}${filename}.txt`, { flags:'a' })
       
       while(!tripQueue.isEmpty()) {
         const client = await pgPool.connect()
@@ -501,7 +435,6 @@ const ingestLatestGTFS =  async ({ force }) => {
               shape.shape_pt_sequence_end == B['shape_pt_sequence'])
             
             if(shapeline[0] && shapeline[0].shapeline_id) {
-              streamIterator = streamIterator + 1
               const shapePtSequenceStart = momenttz.tz(trip.date + ' ' + A['arrival_time'], "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()
               const shapePtSequenceEnd = momenttz.tz(trip.date + ' ' + B['arrival_time'], "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()
               tripTimesList = tripTimesList + `${shapeline[0].shapeline_id}, ${trip['trip_id']}, ${shapePtSequenceStart}, ${shapePtSequenceEnd} \n`
@@ -510,20 +443,9 @@ const ingestLatestGTFS =  async ({ force }) => {
             } else {
               console.log({ msg: 'shapeline_id not found for data: ', shape_id: A['shape_id'], shape_pt_sequence_start: A['shape_pt_sequence'], shape_pt_sequence_end: B['shape_pt_sequence'] })
             }
-            
           }
 
-          if(streamIterator < 500000) {
-            stream.write(tripTimesList)
-          } else {
-            stream.end()
-
-            tripTimesQueue.enqueue(filename)
-            streamIterator = 0
-
-            filename = utils.makeId()
-            stream = fs.createWriteStream(`${tripTimesDirectory}${filename}.txt`, { flags:'a' })
-          }
+          await client.query({ text: `INSERT INTO tmp_trip_times (shapeline_id, trip_id, start_planned, end_planned) VALUES ${tripTimesList}`})
 
           client.release()
         } catch(err) {
@@ -538,8 +460,6 @@ const ingestLatestGTFS =  async ({ force }) => {
         resolve()
       }
     })
-
-    await waitForTripTimesImport()
 
     client = await pgPool.connect()
     
