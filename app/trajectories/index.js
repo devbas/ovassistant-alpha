@@ -43,11 +43,11 @@ const ingestLatestGTFS =  async ({ force }) => {
     // await client.query('TRUNCATE tmp_temp_shapes')
     // await client.query('TRUNCATE tmp_trajectories')
     // await client.query('TRUNCATE tmp_trips')
-    // await client.query('TRUNCATE tmp_stop_times')
-    // await client.query('TRUNCATE tmp_stops')
+    await client.query('TRUNCATE tmp_stop_times')
+    await client.query('TRUNCATE tmp_stops')
     // await client.query('TRUNCATE tmp_calendar_dates')
     // await client.query('TRUNCATE tmp_routes')
-    // await client.query('TRUNCATE tmp_trip_times')
+    await client.query('TRUNCATE tmp_trip_times')
     // await client.query('TRUNCATE tmp_shapelines')
     
     // client.release()
@@ -106,91 +106,115 @@ const ingestLatestGTFS =  async ({ force }) => {
     //   })
     // })
 
-    // console.log('step 6')
+    console.log('step 9')
 
-    // await new Promise((resolve, reject) => {
-    //   console.log(new Date(), ' Inserting stop_times')
-    //   pgPool.connect((err, client) => {
+    await new Promise(async (resolve, reject) => {
+      console.log(new Date(), ' Inserting stops')
+      pgPool.connect((err, client) => {
 
-    //     if(err) {
-    //       reject(err)
-    //     }
+        if(err) {
+          reject(err)
+        }
 
-    //     let stream = client.query(copyFrom('COPY tmp_stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
-    //     let fileStream = fs.createReadStream('./tmp/stop_times.txt')
-    //     fileStream.on('error', reject)
-    //     fileStream.on('drain', reject)
-    //     fileStream.on('finish', resolve)
-    //     fileStream.on('close', async () => {
-    //       const result = await client.query('SELECT COUNT(trip_id) FROM tmp_stop_times')
-    //       console.log('tmp_stop_times closed!', result.rows[0].count)
-    //       resolve() 
-    //     })
-    //     stream.on('error', reject)
-    //     stream.on('end', resolve)
-    //     fileStream.pipe(stream)
-    //   })
-    // })
+        let stream = client.query(copyFrom('COPY tmp_stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./tmp/stops.txt')
+        fileStream.on('error', reject)
+        fileStream.on('drain', reject)
+        fileStream.on('finish', resolve)
+        fileStream.on('close', resolve)
+        stream.on('error', reject)
+        stream.on('end', resolve)
+        fileStream.pipe(stream)
+      })
+    })
 
-    // client = await pgPool.connect()
+    console.log('step 6')
 
-    // await client.query(`CREATE TABLE tmp_tmp_stop_times 
-    //                     (
-    //                       trip_id int8,
-    //                       stop_sequence int4,
-    //                       stop_id varchar(255),
-    //                       stop_headsign varchar(255),
-    //                       arrival_time varchar(255),
-    //                       departure_time varchar(255),
-    //                       pickup_type int4,
-    //                       drop_off_type int4,
-    //                       timepoint int8,
-    //                       shape_dist_traveled int4,
-    //                       fare_units_traveled int8, 
-    //                       geom geometry(POINT,4326)
-    //                     )`)
+    await new Promise((resolve, reject) => {
+      console.log(new Date(), ' Inserting stop_times')
+      pgPool.connect((err, client) => {
+
+        if(err) {
+          reject(err)
+        }
+
+        let stream = client.query(copyFrom('COPY tmp_stop_times (trip_id,stop_sequence,stop_id,stop_headsign,arrival_time,departure_time,pickup_type,drop_off_type,timepoint,shape_dist_traveled,fare_units_traveled) FROM STDIN CSV HEADER'))
+        let fileStream = fs.createReadStream('./tmp/stop_times.txt')
+        fileStream.on('error', reject)
+        fileStream.on('drain', reject)
+        fileStream.on('finish', resolve)
+        fileStream.on('close', async () => {
+          const result = await client.query('SELECT COUNT(trip_id) FROM tmp_stop_times')
+          console.log('tmp_stop_times closed!', result.rows[0].count)
+          resolve() 
+        })
+        stream.on('error', reject)
+        stream.on('end', resolve)
+        fileStream.pipe(stream)
+      })
+    })
+
+    client = await pgPool.connect()
+
+    await client.query(`CREATE TABLE tmp_tmp_stop_times 
+                        (
+                          trip_id int8,
+                          stop_sequence int4,
+                          stop_id varchar(255),
+                          stop_headsign varchar(255),
+                          arrival_time varchar(255),
+                          departure_time varchar(255),
+                          pickup_type int4,
+                          drop_off_type int4,
+                          timepoint int8,
+                          shape_dist_traveled int4,
+                          fare_units_traveled int8, 
+                          geom geometry(POINT,4326)
+                        )`)
     
-    // await client.query(`INSERT INTO tmp_tmp_stop_times(
-    //   trip_id, 
-    //   stop_sequence, 
-    //   stop_id, 
-    //   stop_headsign, 
-    //   arrival_time, 
-    //   departure_time, 
-    //   pickup_type, 
-    //   drop_off_type, 
-    //   timepoint, 
-    //   shape_dist_traveled, 
-    //   fare_units_traveled, 
-    //   geom
-    // )
-    // (SELECT 
-    //   trip_id, 
-    //   stop_sequence, 
-    //   ST.stop_id, 
-    //   stop_headsign, 
-    //   arrival_time, 
-    //   departure_time, 
-    //   pickup_type, 
-    //   drop_off_type, 
-    //   timepoint, 
-    //   shape_dist_traveled, 
-    //   fare_units_traveled, 
-    //   ST_SetSRID(ST_MakePoint(S.stop_lon, S.stop_lat), 4326)
-    // FROM tmp_stop_times ST 
-    // JOIN tmp_stops S 
-    // ON ST.stop_id = S.stop_id)`)
+    await client.query(`INSERT INTO tmp_tmp_stop_times(
+      trip_id, 
+      stop_sequence, 
+      stop_id, 
+      stop_headsign, 
+      arrival_time, 
+      departure_time, 
+      pickup_type, 
+      drop_off_type, 
+      timepoint, 
+      shape_dist_traveled, 
+      fare_units_traveled, 
+      geom
+    )
+    (SELECT 
+      trip_id, 
+      stop_sequence, 
+      ST.stop_id, 
+      stop_headsign, 
+      arrival_time, 
+      departure_time, 
+      pickup_type, 
+      drop_off_type, 
+      timepoint, 
+      shape_dist_traveled, 
+      fare_units_traveled, 
+      ST_SetSRID(ST_MakePoint(S.stop_lon, S.stop_lat), 4326)
+    FROM tmp_stop_times ST 
+    JOIN tmp_stops S 
+    ON ST.stop_id = S.stop_id)`)
 
     
-    // await client.query('DROP TABLE tmp_stop_times')
+    await client.query('DROP TABLE tmp_stop_times')
 
-    // await client.query('ALTER TABLE tmp_tmp_stop_times RENAME TO tmp_stop_times')
+    await client.query('ALTER TABLE tmp_tmp_stop_times RENAME TO tmp_stop_times')
 
-    // await client.query(`CREATE INDEX "${utils.makeId()}_idx_stoptimes_stop_id" ON tmp_stop_times(stop_id)`)
-    // await client.query(`CREATE INDEX "${utils.makeId()}_idx_stoptimes_trip_id" ON tmp_stop_times(trip_id)`)
-    // await client.query(`CREATE INDEX "${utils.makeId()}_idx_stoptimes_geom" ON tmp_stop_times USING GIST(geom)`)
+    await client.query(`CREATE INDEX "${utils.makeId()}_idx_stoptimes_stop_id" ON tmp_stop_times(stop_id)`)
+    await client.query(`CREATE INDEX "${utils.makeId()}_idx_stoptimes_trip_id" ON tmp_stop_times(trip_id)`)
+    await client.query(`CREATE INDEX "${utils.makeId()}_idx_stoptimes_geom" ON tmp_stop_times USING GIST(geom)`)
 
-    // client.release()
+    client.release()
+
+    console.log('next step')
 
     // await new Promise(async (resolve, reject) => {
     //   pgPool.connect((err, client) => {
@@ -253,28 +277,6 @@ const ingestLatestGTFS =  async ({ force }) => {
 
     //     let stream = client.query(copyFrom('COPY tmp_routes (route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_color,route_text_color,route_url) FROM STDIN CSV HEADER'))
     //     let fileStream = fs.createReadStream('./tmp/routes.txt')
-    //     fileStream.on('error', reject)
-    //     fileStream.on('drain', reject)
-    //     fileStream.on('finish', resolve)
-    //     fileStream.on('close', resolve)
-    //     stream.on('error', reject)
-    //     stream.on('end', resolve)
-    //     fileStream.pipe(stream)
-    //   })
-    // })
-
-    // console.log('step 9')
-
-    // await new Promise(async (resolve, reject) => {
-    //   console.log(new Date(), ' Inserting stops')
-    //   pgPool.connect((err, client) => {
-
-    //     if(err) {
-    //       reject(err)
-    //     }
-
-    //     let stream = client.query(copyFrom('COPY tmp_stops (stop_id,stop_code,stop_name,stop_lat,stop_lon,location_type,parent_station,stop_timezone,wheelchair_boarding,platform_code) FROM STDIN CSV HEADER'))
-    //     let fileStream = fs.createReadStream('./tmp/stops.txt')
     //     fileStream.on('error', reject)
     //     fileStream.on('drain', reject)
     //     fileStream.on('finish', resolve)
@@ -406,8 +408,6 @@ const ingestLatestGTFS =  async ({ force }) => {
 
           }
 
-          console.log({ stoptimes: stoptimes.rows })
-
           const verticesQueue = new Queue(verticesList)
           let tripTimesList = ''
 
@@ -427,7 +427,6 @@ const ingestLatestGTFS =  async ({ force }) => {
                 tripTimesList = tripTimesList + ','
               }
 
-              console.log({ partly: tripTimesList })
             } else if(A['shape_pt_sequence'] == B['shape_pt_sequence']) {
               // console.log({ msg: ''})
             } else {
@@ -436,7 +435,6 @@ const ingestLatestGTFS =  async ({ force }) => {
             
           }
 
-          console.log({ tripTimesList: tripTimesList })
           await client.query({ text: `INSERT INTO tmp_trip_times (trip_id, shapeline_id, start_planned, end_planned) VALUES ${tripTimesList}`})
           
           client.release()
