@@ -436,7 +436,7 @@ const ingestLatestGTFS =  async ({ force }) => {
           client.release()
         } catch(err) {
           client.release()
-          console.log({ msg: 'An error occurred', err: err })
+          console.log({ msg: 'An error occurred', err: err, tripTimesList: tripTimesList })
           reject(err)
         }
       }
