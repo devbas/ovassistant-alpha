@@ -441,8 +441,7 @@ const ingestLatestGTFS =  async ({ force }) => {
         } 
       }
 
-      if(tripQueue.isEmpty()) {
-        stream.end() 
+      if(tripQueue.isEmpty()) { 
         resolve()
       }
     })
