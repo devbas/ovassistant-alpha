@@ -431,12 +431,14 @@ const ingestLatestGTFS =  async ({ force }) => {
             }
             
           }
+
+          console.log({ tripTimesList: tripTimesList })
           await client.query({ text: `INSERT INTO tmp_trip_times (trip_id, shapeline_id, start_planned, end_planned) VALUES ${tripTimesList}`})
           
           client.release()
         } catch(err) {
           client.release()
-          console.log({ msg: 'An error occurred', err: err, tripTimesList: tripTimesList })
+          console.log({ msg: 'An error occurred', err: err })
           reject(err)
         }
       }
