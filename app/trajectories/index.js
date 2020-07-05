@@ -419,7 +419,7 @@ const ingestLatestGTFS =  async ({ force }) => {
             if(shapeline[0] && shapeline[0].shapeline_id) {
               const shapePtSequenceStart = momenttz.tz(trip.date + ' ' + A['arrival_time'], "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()
               const shapePtSequenceEnd = momenttz.tz(trip.date + ' ' + B['arrival_time'], "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()
-              tripTimesList = tripTimesList + `${shapeline[0].shapeline_id}, ${trip['trip_id']}, ${shapePtSequenceStart}, ${shapePtSequenceEnd} \n`
+              tripTimesList = tripTimesList + `(${shapeline[0].shapeline_id}, ${trip['trip_id']}, ${shapePtSequenceStart}, ${shapePtSequenceEnd})`
             
               if(verticesQueue.queueSize() > 1) {
                 tripTimesList = tripTimesList + ','
