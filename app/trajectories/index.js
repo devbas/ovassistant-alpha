@@ -338,7 +338,7 @@ const ingestLatestGTFS =  async ({ force }) => {
       const tomorrow = moment().format('YYYYMMDD')
 
       let client = await pgPool.connect()
-      const trips = await client.query({ text: 'SELECT * FROM tmp_trips T JOIN tmp_calendar_dates CD ON T.service_id = CD.service_id WHERE (CD.date = $1 OR CD.date = $2) AND T.shape_id IS NOT NULL', values: [today, tomorrow] })
+      const trips = await client.query({ text: 'SELECT * FROM tmp_trips T JOIN tmp_calendar_dates CD ON T.service_id = CD.service_id WHERE CD.date = $1 AND T.shape_id IS NOT NULL', values: [today] })
       client.release()
 
       const tripQueue = new Queue(trips.rows)
@@ -432,7 +432,7 @@ const ingestLatestGTFS =  async ({ force }) => {
             
           }
 
-          console.log({ tripTimesList: tripTimesList })
+          console.log({ tripTimesList: tripTimesList, shapeline: shapeline })
           await client.query({ text: `INSERT INTO tmp_trip_times (trip_id, shapeline_id, start_planned, end_planned) VALUES ${tripTimesList}`})
           
           client.release()
