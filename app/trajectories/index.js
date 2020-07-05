@@ -424,6 +424,8 @@ const ingestLatestGTFS =  async ({ force }) => {
               if(verticesQueue.queueSize() > 1) {
                 tripTimesList = tripTimesList + ','
               }
+
+              console.log({ partly: tripTimesList })
             } else if(A['shape_pt_sequence'] == B['shape_pt_sequence']) {
               // console.log({ msg: ''})
             } else {
@@ -432,7 +434,7 @@ const ingestLatestGTFS =  async ({ force }) => {
             
           }
 
-          console.log({ tripTimesList: tripTimesList, shapeline: shapeline })
+          console.log({ tripTimesList: tripTimesList })
           await client.query({ text: `INSERT INTO tmp_trip_times (trip_id, shapeline_id, start_planned, end_planned) VALUES ${tripTimesList}`})
           
           client.release()
