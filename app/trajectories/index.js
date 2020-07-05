@@ -420,6 +420,10 @@ const ingestLatestGTFS =  async ({ force }) => {
               const shapePtSequenceStart = momenttz.tz(trip.date + ' ' + A['arrival_time'], "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()
               const shapePtSequenceEnd = momenttz.tz(trip.date + ' ' + B['arrival_time'], "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()
               tripTimesList = tripTimesList + `${shapeline[0].shapeline_id}, ${trip['trip_id']}, ${shapePtSequenceStart}, ${shapePtSequenceEnd} \n`
+            
+              if(shapePointsQueue.queueSize() > 1) {
+                shapeLines = shapeLines + ','
+              }
             } else if(A['shape_pt_sequence'] == B['shape_pt_sequence']) {
               // console.log({ msg: ''})
             } else {
