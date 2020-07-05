@@ -58,6 +58,28 @@ const tripTimesImport = (breaker) => {
   }
 }
 
+const waitForTripTimesImport = async () => {
+  // Wait for the triptimes queue to empty up
+  await new Promise(async (resolve, reject) => {
+    let threshold = 10
+    let pause = 5000
+
+    if(tripTimesQueue.isEmpty()) {
+      resolve()
+    } else {
+      breaker = breaker + 1
+  
+      if(breaker < threshold) {
+        waitForTripTimesImport()
+      } else {
+        setTimeout(() => {
+          waitForTripTimesImport()
+        }, pause)
+      }
+    }
+  })
+}
+
 const ingestLatestGTFS =  async ({ force }) => {
   console.log('go ahead')
   let startTime = moment()
@@ -517,20 +539,9 @@ const ingestLatestGTFS =  async ({ force }) => {
       }
     })
 
-    console.log('Yooo done')
+    await waitForTripTimesImport()
 
-    // client = await pgPool.connect()
-
-    // await client.query({ text: `UPDATE tmp_trajectories 
-    //                             SET start_planned = subquery.start_planned,
-    //                                 end_planned = subquery.end_planned 
-    //                             FROM (
-    //                               SELECT ST_M(ST_StartPoint(geom)) AS start_planned, ST_M(ST_EndPoint(geom)) AS end_planned, trajectory_id
-    //                               FROM tmp_trajectories	
-    //                             ) AS subquery
-    //                             WHERE tmp_trajectories.trajectory_id = subquery.trajectory_id` })
-    
-    
+    client = await pgPool.connect()
     
     // Have the actual switch in a SQL Transaction
     await client.query('BEGIN')
