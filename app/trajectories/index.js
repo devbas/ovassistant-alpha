@@ -406,6 +406,8 @@ const ingestLatestGTFS =  async ({ force }) => {
 
           }
 
+          console.log({ verticesList: verticesList })
+
           const verticesQueue = new Queue(verticesList)
           let tripTimesList = ''
 
