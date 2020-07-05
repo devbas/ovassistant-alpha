@@ -29,7 +29,7 @@ const ingestLatestGTFS =  async ({ force }) => {
     // const outputDir = './tmp/'
     // const tripTimesDirectory = './tmp/trip_times/'
 
-    // const pgPool = new Pool(config.pg)
+    const pgPool = new Pool(config.pg)
 
     // console.log('connected to Postgis!')
     // // const trajectoryCount = await client.query('SELECT COUNT(*) FROM trajectories')
