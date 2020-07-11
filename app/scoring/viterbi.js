@@ -6,15 +6,19 @@ const {performance} = require('perf_hooks');
 async function refreshActiveVehicleCache() { 
   console.log('refreshing active cache');  
 
-  const client = await pool.connect()
+  try {
+    const client = await pool.connect()
 
-  console.log('client leased from pool');  
+    console.log('client leased from pool');  
 
-  await client.query({ text: `UPDATE trip_times_partitioned SET is_active = True WHERE start_planned >= $1 AND is_active = False`, values: [Math.floor(Date.now() / 1000)] })
-  await client.query({ text: `UPDATE trip_times_partitioned SET is_active = False WHERE end_planned < $1`, values: [Math.floor(Date.now() / 1000)] })             
-  
-  console.log(`done for ${Math.floor(Date.now() / 1000)}`)
-  client.release()
+    await client.query({ text: `UPDATE trip_times_partitioned SET is_active = True WHERE start_planned >= $1 AND is_active = False`, values: [Math.floor(Date.now() / 1000)] })
+    await client.query({ text: `UPDATE trip_times_partitioned SET is_active = False WHERE end_planned < $1`, values: [Math.floor(Date.now() / 1000)] })             
+    
+    console.log(`done for ${Math.floor(Date.now() / 1000)}`)
+    client.release()
+  } catch(err) {
+    console.log('err: ', err)
+  }
 
   setTimeout(refreshActiveVehicleCache, 10000)
 }
