@@ -3,7 +3,7 @@ const store = require('./redis-layer-store')
 const _ = require('lodash')
 const {performance} = require('perf_hooks');
 
-setTimeout(async function() {
+async function refreshActiveVehicleCache() { 
   console.log('refreshing active cache');  
 
   const client = await pool.connect()
@@ -11,10 +11,13 @@ setTimeout(async function() {
   await client.query({ text: `UPDATE trip_times_partitioned SET is_active = True WHERE start_planned >= $1 AND is_active = False`, values: [Math.floor(Date.now() / 1000)] })
   await client.query({ text: `UPDATE trip_times_partitioned SET is_active = False WHERE end_planned < $1`, values: [Math.floor(Date.now() / 1000)] })             
   
+  console.log(`done for ${Math.floor(Date.now() / 1000)}`)
   client.release()
 
-  activeVehicleCheck()
-}, 10000)
+  setTimeout(refreshActiveVehicleCache, 10000)
+}
+
+refreshActiveVehicleCache()
 
 /**
  * Returns the probability of the most probable state sequence. 
