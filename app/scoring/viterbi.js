@@ -3,6 +3,19 @@ const store = require('./redis-layer-store')
 const _ = require('lodash')
 const {performance} = require('perf_hooks');
 
+setTimeout(async function() {
+  console.log('refreshing active cache');  
+
+  const client = await pool.connect()
+
+  await client.query({ text: `UPDATE trip_times_partitioned SET is_active = True WHERE start_planned >= $1 AND is_active = False`, values: [Math.floor(Date.now() / 1000)] })
+  await client.query({ text: `UPDATE trip_times_partitioned SET is_active = False WHERE end_planned < $1`, values: [Math.floor(Date.now() / 1000)] })             
+  
+  client.release()
+
+  activeVehicleCheck()
+}, 10000)
+
 /**
  * Returns the probability of the most probable state sequence. 
  * 
@@ -72,6 +85,14 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
   
   const client = await pool.connect()
 
+  /* SELECT *, ST_AsEWKT(ST_Line_Interpolate_Point(S.geom, (1593351708 - start_planned) / (end_planned - start_planned) ))
+FROM tmp_trip_times TT
+JOIN tmp_shapelines S 
+ON TT.shapeline_id = S.shapeline_id
+WHERE TT.start_planned <= 1593351708 
+AND TT.end_planned >= 1593351708
+AND TT.end_planned != TT.start_planned */
+
   try {
     var t0 = performance.now()
     const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
@@ -82,7 +103,7 @@ async function getVehicleLocationByTime(lon, lat, timestamp, radius) {
                                                       WHERE ST.trip_id = T.trip_id 
                                                       GROUP BY stop_id, trip_id 
                                                       LIMIT 1
-                                                    ) AS closest_stop_distance, 
+                                                    ) AS closestStopDistance, 
                                                     (
                                                       SELECT stop_id
                                                       FROM stop_times ST
