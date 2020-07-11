@@ -11,8 +11,8 @@ async function refreshActiveVehicleCache() {
 
     console.log('client leased from pool');  
 
-    await client.query({ text: `UPDATE trip_times_partitioned SET is_active = TRUE WHERE start_planned >= $1 AND is_active = FALSE`, values: [Math.floor(Date.now() / 1000)] })
-    await client.query({ text: `UPDATE trip_times_partitioned SET is_active = FALSE WHERE end_planned < $1 AND is_active = TRUE`, values: [Math.floor(Date.now() / 1000)] })             
+    await client.query({ text: `UPDATE trip_times_partitioned SET is_active = $1 WHERE start_planned >= $2 AND is_active = $3`, values: [true, Math.floor(Date.now() / 1000), false] })
+    await client.query({ text: `UPDATE trip_times_partitioned SET is_active = $1 WHERE end_planned < $2 AND is_active = $3`, values: [false, Math.floor(Date.now() / 1000), true] })             
     
     console.log(`done for ${Math.floor(Date.now() / 1000)}`)
     client.release()
