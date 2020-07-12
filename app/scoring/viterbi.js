@@ -135,11 +135,21 @@ AND TT.end_planned != TT.start_planned */
   try {
     var t0 = performance.now()
 
-    const { rows: vehicles } = await client.query(`SELECT *, 
-                                                  ST_Line_Interpolate_Point(
-                                                    S.geom, 
-                                                    ($1 - start_planned) / (end_planned - start_planned) 
-                                                  ) AS user_vehicle_point,
+    const { rows: vehicles } = await client.query(`SELECT *,
+                                                  (
+                                                    SELECT MIN(ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom)) AS closestStopDistance
+                                                    FROM stop_times ST
+                                                    WHERE ST.trip_id = TT.trip_id 
+                                                    GROUP BY stop_id, trip_id 
+                                                    LIMIT 1
+                                                  ) AS closestStopDistance,
+                                                  (
+                                                    SELECT stop_id
+                                                    FROM stop_times ST
+                                                    WHERE ST.trip_id = TT.trip_id 
+                                                    ORDER BY ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom) ASC
+                                                    LIMIT 1
+                                                  ) AS closestStopId 
                                                   ST_DistanceSphere(
                                                     'SRID=4326;POINT(${lon} ${lat})', 
                                                     ST_Line_Interpolate_Point(
