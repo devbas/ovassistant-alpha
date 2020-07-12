@@ -11,10 +11,39 @@ async function refreshActiveVehicleCache() {
 
     console.log('client leased from pool');  
 
-    await client.query({ text: `UPDATE trip_times_partitioned SET is_active = $1 WHERE start_planned >= $2 AND is_active = $3`, values: [true, Math.floor(Date.now() / 1000), false] })
-    await client.query({ text: `UPDATE trip_times_partitioned SET is_active = $1 WHERE end_planned < $2 AND is_active = $3`, values: [false, Math.floor(Date.now() / 1000), true] })             
+    await client.query('BEGIN')
+
+    const currentUnix = Math.floor(Date.now() / 1000)
+
+    // Copy from passive table into active table
+    await client.query({ text: `INSERT INTO trip_times_active(triptime_id, shapeline_id, trip_id, start_planned, end_planned, is_active)
+                                SELECT triptime_id, shapeline_id, trip_id, start_planned, end_planned, 1 as is_active
+                                FROM trip_times_passive
+                                WHERE start_planned <= $1
+                                AND end_planned >= $2
+                                AND end_planned != start_planned`, values: [currentUnix, currentUnix] })
+
+    // Delete from passive table
+    await client.query({ text: `DELETE FROM trip_times_passive
+                                WHERE start_planned <= $1 
+                                AND end_planned >= $2
+                                AND end_planned != start_planned`, values: [currentUnix, currentUnix] })
+
+    // Copy from active table into passive table
+    await client.query({ text: `INSERT INTO trip_times_passive(triptime_id, shapeline_id, trip_id, start_planned, end_planned, is_active) 
+                                SELECT triptime_id, shapeline_id, trip_id, start_planned, end_planned, 0 as is_active 
+                                FROM trip_times_active 
+                                WHERE end_planned < $1 
+                                AND end_planned != start_planned`, values: [currentUnix] })
+
+    // Delete from active table
+    await client.query({ text: `DELETE FROM trip_times_active 
+                                WHERE end_planned < $1 
+                                AND end_planned != start_planned; `, values: [currentUnix] })
     
-    console.log(`done for ${Math.floor(Date.now() / 1000)}`)
+    await client.query('COMMIT')
+
+    console.log(`done for ${currentUnix}`)
     client.release()
   } catch(err) {
     console.log('err: ', err)
