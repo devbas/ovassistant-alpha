@@ -26,8 +26,12 @@ router.post('/score', async (req, res) => {
   }
 
   try {
-    const result = await viterbi.score(parsedData.lon, parsedData.lat, parsedData.datetime, parsedData.userId)
-    res.status(200).json({ data: result })
+    if(parsedData.lon && parsedData.lat && parsedData.datetime && parsedData.userId) {
+      const result = await viterbi.score(parsedData.lon, parsedData.lat, parsedData.datetime, parsedData.userId)
+      res.status(200).json({ data: result })
+    } else {
+      throw 'Not all required parameters are present.'
+    }
   } catch(err) {
     console.log('err: ', err)
     res.status(500).send({ error: JSON.stringify(err) })
