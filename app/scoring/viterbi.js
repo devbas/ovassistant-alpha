@@ -131,34 +131,64 @@ WHERE TT.start_planned <= 1593351708
 AND TT.end_planned >= 1593351708
 AND TT.end_planned != TT.start_planned */
 
+
   try {
     var t0 = performance.now()
-    const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
-                                                    ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance, 
-                                                    (
-                                                      SELECT MIN(ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom)) AS closestStopDistance
-                                                      FROM stop_times ST
-                                                      WHERE ST.trip_id = T.trip_id 
-                                                      GROUP BY stop_id, trip_id 
-                                                      LIMIT 1
-                                                    ) AS closestStopDistance, 
-                                                    (
-                                                      SELECT stop_id
-                                                      FROM stop_times ST
-                                                      WHERE ST.trip_id = T.trip_id 
-                                                      ORDER BY ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom) ASC
-                                                      LIMIT 1
-                                                    ) AS closestStopId 
-                                                  FROM trajectories T
-                                                  WHERE geom &&& ST_Collect(
-                                                    ST_MakePointM(${lon}, ${lat}, $2),
-                                                    ST_MakePointM(${lon}, ${lat}, $3)
-                                                  )
-                                                  AND start_planned <= $4 
-                                                  AND end_planned >= $5
-                                                  GROUP BY geom, trip_id, vehicle_id
-                                                  ORDER BY user_vehicle_distance ASC
-                                                  LIMIT 7`, [timestamp, timestamp, timestamp, timestamp, timestamp])
+
+    const { rows: vehicles } = await client.query(`SELECT *, 
+                                                  ST_Line_Interpolate_Point(
+                                                    S.geom, 
+                                                    ($1 - start_planned) / (end_planned - start_planned) 
+                                                  ) AS user_vehicle_point,
+                                                  ST_DistanceSphere(
+                                                    'SRID=4326;POINT(${lon} ${lat})', 
+                                                    ST_Line_Interpolate_Point(
+                                                      S.geom, 
+                                                      ($2 - start_planned) / (end_planned - start_planned) 
+                                                    )
+                                                  ) AS user_vehicle_distance
+                                                  FROM trip_times_active TT
+                                                  JOIN shapelines S 
+                                                  ON TT.shapeline_id = S.shapeline_id
+                                                  WHERE TT.start_planned <= $3 
+                                                  AND TT.end_planned >= $4
+                                                  AND TT.end_planned != TT.start_planned
+                                                  AND ST_DWithin(
+                                                    ST_Line_Interpolate_Point(
+                                                      S.geom, 
+                                                      ($5 - start_planned) / (end_planned - start_planned) 
+                                                    ), 
+                                                    'SRID=4326;POINT(${lon} ${lat})', 
+                                                    500, 
+                                                    False
+                                                  )`, [timestamp, timestamp, timestamp, timestamp, timestamp])
+
+    // const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
+    //                                                 ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance, 
+    //                                                 (
+    //                                                   SELECT MIN(ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom)) AS closestStopDistance
+    //                                                   FROM stop_times ST
+    //                                                   WHERE ST.trip_id = T.trip_id 
+    //                                                   GROUP BY stop_id, trip_id 
+    //                                                   LIMIT 1
+    //                                                 ) AS closestStopDistance, 
+    //                                                 (
+    //                                                   SELECT stop_id
+    //                                                   FROM stop_times ST
+    //                                                   WHERE ST.trip_id = T.trip_id 
+    //                                                   ORDER BY ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom) ASC
+    //                                                   LIMIT 1
+    //                                                 ) AS closestStopId 
+    //                                               FROM trajectories T
+    //                                               WHERE geom &&& ST_Collect(
+    //                                                 ST_MakePointM(${lon}, ${lat}, $2),
+    //                                                 ST_MakePointM(${lon}, ${lat}, $3)
+    //                                               )
+    //                                               AND start_planned <= $4 
+    //                                               AND end_planned >= $5
+    //                                               GROUP BY geom, trip_id, vehicle_id
+    //                                               ORDER BY user_vehicle_distance ASC
+    //                                               LIMIT 7`, [timestamp, timestamp, timestamp, timestamp, timestamp])
     
     var t1 = performance.now()                                                
     console.log(`Database call took ${(t1 - t0)} milliseconds for lon: ${lon}, lat: ${lat}, timestamp: ${timestamp}`)
