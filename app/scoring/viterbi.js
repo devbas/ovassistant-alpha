@@ -262,7 +262,7 @@ async function setMarkovLayer(lon, lat, timestamp) {
   try {
     const observations = await getVehicleLocationByTime(lon, lat, timestamp, 0.002690);
     console.log('amount of observations: ', observations.length);
-    GPSErrorMargin = 4.07 // Derived from Newson et al. Potential tuning parameter
+    GPSErrorMargin = 400.07 // Derived from Newson et al. Potential tuning parameter
     for(let i = 0; i < observations.length; i++) {
       observations[i].emissionProb = (10 / (Math.sqrt(2 * Math.PI) * GPSErrorMargin)) * Math.exp(-0.5 * (observations[i].user_vehicle_distance / GPSErrorMargin)**2)
       observations[i].transitionProb = await calculateTransitionMatrix(observations[i], observations)
