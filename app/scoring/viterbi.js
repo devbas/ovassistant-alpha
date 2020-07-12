@@ -149,7 +149,7 @@ AND TT.end_planned != TT.start_planned */
                                                     WHERE ST.trip_id = TT.trip_id 
                                                     ORDER BY ST_Distance_Sphere('SRID=4326;POINT(${lon} ${lat})', geom) ASC
                                                     LIMIT 1
-                                                  ) AS closestStopId 
+                                                  ) AS closestStopId, 
                                                   ST_DistanceSphere(
                                                     'SRID=4326;POINT(${lon} ${lat})', 
                                                     ST_Line_Interpolate_Point(
