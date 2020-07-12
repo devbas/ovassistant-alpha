@@ -159,7 +159,7 @@ AND TT.end_planned != TT.start_planned */
                                                       ($5 - start_planned) / (end_planned - start_planned) 
                                                     ), 
                                                     'SRID=4326;POINT(${lon} ${lat})', 
-                                                    500, 
+                                                    1000, 
                                                     False
                                                   )`, [timestamp, timestamp, timestamp, timestamp, timestamp])
 
