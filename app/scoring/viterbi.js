@@ -154,24 +154,24 @@ AND TT.end_planned != TT.start_planned */
                                                     'SRID=4326;POINT(${lon} ${lat})', 
                                                     ST_Line_Interpolate_Point(
                                                       S.geom, 
-                                                      ($2 - start_planned) / (end_planned - start_planned) 
+                                                      ($1 - start_planned) / (end_planned - start_planned) 
                                                     )
                                                   ) AS user_vehicle_distance
                                                   FROM trip_times_active TT
                                                   JOIN shapelines S 
                                                   ON TT.shapeline_id = S.shapeline_id
-                                                  WHERE TT.start_planned <= $3 
-                                                  AND TT.end_planned >= $4
+                                                  WHERE TT.start_planned <= $2 
+                                                  AND TT.end_planned >= $3
                                                   AND TT.end_planned != TT.start_planned
                                                   AND ST_DWithin(
                                                     ST_Line_Interpolate_Point(
                                                       S.geom, 
-                                                      ($5 - start_planned) / (end_planned - start_planned) 
+                                                      ($4 - start_planned) / (end_planned - start_planned) 
                                                     ), 
                                                     'SRID=4326;POINT(${lon} ${lat})', 
                                                     1000, 
                                                     False
-                                                  )`, [timestamp, timestamp, timestamp, timestamp, timestamp])
+                                                  )`, [timestamp, timestamp, timestamp, timestamp])
 
     // const { rows: vehicles } = await client.query(`SELECT trip_id, vehicle_id, 
     //                                                 ST_DistanceSphere('SRID=4326;POINT(${lon} ${lat})', ST_LocateAlong(geom, $1)) AS user_vehicle_distance, 
