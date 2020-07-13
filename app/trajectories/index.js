@@ -49,6 +49,7 @@ const ingestLatestGTFS =  async ({ force }) => {
     await client.query('TRUNCATE tmp_routes')
     await client.query('TRUNCATE tmp_trip_times')
     await client.query('TRUNCATE tmp_shapelines')
+    await client.query('TRUNCATE trip_times_partitioned')
     
     client.release()
 
@@ -422,7 +423,7 @@ const ingestLatestGTFS =  async ({ force }) => {
             if(shapeline[0] && shapeline[0].shapeline_id) {
               const shapePtSequenceStart = momenttz.tz(trip.date + ' ' + A['arrival_time'], "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()
               const shapePtSequenceEnd = momenttz.tz(trip.date + ' ' + B['arrival_time'], "YYYYMMDD HH:mm:ss", 'Europe/Amsterdam').unix()
-              tripTimesList = tripTimesList + `(${trip['trip_id']}, ${shapeline[0].shapeline_id}, ${shapePtSequenceStart}, ${shapePtSequenceEnd})`
+              tripTimesList = tripTimesList + `(${trip['trip_id']}, ${shapeline[0].shapeline_id}, ${shapePtSequenceStart}, ${shapePtSequenceEnd}, 0)`
               if(verticesQueue.queueSize() > 1) {
                 tripTimesList = tripTimesList + ','
               }
@@ -435,7 +436,7 @@ const ingestLatestGTFS =  async ({ force }) => {
             
           }
 
-          await client.query({ text: `INSERT INTO tmp_trip_times (trip_id, shapeline_id, start_planned, end_planned) VALUES ${tripTimesList}`})
+          await client.query({ text: `INSERT INTO trip_times_partitioned (trip_id, shapeline_id, start_planned, end_planned, is_active) VALUES ${tripTimesList}`})
           
           client.release()
         } catch(err) {
