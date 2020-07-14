@@ -13,12 +13,12 @@ const cors           = require('cors');
 const bodyParser     = require('body-parser');
 const utils          = require('./utils');
 const redisImportController = require('./controllers/import-redis');
+const trajectoryTimingController = require('./controllers/trajectory-timing');
 const { promisify } = require('util');
 const redisClient = require('./redis-client.js');
 const redisClientPersist = require('./redis-client-persist');
 const config = require('./config/config')
 
-// date-fns
 const parseISO = require('date-fns/parseISO')
 
 const redis = require('redis');
@@ -44,10 +44,8 @@ var port = process.env.PORT || 8000;
 var router = express.Router();
 
 router.use((req, res, next) => {
-  // do logging
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  console.log('Something is happening.');
   next(); // make sure we go to the next routes and don't stop here
 });
 
@@ -64,8 +62,7 @@ app.use(function onError(err, req, res, next) {
   res.end(res.sentry + '\n');
 });
 
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
+// REGISTER OUR ROUTES
 app.use('/api', router);
 app.set('view engine', 'jade'); 
 
@@ -116,21 +113,21 @@ sock.on('message', async (topic, message) => {
       if(_.has(result, 'ArrayOfTreinLocation')) {
         result = _.get(result, 'ArrayOfTreinLocation.TreinLocation')
         result.forEach((train) => {
-          const id = 'train:' + _.get(train, 'TreinNummer.0')
+          const id = _.get(train, 'TreinNummer.0')
           const latitude = Number(_.get(train, 'TreinMaterieelDelen.0.Latitude.0'))
           const longitude = Number(_.get(train, 'TreinMaterieelDelen.0.Longitude.0'))
           const orientation = Number(_.get(train, 'TreinMaterieelDelen.0.Richting.0'))
           const datetimeUnix = parseInt(parseISO(train['TreinMaterieelDelen'][0]['GpsDatumTijd'][0], 'yyyy-MM-dd HH:mm:ss', new Date()).getTime() / 1000)
           const type = 'train'
           if (latitude && longitude) { 
-            redisImportController.importData({
-              id: id, 
-              latitude: latitude, 
-              longitude: longitude, 
-              orientation: orientation, 
-              datetimeUnix: datetimeUnix, 
-              type: type
-            }, pgPool)
+            // redisImportController.importData({
+            //   id: id, 
+            //   latitude: latitude, 
+            //   longitude: longitude, 
+            //   orientation: orientation, 
+            //   datetimeUnix: datetimeUnix, 
+            //   type: type
+            // }, pgPool)
           }
         })
       } else if(_.has(result, 'PutReisInformatieBoodschapIn.ReisInformatieProductDVS.0.DynamischeVertrekStaat.0')) {
@@ -144,14 +141,18 @@ sock.on('message', async (topic, message) => {
         }
 
         if(id) {
-          id = 'train:' + id; 
+          // id = 'train:' + id; 
           result.type = 'train'
           result.updated = Math.round((new Date()).getTime() / 1000)
           result.destination = _.get(result, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
           result.subType = result.Trein[0].TreinSoort[0]._
           result.measurementTimestamp = new Date().toJSON()
           result.operatingDay = result.RitDatum[0]
-          redisImportController.updateData(id, result, pgPool)
+          // redisImportController.updateData(id, result, pgPool)
+
+          if(result.has_delay && result.delay_seconds > 20) {
+            trajectoryTimingController.updateTrajectoryTiming({ vehicleId: id, delaySeconds: result.delay_seconds, measurementTimestamp: result.measurementTimestamp, pgPool: pgPool })
+          }
         }
       }
     })
@@ -183,7 +184,7 @@ sock1.on('message', async (topic, message) => {
             
             const positionMessages = messages[positionType]
             _.forEach(positionMessages, (positionMessage, i) => {
-              const id = `vehicle:${positionMessage.dataownercode[0]}:${positionMessage.lineplanningnumber[0]}:${positionMessage.journeynumber[0]}`
+              const id = `${positionMessage.dataownercode[0]}:${positionMessage.lineplanningnumber[0]}:${positionMessage.journeynumber[0]}`
               // console.log('vehicle: ', positionMessage)
               if (positionType === 'END') {
                 redisClient.del(id)
@@ -222,11 +223,14 @@ sock1.on('message', async (topic, message) => {
                   } 
                 }
 
-                if(data.latitude && data.longitude) {
-                  redisImportController.importData(data, pgPool)
-                }
+                // if(data.latitude && data.longitude) {
+                //   redisImportController.importData(data, pgPool)
+                // }
 
-                redisImportController.updateData(id, data, pgPool);
+                if(data.has_delay && data.delay_seconds > 20) {
+                  trajectoryTimingController.updateTrajectoryTiming({ vehicleId: data.id, delaySeconds: data.delay_seconds, measurementTimestamp: data.measurementTimestamp, pgPool: pgPool })
+                  // redisImportController.updateData(id, data, pgPool);
+                }
               }
             })
 
