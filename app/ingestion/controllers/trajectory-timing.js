@@ -11,7 +11,7 @@ const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix
 
     const { rows: trip } = await client.query(`SELECT trip_id FROM trips WHERE realtime_trip_id = $1`, [vehicleId])
 
-    if(trip && trip[0].trip_id) {
+    if(trip[0] && trip[0].trip_id) {
       await client.query(`UPDATE trip_times_partitioned
                             SET 
                             start_planned = start_planned + delay_seconds - $1, 
