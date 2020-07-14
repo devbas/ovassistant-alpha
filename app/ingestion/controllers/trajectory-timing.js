@@ -5,9 +5,9 @@
 */ 
 const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix, pgPool }) => {
 
-  try {
+  const client = await pgPool.connect()
 
-    const client = await pgPool.connect()
+  try {
 
     const { rows: trip } = await client.query(`SELECT trip_id FROM trips WHERE realtime_trip_id = $1`, [vehicleId])
 
