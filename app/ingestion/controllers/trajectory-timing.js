@@ -21,7 +21,7 @@ const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix
                           AND end_planned >= ($5 + delay_seconds - $6)
                           AND end_planned <= ($7 + 1000)`, [delaySeconds, delaySeconds, delaySeconds, trip[0].trip_id, measurementUnix, delaySeconds, measurementUnix])
 
-      console.log(`updated ${result.rowCount} rows for ${vehicleId} with ${delaySeconds} for ${measurementUnix}`)
+      console.log(`updated ${result.rowCount} rows for tripId: ${trip[0].trip_id}, vehicleId ${vehicleId} with ${delaySeconds} for ${measurementUnix}`)
     }
 
     /* 
