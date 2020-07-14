@@ -111,6 +111,7 @@ sock.on('message', async (topic, message) => {
     parseString(data, { tagNameProcessors: [ stripPrefix ]}, (err, result) => {
 
       if(_.has(result, 'ArrayOfTreinLocation')) {
+        delayResults = _.get(result, 'PutReisInformatieBoodschapIn.ReisInformatieProductDVS.0.DynamischeVertrekStaat.0')
         result = _.get(result, 'ArrayOfTreinLocation.TreinLocation')
         result.forEach((train) => {
           const id = _.get(train, 'TreinNummer.0')
@@ -130,10 +131,8 @@ sock.on('message', async (topic, message) => {
             // }, pgPool)
           }
 
-          if (_.has(result, 'Trein.0.ExacteVertrekVertraging.0') && _.get(result, 'Trein.0.ExacteVertrekVertraging') !== 'PT0S') {
-            console.log('this train has delay info')
-            // result.has_delay = true;
-            // result.delay_seconds = utils.durationToSeconds(_.get(result, 'Trein.0.ExacteVertrekVertraging.0'))
+          if (delayResults) {
+            console.log(delayResults)
           }
 
         })
