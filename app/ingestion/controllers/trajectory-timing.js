@@ -12,7 +12,7 @@ const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix
     const { rows: trip } = await client.query(`SELECT trip_id FROM trips WHERE realtime_trip_id = $1`, [vehicleId])
 
     if(trip[0] && trip[0].trip_id) {
-      await client.query(`UPDATE trip_times_partitioned
+      const result = await client.query(`UPDATE trip_times_partitioned
                             SET 
                             start_planned = start_planned + delay_seconds - $1, 
                             end_planned = end_planned + delay_seconds - $2, 
@@ -21,7 +21,7 @@ const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix
                           AND end_planned >= ($5 + delay_seconds - $6)
                           AND end_planned <= ($7 + 1000)`, [delaySeconds, delaySeconds, delaySeconds, trip[0].trip_id, measurementUnix, delaySeconds, measurementUnix])
 
-      console.log(`updated ${vehicleId} with ${delaySeconds} for ${measurementUnix}`)
+      console.log(`updated ${result.rowCount} rows for ${vehicleId} with ${delaySeconds} for ${measurementUnix}`)
     }
 
     /* 
