@@ -3,13 +3,23 @@
 * Updates the trajectory timing for tripId by deducting the delta from the measurement timestamp onwards.
 *
 */ 
-const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix, pgPool }) => {
+const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix, pgPool, vehicleType, operatingDay }) => {
 
   const client = await pgPool.connect()
 
   try {
 
-    const { rows: trip } = await client.query(`SELECT trip_id FROM trips WHERE realtime_trip_id = $1`, [vehicleId])
+    let trip = false
+
+    if(vehicleType === 'train') {
+      const rows = await client.query(`SELECT trip_id FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE T.trip_short_name = $1 AND CD.date = $2 LIMIT 1`, [vehicleId, operatingDay.split('-').join('')])
+      trip = rows.trip
+    } 
+
+    if(vehicleType === 'vehicle') {
+      const rows = await client.query(`SELECT trip_id FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE T.realtime_trip_id = $1 AND CD.date = $2 LIMIT 1`, [vehicleId, operatingDay.split('-').join('')])
+      trip = rows.trip
+    }
 
     if(trip[0] && trip[0].trip_id) {
       const result = await client.query(`UPDATE trip_times_partitioned
@@ -24,23 +34,9 @@ const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix
       console.log(`updated ${result.rowCount} rows for tripId: ${trip[0].trip_id}, vehicleId ${vehicleId} with ${delaySeconds} for ${measurementUnix}`)
     }
 
-    /* 
-
-    UPDATE trip_times_partitioned TTP1 
-    SET 
-      TTP1.start_planned = TTP2.start_planned + TTP2.delay_seconds - ${delta}, 
-      TTP1.end_planned = TTP2.end_planned + TTP2.delay_seconds - ${delta}
-    FROM trip_times_partitioned TTP2
-    WHERE TTP1.triptime_id = TTP2.triptime_id
-    AND TTP2.trip_id = ${trip_id}
-    AND TTP2.end_planned >= (${measurementUnix} + TTP2.delay_seconds - ${delta})
-    AND TTP2.end_planned <= (${measurementUnix} + 1000) // Target for tuning
-    */
-
   } catch (err) {
     console.log({ trajectoryTimingError: err })
   } finally {
-    console.log('release client')
     client.release()
   }
 }
