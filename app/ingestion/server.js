@@ -129,6 +129,13 @@ sock.on('message', async (topic, message) => {
             //   type: type
             // }, pgPool)
           }
+
+          if (_.has(result, 'Trein.0.ExacteVertrekVertraging.0') && _.get(result, 'Trein.0.ExacteVertrekVertraging') !== 'PT0S') {
+            console.log('this train has delay info')
+            // result.has_delay = true;
+            // result.delay_seconds = utils.durationToSeconds(_.get(result, 'Trein.0.ExacteVertrekVertraging.0'))
+          }
+
         })
       } else if(_.has(result, 'PutReisInformatieBoodschapIn.ReisInformatieProductDVS.0.DynamischeVertrekStaat.0')) {
         result = _.get(result, 'PutReisInformatieBoodschapIn.ReisInformatieProductDVS.0.DynamischeVertrekStaat.0')
