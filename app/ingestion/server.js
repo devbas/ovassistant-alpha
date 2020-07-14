@@ -198,7 +198,7 @@ sock1.on('message', async (topic, message) => {
                   type: 'vehicle', 
                   agencyCode: positionMessage.dataownercode[0], 
                   datetimeUnix: nowUnix, 
-                  measurementTimestamp: positionMessage.timestamp[0], 
+                  measurementTimestamp: positionMessage.timestamp[0] ? positionMessage.timestamp[0] : nowUnix, 
                   operatingDay: positionMessage.operatingday[0]
                 }
 
