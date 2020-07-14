@@ -187,7 +187,7 @@ sock1.on('message', async (topic, message) => {
               const id = `${positionMessage.dataownercode[0]}:${positionMessage.lineplanningnumber[0]}:${positionMessage.journeynumber[0]}`
               // console.log('vehicle: ', positionMessage)
               if (positionType === 'END') {
-                redisClient.del(id)
+                // redisClient.del(id)
                 // redisClient.zrem('items', id)
               } else {
                 // console.log('positionMessage: ', positionMessage)

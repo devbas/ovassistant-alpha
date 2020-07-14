@@ -40,7 +40,7 @@ const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix
     */
 
   } catch (err) {
-    console.log({ err: err })
+    console.log({ trajectoryTimingError: err })
   } finally {
     client.release()
   }
