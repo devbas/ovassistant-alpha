@@ -32,6 +32,8 @@ const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix
                           AND end_planned <= ($7 + 1000)`, [delaySeconds, delaySeconds, delaySeconds, trip[0].trip_id, measurementUnix, delaySeconds, measurementUnix])
 
       console.log(`updated ${result.rowCount} rows for tripId: ${trip[0].trip_id}, vehicleId ${vehicleId} with ${delaySeconds} for ${measurementUnix}`)
+    } else {
+      console.log('nothing for trip: ', trip)
     }
 
   } catch (err) {
