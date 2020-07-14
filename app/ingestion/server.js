@@ -157,7 +157,7 @@ sock.on('message', async (topic, message) => {
           // redisImportController.updateData(id, result, pgPool)
 
           if(result.has_delay && result.delay_seconds > 20) {
-            trajectoryTimingController.updateTrajectoryTiming({ vehicleId: id, delaySeconds: result.delay_seconds, measurementTimestamp: result.measurementTimestamp, pgPool: pgPool })
+            trajectoryTimingController.updateTrajectoryTiming({ vehicleId: id, delaySeconds: result.delay_seconds, measurementUnix: result.measurementTimestamp, pgPool: pgPool })
           }
         }
       }
@@ -234,7 +234,7 @@ sock1.on('message', async (topic, message) => {
                 // }
 
                 if(data.has_delay && data.delay_seconds > 20) {
-                  trajectoryTimingController.updateTrajectoryTiming({ vehicleId: data.id, delaySeconds: data.delay_seconds, measurementTimestamp: data.measurementTimestamp, pgPool: pgPool })
+                  trajectoryTimingController.updateTrajectoryTiming({ vehicleId: data.id, delaySeconds: data.delay_seconds, measurementUnix: data.measurementTimestamp, pgPool: pgPool })
                   // redisImportController.updateData(id, data, pgPool);
                 }
               }
