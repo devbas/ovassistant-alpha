@@ -21,7 +21,7 @@ const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix
                           WHERE TTP1.triptime_id = TTP2.triptime_id
                           AND TTP2.trip_id = $4
                           AND TTP2.end_planned >= ($5 + TTP2.delay_seconds - $6)
-                          AND TTP2.end_planned <= ($7 + 1000) // Target for tuning`, [delaySeconds, delaySeconds, delaySeconds, trip[0].trip_id, measurementUnix, delaySeconds, measurementUnix])
+                          AND TTP2.end_planned <= ($7 + 1000)`, [delaySeconds, delaySeconds, delaySeconds, trip[0].trip_id, measurementUnix, delaySeconds, measurementUnix])
     } else {
       console.log('no trip found for: ' + vehicleId)
     }
