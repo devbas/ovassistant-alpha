@@ -234,7 +234,7 @@ sock1.on('message', async (topic, message) => {
                 // }
 
                 if(data.has_delay && data.delay_seconds > 20) {
-                  trajectoryTimingController.updateTrajectoryTiming({ vehicleId: data.id, delaySeconds: data.delay_seconds, measurementUnix: data.measurementTimestamp, pgPool: pgPool })
+                  trajectoryTimingController.updateTrajectoryTiming({ vehicleId: data.id, delaySeconds: data.delay_seconds, measurementUnix: nowUnix, pgPool: pgPool })
                   // redisImportController.updateData(id, data, pgPool);
                 }
               }
