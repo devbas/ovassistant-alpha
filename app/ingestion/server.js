@@ -152,12 +152,19 @@ sock.on('message', async (topic, message) => {
           result.updated = Math.round((new Date()).getTime() / 1000)
           result.destination = _.get(result, 'Trein.0.PresentatieTreinEindBestemming.0.Uitingen.0.Uiting.0')
           result.subType = result.Trein[0].TreinSoort[0]._
-          result.measurementTimestamp = new Date().toJSON()
-          result.operatingDay = result.RitDatum[0]
+          // result.measurementTimestamp = new Date().toJSON()
+          // result.operatingDay = result.RitDatum[0]
           // redisImportController.updateData(id, result, pgPool)
 
           if(result.has_delay && result.delay_seconds > 20) {
-            trajectoryTimingController.updateTrajectoryTiming({ vehicleId: id, delaySeconds: result.delay_seconds, measurementUnix: result.updated, pgPool: pgPool })
+            trajectoryTimingController.updateTrajectoryTiming({ 
+              vehicleId: id, 
+              delaySeconds: result.delay_seconds, 
+              measurementUnix: result.updated, 
+              pgPool: pgPool, 
+              vehicleType: result.type,
+              operatingDay: result.RitDatum[0]
+            })
           }
         }
       }
@@ -234,7 +241,14 @@ sock1.on('message', async (topic, message) => {
                 // }
 
                 if(data.has_delay && data.delay_seconds > 20) {
-                  trajectoryTimingController.updateTrajectoryTiming({ vehicleId: data.id, delaySeconds: data.delay_seconds, measurementUnix: nowUnix, pgPool: pgPool })
+                  trajectoryTimingController.updateTrajectoryTiming({ 
+                    vehicleId: data.id, 
+                    delaySeconds: data.delay_seconds, 
+                    measurementUnix: nowUnix, 
+                    pgPool: pgPool, 
+                    vehicleType: data.type, 
+                    operatingDay: data.operatingDay
+                  })
                   // redisImportController.updateData(id, data, pgPool);
                 }
               }
