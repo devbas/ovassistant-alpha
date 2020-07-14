@@ -240,14 +240,14 @@ async function calculateTransitionMatrix(candidate, fleet) {
   for(let i = 0; i < fleet.length; i++) {
     const vehicle = fleet[i]
 
-    if(candidate.vehicle_id === vehicle.vehicle_id) {
-      transitionProb[vehicle.vehicle_id] = 1
+    if(candidate.trip_id === vehicle.trip_id) {
+      transitionProb[vehicle.trip_id] = 1
     } else {
-      transitionProb[vehicle.vehicle_id] = calculateTransition(candidate, vehicle)
+      transitionProb[vehicle.trip_id] = calculateTransition(candidate, vehicle)
     }
   }
 
-  return { [candidate.vehicle_id]: transitionProb }
+  return { [candidate.trip_id]: transitionProb }
 }
 
 /**
@@ -302,9 +302,9 @@ async function setMarkovModel(layers) {
 
     for(let j = 0; j < layer.length; j++) {
       const vehicle = layer[j]
-      if(!states.includes(vehicle.vehicle_id)) {
-        states.push(vehicle.vehicle_id)
-        startProb[vehicle.vehicle_id] = vehicle.emissionProb
+      if(!states.includes(vehicle.trip_id)) {
+        states.push(vehicle.trip_id)
+        startProb[vehicle.trip_id] = vehicle.emissionProb
       }
     }
   }
@@ -316,13 +316,13 @@ async function setMarkovModel(layers) {
 
     for(let i = 0; i < layers.length; i++) {
       const layer = layers[i]
-      const vehicle = _.find(layer, { vehicle_id: state })
+      const vehicle = _.find(layer, { trip_id: state })
       emitProb[state][layer.observationId] = vehicle ? vehicle.emissionProb : 0
 
       for(let j = 0; j < layer.length; j++) {
         const vehicle = layer[j]
-        const transitionProb = vehicle.transitionProb[vehicle.vehicle_id][state]
-        transProb[state][vehicle.vehicle_id] = transitionProb ? transitionProb : 0
+        const transitionProb = vehicle.transitionProb[vehicle.trip_id][state]
+        transProb[state][vehicle.trip_id] = transitionProb ? transitionProb : 0
       }
     }
   }
