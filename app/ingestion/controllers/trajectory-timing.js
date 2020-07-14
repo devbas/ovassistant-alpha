@@ -13,12 +13,12 @@ const updateTrajectoryTiming = async ({ vehicleId, delaySeconds, measurementUnix
 
     if(vehicleType === 'train') {
       const rows = await client.query(`SELECT trip_id FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE T.trip_short_name = $1 AND CD.date = $2 LIMIT 1`, [vehicleId, operatingDay.split('-').join('')])
-      trip = rows.trip
+      trip = rows
     } 
 
     if(vehicleType === 'vehicle') {
       const rows = await client.query(`SELECT trip_id FROM trips T JOIN calendar_dates CD ON T.service_id = CD.service_id WHERE T.realtime_trip_id = $1 AND CD.date = $2 LIMIT 1`, [vehicleId, operatingDay.split('-').join('')])
-      trip = rows.trip
+      trip = rows
     }
 
     if(trip[0] && trip[0].trip_id) {
