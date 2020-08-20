@@ -13,7 +13,7 @@
     "@sentry/node": "4.4.1",
     "async": "2.6.1",
     "axios": "0.18.1",
-    "bcrypt": "^3.0.8",
+    "bcrypt": "^5.0.0",
     "cors": "2.8.5",
     "dd-trace": "^0.21.0",
     "express": "4.16.3",
