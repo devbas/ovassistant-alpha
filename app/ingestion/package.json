@@ -19,7 +19,7 @@
     "dd-trace": "^0.20.3",
     "decompress": "^4.2.1",
     "express": "4.16.3",
-    "lodash": "4.17.19",
+    "lodash": "4.17.21",
     "moment": "2.22.2",
     "moment-timezone": "0.5.21",
     "mysql": "2.16.0",
