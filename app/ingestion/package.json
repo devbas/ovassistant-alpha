@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@sentry/node": "4.4.1",
-    "async": "2.6.1",
+    "async": "2.6.4",
     "axios": "0.21.2",
     "cors": "2.8.5",
     "date-fns": "^2.13.0",
