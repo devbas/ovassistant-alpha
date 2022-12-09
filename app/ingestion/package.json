@@ -18,7 +18,7 @@
     "date-fns-tz": "^1.0.10",
     "dd-trace": "^0.20.3",
     "decompress": "^4.2.1",
-    "express": "4.16.3",
+    "express": "4.17.3",
     "lodash": "4.17.21",
     "moment": "2.22.2",
     "moment-timezone": "0.5.21",
